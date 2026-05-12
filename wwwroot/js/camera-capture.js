@@ -46,7 +46,7 @@ captureButton.addEventListener("click", async () => {
 
         if (result.success) {
 
-            alert(`Attendance recorded for learner ID: ${result.learnerId}`);
+            alert(`Attendance recorded for student ID: ${result.studentId}`);
 
         } else {
 

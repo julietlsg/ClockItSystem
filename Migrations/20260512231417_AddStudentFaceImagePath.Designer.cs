@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClockItSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260512214106_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260512231417_AddStudentFaceImagePath")]
+    partial class AddStudentFaceImagePath
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -145,12 +145,12 @@ namespace ClockItSystem.Migrations
                     b.Property<string>("CreatedByUserId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("LearnerId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("VerificationMethod")
                         .IsRequired()
@@ -162,7 +162,7 @@ namespace ClockItSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LearnerId");
+                    b.HasIndex("StudentId");
 
                     b.ToTable("AttendanceRecords");
                 });
@@ -191,17 +191,17 @@ namespace ClockItSystem.Migrations
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
-                    b.Property<int>("LearnerId")
+                    b.Property<int>("StudentId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LearnerId");
+                    b.HasIndex("StudentId");
 
                     b.ToTable("BiometricProfiles");
                 });
 
-            modelBuilder.Entity("ClockItSystem.Models.Learner", b =>
+            modelBuilder.Entity("ClockItSystem.Models.Student", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -212,24 +212,20 @@ namespace ClockItSystem.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("FaceImagePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("GradeOrClass")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("GuardianName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GuardianPhone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -239,13 +235,16 @@ namespace ClockItSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ProgrammeOrCourse")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("StudentNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Learners");
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -394,24 +393,24 @@ namespace ClockItSystem.Migrations
 
             modelBuilder.Entity("ClockItSystem.Models.AttendanceRecord", b =>
                 {
-                    b.HasOne("ClockItSystem.Models.Learner", "Learner")
+                    b.HasOne("ClockItSystem.Models.Student", "Student")
                         .WithMany("AttendanceRecords")
-                        .HasForeignKey("LearnerId")
+                        .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Learner");
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("ClockItSystem.Models.BiometricProfile", b =>
                 {
-                    b.HasOne("ClockItSystem.Models.Learner", "Learner")
+                    b.HasOne("ClockItSystem.Models.Student", "Student")
                         .WithMany("BiometricProfiles")
-                        .HasForeignKey("LearnerId")
+                        .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Learner");
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -465,7 +464,7 @@ namespace ClockItSystem.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ClockItSystem.Models.Learner", b =>
+            modelBuilder.Entity("ClockItSystem.Models.Student", b =>
                 {
                     b.Navigation("AttendanceRecords");
 

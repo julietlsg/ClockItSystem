@@ -52,24 +52,25 @@ namespace ClockItSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Learners",
+                name: "Students",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IdNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GradeOrClass = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GuardianName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GuardianPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProgrammeOrCourse = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GuardianName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GuardianPhone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FaceImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Learners", x => x.Id);
+                    table.PrimaryKey("PK_Students", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -184,7 +185,7 @@ namespace ClockItSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    LearnerId = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: false),
                     AttendanceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClockTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     VerificationMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -197,9 +198,9 @@ namespace ClockItSystem.Migrations
                 {
                     table.PrimaryKey("PK_AttendanceRecords", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AttendanceRecords_Learners_LearnerId",
-                        column: x => x.LearnerId,
-                        principalTable: "Learners",
+                        name: "FK_AttendanceRecords_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -210,7 +211,7 @@ namespace ClockItSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    LearnerId = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: false),
                     BiometricType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FaceImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BiometricTemplate = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -221,9 +222,9 @@ namespace ClockItSystem.Migrations
                 {
                     table.PrimaryKey("PK_BiometricProfiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BiometricProfiles_Learners_LearnerId",
-                        column: x => x.LearnerId,
-                        principalTable: "Learners",
+                        name: "FK_BiometricProfiles_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -296,14 +297,14 @@ namespace ClockItSystem.Migrations
                 column: "AttendanceRecordId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttendanceRecords_LearnerId",
+                name: "IX_AttendanceRecords_StudentId",
                 table: "AttendanceRecords",
-                column: "LearnerId");
+                column: "StudentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BiometricProfiles_LearnerId",
+                name: "IX_BiometricProfiles_StudentId",
                 table: "BiometricProfiles",
-                column: "LearnerId");
+                column: "StudentId");
         }
 
         /// <inheritdoc />
@@ -340,7 +341,7 @@ namespace ClockItSystem.Migrations
                 name: "AttendanceRecords");
 
             migrationBuilder.DropTable(
-                name: "Learners");
+                name: "Students");
         }
     }
 }

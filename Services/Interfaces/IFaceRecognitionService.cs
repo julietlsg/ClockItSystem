@@ -4,7 +4,7 @@ namespace ClockItSystem.Services.Interfaces
 {
     public interface IFaceRecognitionService
     {
-        Task<string> EnrollFaceAsync(int learnerId, string imageBase64);
+        Task<string> EnrollFaceAsync(int studentId, string imageBase64);
         Task<FaceMatchResult?> MatchFaceAsync(string capturedImageBase64);
     }
 }

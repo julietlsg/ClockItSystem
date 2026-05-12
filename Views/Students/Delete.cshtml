@@ -1,0 +1,24 @@
+﻿@model ClockItSystem.Models.Student
+
+@{
+    ViewData["Title"] = "Deactivate Student";
+}
+
+<div class="container mt-4">
+    <h2>Deactivate Student</h2>
+
+    <div class="clockit-card">
+        <p>Are you sure you want to deactivate this student?</p>
+
+        <h4>@Model.FirstName @Model.LastName</h4>
+        <p>Student Number: @Model.StudentNumber</p>
+
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <button type="submit" class="btn btn-danger">Deactivate</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

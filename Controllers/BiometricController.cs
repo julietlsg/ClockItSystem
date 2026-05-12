@@ -27,13 +27,13 @@ namespace ClockItSystem.Controllers
 
             if (result == null)
             {
-                return Json(new { success = false, message = "No matching learner found." });
+                return Json(new { success = false, message = "No matching student found." });
             }
 
             return Json(new
             {
                 success = true,
-                learnerId = result.LearnerId,
+                studentId = result.StudentId,
                 score = result.Score
             });
         }

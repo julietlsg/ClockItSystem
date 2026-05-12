@@ -14,12 +14,12 @@ namespace ClockItSystem.Services
             _context = context;
         }
 
-        public async Task RecordAttendanceAsync(int learnerId, string method, decimal score, string? imagePath)
+        public async Task RecordAttendanceAsync(int studentId, string method, decimal score, string? imagePath)
         {
             var today = DateTime.Today;
 
             var existing = await _context.AttendanceRecords
-                .FirstOrDefaultAsync(x => x.LearnerId == learnerId &&
+                .FirstOrDefaultAsync(x => x.StudentId == studentId &&
                                           x.AttendanceDate == today);
 
             if (existing != null)
@@ -27,7 +27,7 @@ namespace ClockItSystem.Services
 
             var record = new AttendanceRecord
             {
-                LearnerId = learnerId,
+                StudentId = studentId,
                 AttendanceDate = today,
                 ClockTime = DateTime.Now,
                 VerificationMethod = method,

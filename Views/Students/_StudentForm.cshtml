@@ -1,0 +1,67 @@
+﻿@model ClockItSystem.Models.ViewModels.StudentViewModel
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="StudentNumber" class="form-label"></label>
+        <input asp-for="StudentNumber" class="form-control" />
+        <span asp-validation-for="StudentNumber" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="IdNumber" class="form-label"></label>
+        <input asp-for="IdNumber" class="form-control" />
+        <span asp-validation-for="IdNumber" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="FirstName" class="form-label"></label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="LastName" class="form-label"></label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="ProgrammeOrCourse" class="form-label"></label>
+        <input asp-for="ProgrammeOrCourse" class="form-control" />
+        <span asp-validation-for="ProgrammeOrCourse" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="GuardianName" class="form-label"></label>
+        <input asp-for="GuardianName" class="form-control" />
+        <span asp-validation-for="GuardianName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="GuardianPhone" class="form-label"></label>
+        <input asp-for="GuardianPhone" class="form-control" />
+        <span asp-validation-for="GuardianPhone" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="FaceImage" class="form-label"></label>
+        <input asp-for="FaceImage" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
+        <span asp-validation-for="FaceImage" class="text-danger"></span>
+
+        @if (!string.IsNullOrEmpty(Model.ExistingFaceImagePath))
+        {
+            <div class="mt-3">
+                <p>Current Image:</p>
+                <img src="@Model.ExistingFaceImagePath" width="120" height="120" style="border-radius:12px; object-fit:cover;" />
+            </div>
+        }
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Status</label>
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label asp-for="IsActive" class="form-check-label">Active</label>
+        </div>
+    </div>
+</div>

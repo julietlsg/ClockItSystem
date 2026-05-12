@@ -1,0 +1,31 @@
+﻿@model ClockItSystem.Models.ViewModels.StudentViewModel
+
+@{
+    ViewData["Title"] = "Edit Student";
+}
+
+<div class="container mt-4">
+    <h2>Edit Student</h2>
+
+    <div class="clockit-card">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ExistingFaceImagePath" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <partial name="_StudentForm" model="Model" />
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-clockit">Update Student</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

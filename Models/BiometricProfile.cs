@@ -4,18 +4,18 @@
     {
         public int Id { get; set; }
 
-        public int LearnerId { get; set; }
-        public Learner Learner { get; set; } = null!;
+        public int StudentId { get; set; }
+
+        public Student Student { get; set; } = null!;
 
         public string BiometricType { get; set; } = string.Empty;
-        // Face / Fingerprint
 
         public string? FaceImagePath { get; set; }
 
         public string? BiometricTemplate { get; set; }
-        // Store face embedding/template reference, not raw biometric data where possible.
 
         public bool IsVerified { get; set; }
-        public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime EnrolledAt { get; set; }
     }
 }

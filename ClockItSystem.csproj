@@ -9,9 +9,8 @@
   <ItemGroup>
     <Folder Include="Views\Approvals\" />
     <Folder Include="Views\Reports\" />
-    <Folder Include="Views\Learners\" />
     <Folder Include="Views\Attendance\" />
-    <Folder Include="wwwroot\uploads\" />
+    <Folder Include="wwwroot\uploads\students\" />
   </ItemGroup>
 
   <ItemGroup>
