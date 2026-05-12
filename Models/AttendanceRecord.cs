@@ -4,8 +4,8 @@
     {
         public int Id { get; set; }
 
-        public int LearnerId { get; set; }
-        public Learner Learner { get; set; } = null!;
+        public int StudentId { get; set; }
+        public Student Student { get; set; } = null!;
 
         public DateTime AttendanceDate { get; set; }
         public DateTime ClockTime { get; set; }

@@ -1,0 +1,69 @@
+﻿@model IEnumerable<ClockItSystem.Models.Student>
+
+@{
+    ViewData["Title"] = "Students";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Students</h2>
+        <a asp-action="Create" class="btn btn-clockit">Add Student</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="clockit-card">
+        <table class="table table-dark table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Student No.</th>
+                    <th>Name</th>
+                    <th>Programme/Course</th>
+                    <th>Guardian</th>
+                    <th>Status</th>
+                    <th style="width:220px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var student in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(student.FaceImagePath))
+                            {
+                                <img src="@student.FaceImagePath" width="50" height="50" style="border-radius:50%; object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <span>No Image</span>
+                            }
+                        </td>
+                        <td>@student.StudentNumber</td>
+                        <td>@student.FirstName @student.LastName</td>
+                        <td>@student.ProgrammeOrCourse</td>
+                        <td>@student.GuardianName</td>
+                        <td>
+                            @if (student.IsActive)
+                            {
+                                <span class="badge status-approved">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge status-rejected">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@student.Id" class="btn btn-sm btn-outline-info">View</a>
+                            <a asp-action="Edit" asp-route-id="@student.Id" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@student.Id" class="btn btn-sm btn-outline-danger">Deactivate</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

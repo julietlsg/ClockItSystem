@@ -21,9 +21,9 @@ namespace ClockItSystem.Controllers
             var today = DateTime.Today;
 
             var records = await _context.AttendanceRecords
-                .Include(x => x.Learner)
+                .Include(x => x.Student)
                 .Where(x => x.AttendanceDate == today)
-                .OrderBy(x => x.Learner.LastName)
+                .OrderBy(x => x.Student.LastName)
                 .ToListAsync();
 
             return View(records);

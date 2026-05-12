@@ -11,7 +11,7 @@ namespace ClockItSystem.Data
         {
         }
 
-        public DbSet<Learner> Learners { get; set; }
+        public DbSet<Student> Students { get; set; }
 
         public DbSet<BiometricProfile> BiometricProfiles { get; set; }
 
@@ -23,16 +23,20 @@ namespace ClockItSystem.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<Learner>()
+            builder.Entity<AttendanceRecord>()
+                .Property(x => x.VerificationScore)
+                .HasPrecision(5, 2);
+
+            builder.Entity<Student>()
                 .HasMany(x => x.BiometricProfiles)
-                .WithOne(x => x.Learner)
-                .HasForeignKey(x => x.LearnerId)
+                .WithOne(x => x.Student)
+                .HasForeignKey(x => x.StudentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<Learner>()
+            builder.Entity<Student>()
                 .HasMany(x => x.AttendanceRecords)
-                .WithOne(x => x.Learner)
-                .HasForeignKey(x => x.LearnerId)
+                .WithOne(x => x.Student)
+                .HasForeignKey(x => x.StudentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<AttendanceApproval>()
@@ -40,10 +44,6 @@ namespace ClockItSystem.Data
                 .WithMany()
                 .HasForeignKey(x => x.AttendanceRecordId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Entity<AttendanceRecord>()
-                .Property(x => x.VerificationScore)
-                .HasPrecision(5, 2);
         }
     }
 }
