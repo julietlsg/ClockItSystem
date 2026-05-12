@@ -1,0 +1,62 @@
+:root {
+    --clockit-bg: #050A12;
+    --clockit-card: #071B3A;
+    --clockit-primary: #0B5ED7;
+    --clockit-accent: #18D3E8;
+    --clockit-text: #FFFFFF;
+    --clockit-muted: #AAB4C3;
+    --clockit-success: #22C55E;
+    --clockit-warning: #F59E0B;
+    --clockit-danger: #EF4444;
+}
+
+body {
+    background: linear-gradient(135deg, #050A12, #071B3A);
+    color: var(--clockit-text);
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.navbar-clockit {
+    background-color: #050A12;
+    border-bottom: 1px solid rgba(24, 211, 232, 0.25);
+}
+
+.clockit-logo {
+    height: 45px;
+}
+
+.clockit-card {
+    background: rgba(7, 27, 58, 0.95);
+    border: 1px solid rgba(24, 211, 232, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    padding: 24px;
+}
+
+.btn-clockit {
+    background: linear-gradient(135deg, var(--clockit-primary), var(--clockit-accent));
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+    .btn-clockit:hover {
+        opacity: 0.9;
+        color: white;
+    }
+
+.status-approved {
+    background-color: var(--clockit-success);
+    color: white;
+}
+
+.status-pending {
+    background-color: var(--clockit-warning);
+    color: white;
+}
+
+.status-rejected {
+    background-color: var(--clockit-danger);
+    color: white;
+}

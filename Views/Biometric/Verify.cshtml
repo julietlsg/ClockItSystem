@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Facial Verification";
+}
+
+<link rel="stylesheet" href="~/css/clockit-theme.css" />
+
+<div class="container mt-5">
+
+    <div class="clockit-card text-center">
+
+        <h2>Facial Attendance Verification</h2>
+
+        <p>Please look at the camera to verify attendance.</p>
+
+        <video id="video"
+               autoplay
+               playsinline
+               width="500"
+               height="350"
+               style="border-radius: 12px; border: 2px solid #18D3E8;">
+        </video>
+
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <div class="mt-4">
+
+            <button id="captureBtn" class="btn btn-clockit">
+                Scan Face
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="~/js/camera-capture.js"></script>
