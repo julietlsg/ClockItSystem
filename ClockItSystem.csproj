@@ -10,6 +10,7 @@
     <Folder Include="Views\Approvals\" />
     <Folder Include="Views\Reports\" />
     <Folder Include="Views\Attendance\" />
+    <Folder Include="wwwroot\uploads\attendance\" />
     <Folder Include="wwwroot\uploads\students\" />
   </ItemGroup>
 

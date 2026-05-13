@@ -14,30 +14,40 @@ namespace ClockItSystem.Services
             _context = context;
         }
 
-        public async Task RecordAttendanceAsync(int studentId, string method, decimal score, string? imagePath)
+        public async Task<int> RecordAttendanceAsync(
+            int studentId,
+            string method,
+            decimal score,
+            string? capturedImagePath)
         {
             var today = DateTime.Today;
 
-            var existing = await _context.AttendanceRecords
-                .FirstOrDefaultAsync(x => x.StudentId == studentId &&
-                                          x.AttendanceDate == today);
+            var existingRecord = await _context.AttendanceRecords
+                .FirstOrDefaultAsync(x =>
+                    x.StudentId == studentId &&
+                    x.AttendanceDate == today);
 
-            if (existing != null)
-                return;
+            if (existingRecord != null)
+            {
+                return existingRecord.Id;
+            }
 
-            var record = new AttendanceRecord
+            var attendanceRecord = new AttendanceRecord
             {
                 StudentId = studentId,
                 AttendanceDate = today,
                 ClockTime = DateTime.Now,
                 VerificationMethod = method,
                 VerificationScore = score,
-                CapturedImagePath = imagePath,
+                CapturedImagePath = capturedImagePath,
                 Status = "PendingApproval"
             };
 
-            _context.AttendanceRecords.Add(record);
+            _context.AttendanceRecords.Add(attendanceRecord);
+
             await _context.SaveChangesAsync();
+
+            return attendanceRecord.Id;
         }
     }
 }

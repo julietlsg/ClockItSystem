@@ -1,62 +1,165 @@
 :root {
-    --clockit-bg: #050A12;
+    --clockit-bg: #030712;
+    --clockit-bg-dark: #020617;
     --clockit-card: #071B3A;
     --clockit-primary: #0B5ED7;
     --clockit-accent: #18D3E8;
     --clockit-text: #FFFFFF;
-    --clockit-muted: #AAB4C3;
-    --clockit-success: #22C55E;
-    --clockit-warning: #F59E0B;
-    --clockit-danger: #EF4444;
 }
 
+/* GLOBAL */
+html,
 body {
-    background: linear-gradient(135deg, #050A12, #071B3A);
-    color: var(--clockit-text);
-    font-family: 'Segoe UI', Arial, sans-serif;
-}
-
-.navbar-clockit {
-    background-color: #050A12;
-    border-bottom: 1px solid rgba(24, 211, 232, 0.25);
-}
-
-.clockit-logo {
-    height: 45px;
-}
-
-.clockit-card {
-    background: rgba(7, 27, 58, 0.95);
-    border: 1px solid rgba(24, 211, 232, 0.2);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    padding: 24px;
-}
-
-.btn-clockit {
-    background: linear-gradient(135deg, var(--clockit-primary), var(--clockit-accent));
-    border: none;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--clockit-bg);
+    font-family: 'Segoe UI', sans-serif;
+    overflow-x: hidden;
     color: white;
-    font-weight: 600;
-    border-radius: 8px;
 }
 
-    .btn-clockit:hover {
-        opacity: 0.9;
+/* NAVBAR */
+.navbar-clockit {
+    background: rgba(2, 6, 23, 0.95);
+    border-bottom: 1px solid rgba(24, 211, 232, 0.15);
+    backdrop-filter: blur(8px);
+}
+
+    .navbar-clockit .navbar-brand {
+        color: #ffffff !important;
+        font-weight: 700;
+    }
+
+    .navbar-clockit .nav-link {
+        color: rgba(255,255,255,0.88) !important;
+        transition: 0.3s ease;
+    }
+
+        .navbar-clockit .nav-link:hover {
+            color: var(--clockit-accent) !important;
+        }
+
+/* MAIN LANDING PAGE */
+.clockit-landing {
+    min-height: calc(100vh - 70px);
+    background: linear-gradient( 90deg, rgba(2, 6, 23, 0.98) 0%, rgba(3, 7, 18, 0.95) 18%, rgba(5, 20, 55, 0.92) 42%, rgba(8, 55, 125, 0.95) 75%, rgba(14, 95, 190, 0.96) 100% );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+/* HERO CARD */
+.clockit-landing-card {
+    width: 75%;
+    max-width: 1050px;
+    min-height: 460px;
+    background: linear-gradient( 90deg, rgba(7, 12, 30, 0.82), rgba(10, 45, 110, 0.68) );
+    border: 1px solid rgba(24, 211, 232, 0.15);
+    box-shadow: 0 25px 80px rgba(0,0,0,0.45), 0 0 50px rgba(11,94,215,0.22);
+    padding: 80px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* LOGO */
+.clockit-landing-logo {
+    width: 460px;
+    max-width: 100%;
+    object-fit: contain;
+    margin-bottom: 55px;
+    filter: drop-shadow(0 0 18px rgba(24, 211, 232, 0.30)) drop-shadow(0 0 40px rgba(11, 94, 215, 0.25));
+    transition: all 0.3s ease;
+}
+/* TITLE */
+.clockit-landing h1 {
+    font-size: 56px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 28px;
+}
+
+/* DESCRIPTION */
+.clockit-landing p {
+    font-size: 19px;
+    color: rgba(255,255,255,0.92);
+    max-width: 900px;
+    line-height: 1.8;
+    margin-bottom: 40px;
+}
+
+/* BUTTON GROUP */
+.clockit-button-group {
+    display: flex;
+    gap: 24px;
+}
+
+/* BUTTONS */
+.btn-clockit-white {
+    background: white;
+    color: #071B3A;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 30px;
+    min-width: 110px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .btn-clockit-white:hover {
+        background: var(--clockit-accent);
         color: white;
     }
 
-.status-approved {
-    background-color: var(--clockit-success);
-    color: white;
+/* GENERAL SYSTEM CARD */
+.clockit-card {
+    background: rgba(7, 27, 58, 0.95);
+    border: 1px solid rgba(24, 211, 232, 0.15);
+    border-radius: 14px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+    padding: 24px;
 }
 
-.status-pending {
-    background-color: var(--clockit-warning);
+/* SYSTEM BUTTONS */
+.btn-clockit {
+    background: linear-gradient( 135deg, var(--clockit-primary), var(--clockit-accent) );
+    border: none;
     color: white;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-weight: 600;
 }
 
-.status-rejected {
-    background-color: var(--clockit-danger);
-    color: white;
+    .btn-clockit:hover {
+        opacity: 0.92;
+        color: white;
+    }
+
+/* RESPONSIVE */
+@media(max-width: 768px) {
+
+    .clockit-landing-card {
+        width: 95%;
+        padding: 50px 24px;
+    }
+
+    .clockit-landing h1 {
+        font-size: 34px;
+    }
+
+    .clockit-landing p {
+        font-size: 15px;
+    }
+
+    .clockit-button-group {
+        flex-direction: column;
+    }
+
+    .btn-clockit-white {
+        width: 180px;
+    }
 }

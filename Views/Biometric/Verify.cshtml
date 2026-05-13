@@ -1,37 +1,42 @@
 ﻿@{
     ViewData["Title"] = "Facial Verification";
 }
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+<script src="~/js/camera-capture.js"></script>
 
-<link rel="stylesheet" href="~/css/clockit-theme.css" />
-
-<div class="container mt-5">
-
+<div class="container mt-4">
     <div class="clockit-card text-center">
 
         <h2>Facial Attendance Verification</h2>
 
-        <p>Please look at the camera to verify attendance.</p>
+        <p class="text-muted">
+            Position the student in front of the camera and click scan.
+        </p>
 
-        <video id="video"
-               autoplay
-               playsinline
-               width="500"
-               height="350"
-               style="border-radius: 12px; border: 2px solid #18D3E8;">
-        </video>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
 
-        <canvas id="canvas" style="display:none;"></canvas>
+                <video id="video"
+                       autoplay
+                       playsinline
+                       width="100%"
+                       style="border-radius: 16px; border: 2px solid #18D3E8; background:#000;">
+                </video>
 
-        <div class="mt-4">
+                <canvas id="canvas" style="display:none;"></canvas>
 
-            <button id="captureBtn" class="btn btn-clockit">
-                Scan Face
-            </button>
+                <div class="mt-4">
+                    <button id="captureBtn" class="btn btn-clockit">
+                        Scan Face & Record Attendance
+                    </button>
+                </div>
 
+                <div id="resultBox" class="alert mt-4 d-none"></div>
+
+            </div>
         </div>
 
     </div>
-
 </div>
 
 <script src="~/js/camera-capture.js"></script>
