@@ -163,3 +163,95 @@ body {
         width: 180px;
     }
 }
+
+/* BIOMETRIC SCAN PAGE */
+.biometric-page {
+    min-height: calc(100vh - 70px);
+    background: linear-gradient( 90deg, rgba(2, 6, 23, 0.98) 0%, rgba(3, 7, 18, 0.95) 18%, rgba(5, 20, 55, 0.92) 42%, rgba(8, 55, 125, 0.95) 75%, rgba(14, 95, 190, 0.96) 100% );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.biometric-card {
+    width: 100%;
+    max-width: 900px;
+    min-height: 620px;
+    background: rgba(5, 15, 35, 0.72);
+    border: 1px solid rgba(24, 211, 232, 0.18);
+    box-shadow: 0 25px 80px rgba(0,0,0,0.45), 0 0 50px rgba(11,94,215,0.22);
+    padding: 50px 40px;
+    text-align: center;
+    color: white;
+}
+
+    .biometric-card h2 {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 18px;
+    }
+
+.biometric-instruction {
+    font-size: 17px;
+    color: rgba(255,255,255,0.88);
+    margin-bottom: 35px;
+}
+
+.face-scan-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.face-scan-circle {
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    background: #020617;
+    border: 3px solid rgba(24, 211, 232, 0.8);
+    box-shadow: 0 0 25px rgba(24, 211, 232, 0.45), inset 0 0 35px rgba(11, 94, 215, 0.35);
+}
+
+    .face-scan-circle video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.scan-ring {
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255,255,255,0.55);
+    pointer-events: none;
+}
+
+.biometric-status {
+    display: inline-block;
+    min-width: 320px;
+    padding: 14px 22px;
+    border-radius: 10px;
+    background: rgba(7, 27, 58, 0.95);
+    border: 1px solid rgba(24, 211, 232, 0.25);
+    color: white;
+    font-weight: 600;
+}
+
+    .biometric-status.success {
+        border-color: rgba(34, 197, 94, 0.8);
+        color: #22C55E;
+    }
+
+    .biometric-status.error {
+        border-color: rgba(239, 68, 68, 0.8);
+        color: #EF4444;
+    }
+
+    .biometric-status.info {
+        border-color: rgba(24, 211, 232, 0.8);
+        color: #18D3E8;
+    }
