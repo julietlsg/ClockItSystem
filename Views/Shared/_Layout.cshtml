@@ -33,31 +33,41 @@
                 <ul class="navbar-nav ms-auto">
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                               asp-controller="Home"
-                               asp-action="Index">
-                            Home
-                        </a>
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                               asp-controller="Students"
-                               asp-action="Index">
-                            Students
-                        </a>
+                        <a class="nav-link" asp-controller="Students" asp-action="Index">Students</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                               asp-controller="Biometric"
-                               asp-action="Verify">
-                            Facial Verification
-                        </a>
+                        <a class="nav-link" asp-controller="Biometric" asp-action="Verify">Facial Verification</a>
                     </li>
 
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+@*                         <li class="nav-item">
+                            <a class="nav-link" asp-controller="Approvals" asp-action="Daily">Approvals</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Approvals" asp-action="History">Approval History</a>
+                        </li>
+
+ *@                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Register">Register User</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-link nav-link text-light">
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+                    }
                 </ul>
-
             </div>
 
         </div>

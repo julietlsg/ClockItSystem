@@ -2,5 +2,26 @@
 {
     public class DailyApprovalViewModel
     {
+        public int AttendanceRecordId { get; set; }
+
+        public int StudentId { get; set; }
+
+        public string StudentNumber { get; set; } = string.Empty;
+
+        public string StudentName { get; set; } = string.Empty;
+
+        public string? GradeOrClass { get; set; }
+
+        public DateTime AttendanceDate { get; set; }
+
+        public DateTime ClockTime { get; set; }
+
+        public string VerificationMethod { get; set; } = string.Empty;
+
+        public decimal? VerificationScore { get; set; }
+
+        public string Status { get; set; } = string.Empty;
+
+        public string? CapturedImagePath { get; set; }
     }
 }

@@ -1,0 +1,74 @@
+﻿@model IEnumerable<ClockItSystem.Models.AttendanceApproval>
+
+@{
+    ViewData["Title"] = "Approval History";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Approval History</h2>
+
+        <a asp-action="Daily" class="btn btn-clockit">
+            Back to Daily Approvals
+        </a>
+    </div>
+
+    <div class="clockit-card">
+
+        @if (!Model.Any())
+        {
+            <div class="text-center p-4">
+                <h5>No approval history found.</h5>
+            </div>
+        }
+        else
+        {
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Date</th>
+                        <th>Clock Time</th>
+                        <th>Decision</th>
+                        <th>Comment</th>
+                        <th>Reviewed By</th>
+                        <th>Reviewed At</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @item.AttendanceRecord.Student.FirstName
+                                @item.AttendanceRecord.Student.LastName
+                            </td>
+
+                            <td>@item.AttendanceRecord.AttendanceDate.ToString("yyyy-MM-dd")</td>
+                            <td>@item.AttendanceRecord.ClockTime.ToString("HH:mm")</td>
+
+                            <td>
+                                @if (item.IsApproved)
+                                {
+                                    <span class="badge status-approved">Approved</span>
+                                }
+                                else
+                                {
+                                    <span class="badge status-rejected">Rejected</span>
+                                }
+                            </td>
+
+                            <td>@item.Comment</td>
+                            <td>@item.ApprovedByUserId</td>
+                            <td>@item.ApprovedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+
+</div>

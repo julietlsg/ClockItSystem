@@ -6,17 +6,25 @@ let isProcessing = false;
 let cameraStarted = false;
 let faceCurrentlyInFrame = false;
 let faceMonitorInterval = null;
+let successMessageLocked = false;
 
 async function loadFaceApiModels() {
     try {
         showStatus("Loading face detection model...", "info");
 
         if (typeof faceapi === "undefined") {
-            showStatus("Face API library did not load. Check internet connection.", "error");
             throw new Error("faceapi is undefined");
         }
 
         await faceapi.nets.tinyFaceDetector.loadFromUri(
+            "https://justadudewhohacks.github.io/face-api.js/models"
+        );
+
+        await faceapi.nets.faceLandmark68Net.loadFromUri(
+            "https://justadudewhohacks.github.io/face-api.js/models"
+        );
+
+        await faceapi.nets.faceRecognitionNet.loadFromUri(
             "https://justadudewhohacks.github.io/face-api.js/models"
         );
 
@@ -28,6 +36,7 @@ async function loadFaceApiModels() {
         throw error;
     }
 }
+
 async function startCamera() {
     try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -97,20 +106,24 @@ async function checkForFace() {
         );
 
         if (detection) {
-            if (!faceCurrentlyInFrame) {
+            if (!faceCurrentlyInFrame && !successMessageLocked) {
                 faceCurrentlyInFrame = true;
                 await captureAndVerify();
-            } else {
-                showStatus("Face detected. Please wait for next student.", "info");
             }
         } else {
             faceCurrentlyInFrame = false;
-            showStatus("Waiting for face. Please place face within the scan area.", "info");
+
+            if (!successMessageLocked) {
+                showStatus("Waiting for face. Please place face within the scan area.", "info");
+            }
         }
     }
     catch (error) {
         console.error("Face detection error:", error);
-        showStatus("Face detection failed.", "error");
+
+        if (!successMessageLocked) {
+            showStatus("Face detection failed.", "error");
+        }
     }
 }
 
@@ -119,6 +132,25 @@ async function captureAndVerify() {
         isProcessing = true;
 
         showStatus("Face detected. Verifying attendance...", "info");
+
+        const detection = await faceapi
+            .detectSingleFace(
+                video,
+                new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 224,
+                    scoreThreshold: 0.5
+                })
+            )
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (!detection) {
+            showStatus("No clear face detected. Please look directly at the camera.", "error");
+            return;
+        }
+
+        const descriptorArray = Array.from(detection.descriptor);
+        const descriptorJson = JSON.stringify(descriptorArray);
 
         const context = canvas.getContext("2d");
 
@@ -140,19 +172,42 @@ async function captureAndVerify() {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                imageBase64: imageBase64
+                imageBase64: imageBase64,
+                descriptorJson: descriptorJson
             })
         });
 
         const result = await response.json();
 
         if (result.success) {
+            successMessageLocked = true;
+
             showStatus(
-                `Attendance recorded successfully. Match Score: ${result.score}%`,
+                `${result.message}. Score: ${result.score}%`,
                 "success"
             );
+
+            setTimeout(() => {
+                successMessageLocked = false;
+
+                showStatus(
+                    "Please allow the next student to place their face within the scan area.",
+                    "info"
+                );
+            }, 4000);
         } else {
+            successMessageLocked = true;
+
             showStatus(result.message, "error");
+
+            setTimeout(() => {
+                successMessageLocked = false;
+
+                showStatus(
+                    "Waiting for face. Please place face within the scan area.",
+                    "info"
+                );
+            }, 5000);
         }
     }
     catch (error) {

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
     public class StudentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -39,7 +39,7 @@ namespace ClockItSystem.Controllers
             return View(student);
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View(new StudentViewModel());
@@ -47,7 +47,7 @@ namespace ClockItSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(StudentViewModel model)
         {
             if (!ModelState.IsValid)
@@ -76,7 +76,7 @@ namespace ClockItSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var student = await _context.Students.FindAsync(id);
@@ -103,7 +103,7 @@ namespace ClockItSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, StudentViewModel model)
         {
             if (id != model.Id)
@@ -138,7 +138,7 @@ namespace ClockItSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var student = await _context.Students.FindAsync(id);
@@ -151,7 +151,7 @@ namespace ClockItSystem.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var student = await _context.Students.FindAsync(id);

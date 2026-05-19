@@ -55,6 +55,7 @@
 
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-clockit">Edit</a>
                 <a asp-action="Index" class="btn btn-secondary">Back</a>
+                <a asp-controller="Biometric" asp-action="Enroll" asp-route-studentId="@Model.Id" class="btn btn-clockit"> Enrol Face </a>
             </div>
         </div>
     </div>

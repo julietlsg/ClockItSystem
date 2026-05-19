@@ -18,18 +18,42 @@
 
         <div class="clockit-button-group">
 
-            <a asp-controller="Account"
-                   asp-action="Register"
-                   class="btn btn-clockit-white">
-                Sign Up
-            </a>
+            @if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                <div class="d-flex justify-content-center gap-3 mt-4">
 
-            <a asp-controller="Account"
-                   asp-action="Login"
-                   class="btn btn-clockit-white">
-                Login
-            </a>
+                    <a asp-controller="Account"
+                           asp-action="Register"
+                           class="btn btn-clockit-outline">
+                        Sign Up
+                    </a>
 
+                    <a asp-controller="Account"
+                           asp-action="Login"
+                           class="btn btn-clockit">
+                        Login
+                    </a>
+
+                </div>
+            }
+            else
+            {
+                <div class="d-flex justify-content-center gap-3 mt-4">
+
+                    <a asp-controller="Approvals"
+                           asp-action="Daily"
+                           class="btn btn-clockit">
+                        Approvals
+                    </a>
+
+                    <a asp-controller="Approvals"
+                           asp-action="History"
+                           class="btn btn-clockit">
+                        Approval History
+                    </a>
+
+                </div>
+            }
         </div>
 
     </div>
