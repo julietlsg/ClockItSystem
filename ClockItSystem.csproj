@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Approvals\" />
     <Folder Include="Views\Reports\" />
     <Folder Include="Views\Attendance\" />
+    <Folder Include="wwwroot\uploads\attendance\" />
     <Folder Include="wwwroot\uploads\students\" />
   </ItemGroup>
 

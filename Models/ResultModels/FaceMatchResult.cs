@@ -4,5 +4,7 @@
     {
         public int StudentId { get; set; }
         public decimal Score { get; set; }
+        public string Message { get; set; } = string.Empty;
+
     }
 }

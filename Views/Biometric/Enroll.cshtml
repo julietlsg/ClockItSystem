@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Enrol Face";
+    var studentId = ViewBag.StudentId;
+    var studentName = ViewBag.StudentName;
+}
+
+<div class="biometric-page">
+
+    <div class="biometric-card">
+
+        <h2>Face Enrolment</h2>
+
+        <p class="biometric-instruction">
+            Enrolling face for <strong>@studentName</strong>. Place the student's face inside the scan area.
+        </p>
+
+        <input type="hidden" id="studentId" value="@studentId" />
+
+        <div class="face-scan-wrapper">
+
+            <div class="face-scan-circle">
+
+                <video id="video"
+                       autoplay
+                       playsinline
+                       muted>
+                </video>
+
+                <div class="scan-ring"></div>
+
+            </div>
+
+        </div>
+
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <div id="resultBox" class="biometric-status">
+            Initialising camera...
+        </div>
+
+        <div class="mt-4">
+            <a asp-controller="Students" asp-action="Details" asp-route-id="@studentId" class="btn btn-secondary">
+                Back to Student
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<script defer src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script defer src="~/js/face-enrollment.js" asp-append-version="true"></script>

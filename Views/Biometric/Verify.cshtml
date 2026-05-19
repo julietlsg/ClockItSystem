@@ -2,36 +2,41 @@
     ViewData["Title"] = "Facial Verification";
 }
 
-<link rel="stylesheet" href="~/css/clockit-theme.css" />
+<div class="biometric-page">
 
-<div class="container mt-5">
-
-    <div class="clockit-card text-center">
+    <div class="biometric-card">
 
         <h2>Facial Attendance Verification</h2>
 
-        <p>Please look at the camera to verify attendance.</p>
+        <p class="biometric-instruction">
+            Place the student's face within the scan area. Attendance will be recorded automatically.
+        </p>
 
-        <video id="video"
-               autoplay
-               playsinline
-               width="500"
-               height="350"
-               style="border-radius: 12px; border: 2px solid #18D3E8;">
-        </video>
+        <div class="face-scan-wrapper">
+
+            <div class="face-scan-circle">
+
+                <video id="video"
+                       autoplay
+                       playsinline
+                       muted>
+                </video>
+
+                <div class="scan-ring"></div>
+
+            </div>
+
+        </div>
 
         <canvas id="canvas" style="display:none;"></canvas>
 
-        <div class="mt-4">
-
-            <button id="captureBtn" class="btn btn-clockit">
-                Scan Face
-            </button>
-
+        <div id="resultBox" class="biometric-status">
+            Initialising camera...
         </div>
 
     </div>
 
 </div>
 
-<script src="~/js/camera-capture.js"></script>
+<script defer src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script defer src="~/js/camera-capture.js" asp-append-version="true"></script>

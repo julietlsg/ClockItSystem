@@ -1,17 +1,31 @@
-﻿using ClockItSystem.Services.Interfaces;
+﻿using ClockItSystem.Data;
+using ClockItSystem.Models;
+using ClockItSystem.Models.Requests;
+using ClockItSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
     public class BiometricController : Controller
     {
         private readonly IFaceRecognitionService _faceRecognitionService;
+        private readonly IAttendanceService _attendanceService;
+        private readonly IWebHostEnvironment _environment;
+        private readonly ApplicationDbContext _context;
 
-        public BiometricController(IFaceRecognitionService faceRecognitionService)
+        public BiometricController(
+            IFaceRecognitionService faceRecognitionService,
+            IAttendanceService attendanceService,
+            IWebHostEnvironment environment,
+            ApplicationDbContext context)
         {
             _faceRecognitionService = faceRecognitionService;
+            _attendanceService = attendanceService;
+            _environment = environment;
+            _context = context;
         }
 
         [HttpGet]
@@ -23,24 +37,153 @@ namespace ClockItSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> VerifyFace([FromBody] FaceCaptureRequest request)
         {
-            var result = await _faceRecognitionService.MatchFaceAsync(request.ImageBase64);
-
-            if (result == null)
+            if (request == null ||
+                string.IsNullOrWhiteSpace(request.ImageBase64) ||
+                string.IsNullOrWhiteSpace(request.DescriptorJson))
             {
-                return Json(new { success = false, message = "No matching student found." });
+                return Json(new
+                {
+                    success = false,
+                    message = "No valid face data was captured."
+                });
             }
+
+            var faceMatch = await _faceRecognitionService.MatchFaceAsync(request.DescriptorJson);
+
+            if (faceMatch == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Face not recognised. Please enrol the student before attendance verification."
+                });
+            }
+
+            var capturedImagePath = await SaveCapturedAttendanceImageAsync(request.ImageBase64);
+
+            var attendanceRecordId = await _attendanceService.RecordAttendanceAsync(
+                faceMatch.StudentId,
+                "Face",
+                faceMatch.Score,
+                capturedImagePath);
 
             return Json(new
             {
                 success = true,
-                studentId = result.StudentId,
-                score = result.Score
+                message = faceMatch.Message,
+                studentId = faceMatch.StudentId,
+                score = faceMatch.Score,
+                attendanceRecordId
             });
         }
-    }
 
-    public class FaceCaptureRequest
-    {
-        public string ImageBase64 { get; set; } = string.Empty;
+        [HttpGet]
+        public async Task<IActionResult> Enroll(int studentId)
+        {
+            var student = await _context.Students.FindAsync(studentId);
+
+            if (student == null)
+                return NotFound();
+
+            ViewBag.StudentId = student.Id;
+            ViewBag.StudentName = $"{student.FirstName} {student.LastName}";
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EnrollFace([FromBody] FaceEnrollmentRequest request)
+        {
+            if (request == null ||
+                request.StudentId <= 0 ||
+                string.IsNullOrWhiteSpace(request.ImageBase64) ||
+                string.IsNullOrWhiteSpace(request.DescriptorJson))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Invalid face enrolment data."
+                });
+            }
+
+            var student = await _context.Students.FindAsync(request.StudentId);
+
+            if (student == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Student not found."
+                });
+            }
+
+            var imagePath = await SaveCapturedAttendanceImageAsync(request.ImageBase64);
+
+            var existingProfile = await _context.BiometricProfiles
+                .FirstOrDefaultAsync(x =>
+                    x.StudentId == request.StudentId &&
+                    x.BiometricType == "Face");
+
+            if (existingProfile == null)
+            {
+                var profile = new BiometricProfile
+                {
+                    StudentId = request.StudentId,
+                    BiometricType = "Face",
+                    FaceImagePath = imagePath,
+                    BiometricTemplate = request.DescriptorJson,
+                    IsVerified = true,
+                    EnrolledAt = DateTime.Now
+                };
+
+                _context.BiometricProfiles.Add(profile);
+            }
+            else
+            {
+                existingProfile.FaceImagePath = imagePath;
+                existingProfile.BiometricTemplate = request.DescriptorJson;
+                existingProfile.IsVerified = true;
+                existingProfile.EnrolledAt = DateTime.Now;
+
+                _context.BiometricProfiles.Update(existingProfile);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                message = "Face enrolled successfully."
+            });
+        }
+
+        private async Task<string?> SaveCapturedAttendanceImageAsync(string imageBase64)
+        {
+            if (string.IsNullOrWhiteSpace(imageBase64))
+                return null;
+
+            var base64Data = imageBase64;
+
+            if (imageBase64.Contains(","))
+            {
+                base64Data = imageBase64.Split(',')[1];
+            }
+
+            var imageBytes = Convert.FromBase64String(base64Data);
+
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "attendance");
+
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var fileName = $"{Guid.NewGuid()}.png";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
+
+            return $"/uploads/attendance/{fileName}";
+        }
     }
 }

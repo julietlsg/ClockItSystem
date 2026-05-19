@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+}
+
+<div class="clockit-landing">
+
+    <div class="clockit-landing-card text-center">
+
+        <img src="~/images/clockit-logo-transparent.png"
+             alt="Clock It Logo"
+             class="clockit-landing-logo" />
+
+        <h1>Welcome to Clock It</h1>
+
+        <p>
+            A smart, secure and efficient learner attendance system designed to verify attendance using facial recognition and biometric technology.
+        </p>
+
+        <div class="clockit-button-group">
+
+            @if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                <div class="d-flex justify-content-center gap-3 mt-4">
+
+                    <a asp-controller="Account"
+                           asp-action="Register"
+                           class="btn btn-clockit-outline">
+                        Sign Up
+                    </a>
+
+                    <a asp-controller="Account"
+                           asp-action="Login"
+                           class="btn btn-clockit">
+                        Login
+                    </a>
+
+                </div>
+            }
+            else
+            {
+                <div class="d-flex justify-content-center gap-3 mt-4">
+
+                    <a asp-controller="Approvals"
+                           asp-action="Daily"
+                           class="btn btn-clockit">
+                        Approvals
+                    </a>
+
+                    <a asp-controller="Approvals"
+                           asp-action="History"
+                           class="btn btn-clockit">
+                        Approval History
+                    </a>
+
+                </div>
+            }
+        </div>
+
+    </div>
+
+</div>
