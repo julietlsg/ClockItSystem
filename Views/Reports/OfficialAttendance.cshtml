@@ -1,0 +1,99 @@
+﻿@model IEnumerable<ClockItSystem.Models.ViewModels.AttendanceReportViewModel>
+
+@{
+    ViewData["Title"] = "Official Attendance Report";
+    var selectedDate = (DateTime)ViewBag.SelectedDate;
+}
+
+<div class="container mt-4">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Official Attendance Report</h2>
+
+    <div class="d-flex gap-2">
+
+        <form asp-action="OfficialAttendance" method="get" class="d-flex gap-2">
+            <input type="date"
+                   name="date"
+                   value="@selectedDate.ToString("yyyy-MM-dd")"
+                   class="form-control" />
+
+            <button type="submit" class="btn btn-clockit">
+                Filter
+            </button>
+        </form>
+
+        <a asp-action="ExportOfficialExcel"
+           asp-route-date="@selectedDate.ToString("yyyy-MM-dd")"
+           class="btn btn-success">
+            Export Excel
+        </a>
+
+        <a asp-action="ExportOfficialPdf"
+           asp-route-date="@selectedDate.ToString("yyyy-MM-dd")"
+           class="btn btn-danger">
+            Export PDF
+        </a>
+
+    </div>
+</div>
+    <div class="clockit-card">
+        @if (!Model.Any())
+        {
+            <div class="text-center p-4">
+                <h5>No approved attendance records found for this date.</h5>
+            </div>
+        }
+        else
+        {
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Student No.</th>
+                        <th>Student</th>
+                        <th>Programme/Course</th>
+                        <th>Date</th>
+                        <th>Clock Time</th>
+                        <th>Method</th>
+                        <th>Score</th>
+                        <th>Approved By</th>
+                        <th>Approved At</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.CapturedImagePath))
+                                {
+                                    <img src="@item.CapturedImagePath"
+                                         width="55"
+                                         height="55"
+                                         style="border-radius:50%; object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <span>No Image</span>
+                                }
+                            </td>
+
+                            <td>@item.StudentNumber</td>
+                            <td>@item.StudentName</td>
+                            <td>@item.ProgrammeOrCourse</td>
+                            <td>@item.AttendanceDate.ToString("yyyy-MM-dd")</td>
+                            <td>@item.ClockTime.ToString("HH:mm")</td>
+                            <td>@item.VerificationMethod</td>
+                            <td>@(item.VerificationScore?.ToString("0.00") ?? "-")%</td>
+                            <td>@item.ApprovedBy</td>
+                            <td>@(item.ApprovedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+</div>
