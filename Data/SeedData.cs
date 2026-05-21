@@ -13,7 +13,6 @@ namespace ClockItSystem.Data
             string[] roles =
             {
                 "Admin",
-                "Assessor",
                 "Facilitator"
             };
 

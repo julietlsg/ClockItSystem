@@ -24,16 +24,13 @@ namespace ClockItSystem.Models.ViewModels
         [Display(Name = "Programme/Course")]
         public string? ProgrammeOrCourse { get; set; }
 
-        [Display(Name = "Guardian Name")]
-        public string? GuardianName { get; set; }
-
-        [Display(Name = "Guardian Phone")]
-        public string? GuardianPhone { get; set; }
-
         public string? ExistingFaceImagePath { get; set; }
 
         [Display(Name = "Upload Face Image")]
         public IFormFile? FaceImage { get; set; }
+        
+        [Display(Name = "Contact Number")]
+        public string? ContactNumber { get; set; }
 
         public bool IsActive { get; set; } = true;
     }

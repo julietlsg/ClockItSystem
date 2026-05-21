@@ -112,7 +112,6 @@ namespace ClockItSystem.Controllers
             return View(model);
         }
 
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -127,7 +126,7 @@ namespace ClockItSystem.Controllers
             return new List<SelectListItem>
             {
                 new SelectListItem { Text = "Admin", Value = "Admin" },
-                new SelectListItem { Text = "Assessor", Value = "Assessor" },
+                //new SelectListItem { Text = "Assessor", Value = "Assessor" },
                 new SelectListItem { Text = "Facilitator", Value = "Facilitator" }
             };
         }
