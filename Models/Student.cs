@@ -24,11 +24,8 @@ namespace ClockItSystem.Models
         [Display(Name = "Programme/Course")]
         public string? ProgrammeOrCourse { get; set; }
 
-        [Display(Name = "Guardian Name")]
-        public string? GuardianName { get; set; }
-
-        [Display(Name = "Guardian Phone")]
-        public string? GuardianPhone { get; set; }
+        [Display(Name = "Contact Number")]
+        public string? ContactNumber { get; set; }
 
         [Display(Name = "Face Image")]
         public string? FaceImagePath { get; set; }

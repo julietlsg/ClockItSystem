@@ -10,8 +10,6 @@ namespace ClockItSystem.Services
     {
         private readonly ApplicationDbContext _context;
 
-        // Temporary calibration value.
-        // We will reduce this after testing real same-student distances.
         private const double MaximumAllowedDistance = 0.55;
 
         public FaceRecognitionService(ApplicationDbContext context)
@@ -34,7 +32,7 @@ namespace ClockItSystem.Services
                 .Where(x =>
                     x.BiometricType == "Face" &&
                     x.IsVerified &&
-                    !string.IsNullOrEmpty(x.BiometricTemplate) &&
+                    !string.IsNullOrWhiteSpace(x.BiometricTemplate) &&
                     x.Student.IsActive)
                 .ToListAsync();
 
@@ -75,7 +73,7 @@ namespace ClockItSystem.Services
             {
                 StudentId = bestStudentId.Value,
                 Score = score,
-                Message = $"Face matched. Distance: {bestDistance:F4}"
+                Message = "Face matched successfully."
             };
         }
 
@@ -83,7 +81,7 @@ namespace ClockItSystem.Services
         {
             double sum = 0;
 
-            for (int i = 0; i < first.Length; i++)
+            for (var i = 0; i < first.Length; i++)
             {
                 var difference = first[i] - second[i];
                 sum += difference * difference;

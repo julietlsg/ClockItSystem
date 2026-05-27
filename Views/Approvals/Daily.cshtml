@@ -45,12 +45,13 @@
                         <th>Photo</th>
                         <th>Student No.</th>
                         <th>Student</th>
-                        <th>Class</th>
+                        <th>ProgrammeOrCourse</th>
+                        <th>AttendanceDate</th>
                         <th>Clock Time</th>
                         <th>Method</th>
                         <th>Score</th>
                         <th>Status</th>
-                        <th style="width:240px;">Action</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
@@ -74,7 +75,8 @@
 
                             <td>@item.StudentNumber</td>
                             <td>@item.StudentName</td>
-                            <td>@item.GradeOrClass</td>
+                            <td>@item.ProgrammeOrCourse</td>
+                            <td>@item.AttendanceDate.ToString("yyyy-MM-dd")</td>
                             <td>@item.ClockTime.ToString("HH:mm")</td>
                             <td>@item.VerificationMethod</td>
                             <td>@(item.VerificationScore?.ToString("0.00") ?? "-")%</td>
@@ -133,7 +135,7 @@
                                 }
                                 else
                                 {
-                                    <span class="text-muted">Reviewed</span>
+                                    <span>Reviewed</span>
                                 }
                             </td>
                         </tr>

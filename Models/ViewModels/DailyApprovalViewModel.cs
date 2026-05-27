@@ -10,7 +10,7 @@
 
         public string StudentName { get; set; } = string.Empty;
 
-        public string? GradeOrClass { get; set; }
+        public string? ProgrammeOrCourse { get; set; }
 
         public DateTime AttendanceDate { get; set; }
 

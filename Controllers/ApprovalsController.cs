@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize(Roles = "Assessor,Facilitator,Admin")]
+    [Authorize(Roles = "Admin,Facilitator")]
     public class ApprovalsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -32,7 +32,7 @@ namespace ClockItSystem.Controllers
                     StudentId = x.StudentId,
                     StudentNumber = x.Student.StudentNumber,
                     StudentName = x.Student.FirstName + " " + x.Student.LastName,
-                    GradeOrClass = x.Student.ProgrammeOrCourse,
+                    ProgrammeOrCourse = x.Student.ProgrammeOrCourse,
                     AttendanceDate = x.AttendanceDate,
                     ClockTime = x.ClockTime,
                     VerificationMethod = x.VerificationMethod,

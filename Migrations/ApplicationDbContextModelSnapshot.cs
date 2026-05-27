@@ -206,6 +206,9 @@ namespace ClockItSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ContactNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -214,12 +217,6 @@ namespace ClockItSystem.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GuardianName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GuardianPhone")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdNumber")

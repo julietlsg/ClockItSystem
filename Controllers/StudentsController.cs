@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClockItSystem.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin")]
     public class StudentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -62,8 +62,7 @@ namespace ClockItSystem.Controllers
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 ProgrammeOrCourse = model.ProgrammeOrCourse,
-                GuardianName = model.GuardianName,
-                GuardianPhone = model.GuardianPhone,
+                ContactNumber = model.ContactNumber,
                 FaceImagePath = imagePath,
                 IsActive = model.IsActive,
                 CreatedAt = DateTime.Now
@@ -92,8 +91,7 @@ namespace ClockItSystem.Controllers
                 FirstName = student.FirstName,
                 LastName = student.LastName,
                 ProgrammeOrCourse = student.ProgrammeOrCourse,
-                GuardianName = student.GuardianName,
-                GuardianPhone = student.GuardianPhone,
+                ContactNumber = student.ContactNumber,
                 ExistingFaceImagePath = student.FaceImagePath,
                 IsActive = student.IsActive
             };
@@ -122,8 +120,7 @@ namespace ClockItSystem.Controllers
             student.FirstName = model.FirstName;
             student.LastName = model.LastName;
             student.ProgrammeOrCourse = model.ProgrammeOrCourse;
-            student.GuardianName = model.GuardianName;
-            student.GuardianPhone = model.GuardianPhone;
+            student.ContactNumber = model.ContactNumber;
             student.IsActive = model.IsActive;
 
             if (model.FaceImage != null)
