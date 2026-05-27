@@ -282,3 +282,41 @@ body {
         background: rgba(30, 213, 255, 0.15);
         color: white;
     }
+.attendance-success {
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.success-check {
+    width: 78px;
+    height: 78px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: rgba(0, 255, 163, 0.12);
+    border: 2px solid #00ffa3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00ffa3;
+    font-size: 42px;
+    font-weight: bold;
+}
+
+.success-title {
+    color: #00ffa3;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.success-student {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.success-number {
+    color: #9fb3d9;
+    font-size: 17px;
+}

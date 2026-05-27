@@ -6,11 +6,11 @@ let isProcessing = false;
 let cameraStarted = false;
 let faceCurrentlyInFrame = false;
 let faceMonitorInterval = null;
-let successMessageLocked = false;
+let messageLocked = false;
 
 async function loadFaceApiModels() {
     try {
-        showStatus("Loading face detection model...", "info");
+        showTextStatus("Loading face detection model...", "info");
 
         if (typeof faceapi === "undefined") {
             throw new Error("faceapi is undefined");
@@ -28,11 +28,11 @@ async function loadFaceApiModels() {
             "https://justadudewhohacks.github.io/face-api.js/models"
         );
 
-        showStatus("Face detection ready. Starting camera...", "info");
+        showTextStatus("Face detection ready. Starting camera...", "info");
     }
     catch (error) {
         console.error("Face API model loading error:", error);
-        showStatus("Unable to initialise facial verification.", "error");
+        showTextStatus("Unable to initialise facial verification.", "error");
         throw error;
     }
 }
@@ -40,7 +40,7 @@ async function loadFaceApiModels() {
 async function startCamera() {
     try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showStatus("Camera API is not supported by this browser.", "error");
+            showTextStatus("Camera API is not supported by this browser.", "error");
             return;
         }
 
@@ -60,7 +60,7 @@ async function startCamera() {
 
             cameraStarted = true;
 
-            showStatus("Camera ready. Place face within the scan area.", "info");
+            showTextStatus("Camera ready. Place face within the scan area.", "info");
 
             startFaceMonitoring();
         };
@@ -69,13 +69,13 @@ async function startCamera() {
         console.error("Camera access error:", error);
 
         if (error.name === "NotAllowedError") {
-            showStatus("Camera permission denied. Please allow camera access.", "error");
+            showTextStatus("Camera permission denied. Please allow camera access.", "error");
         } else if (error.name === "NotFoundError") {
-            showStatus("No camera was found on this device.", "error");
+            showTextStatus("No camera was found on this device.", "error");
         } else if (error.name === "NotReadableError") {
-            showStatus("Camera is already in use by another application.", "error");
+            showTextStatus("Camera is already in use by another application.", "error");
         } else {
-            showStatus("Unable to start camera. Please check browser permissions.", "error");
+            showTextStatus("Unable to start camera. Please check browser permissions.", "error");
         }
     }
 }
@@ -106,23 +106,23 @@ async function checkForFace() {
         );
 
         if (detection) {
-            if (!faceCurrentlyInFrame && !successMessageLocked) {
+            if (!faceCurrentlyInFrame && !messageLocked) {
                 faceCurrentlyInFrame = true;
                 await captureAndVerify();
             }
         } else {
             faceCurrentlyInFrame = false;
 
-            if (!successMessageLocked) {
-                showStatus("Waiting for face. Please place face within the scan area.", "info");
+            if (!messageLocked) {
+                showTextStatus("Waiting for face. Please place face within the scan area.", "info");
             }
         }
     }
     catch (error) {
         console.error("Face detection error:", error);
 
-        if (!successMessageLocked) {
-            showStatus("Face detection failed.", "error");
+        if (!messageLocked) {
+            showTextStatus("Face detection failed.", "error");
         }
     }
 }
@@ -131,7 +131,7 @@ async function captureAndVerify() {
     try {
         isProcessing = true;
 
-        showStatus("Face detected. Verifying attendance...", "info");
+        showTextStatus("Face detected. Verifying attendance...", "info");
 
         const detection = await faceapi
             .detectSingleFace(
@@ -145,7 +145,7 @@ async function captureAndVerify() {
             .withFaceDescriptor();
 
         if (!detection) {
-            showStatus("No clear face detected. Please look directly at the camera.", "error");
+            showTextStatus("No clear face detected. Please look directly at the camera.", "error");
             return;
         }
 
@@ -158,7 +158,7 @@ async function captureAndVerify() {
         canvas.height = video.videoHeight;
 
         if (canvas.width === 0 || canvas.height === 0) {
-            showStatus("Camera not ready yet. Please wait.", "error");
+            showTextStatus("Camera not ready yet. Please wait.", "error");
             return;
         }
 
@@ -180,30 +180,31 @@ async function captureAndVerify() {
         const result = await response.json();
 
         if (result.success) {
-            successMessageLocked = true;
+            messageLocked = true;
 
-            showStatus(
-                `${result.message}. Score: ${result.score}%`,
-                "success"
+            showSuccessStatus(
+                result.message,
+                result.studentName,
+                result.studentNumber
             );
 
             setTimeout(() => {
-                successMessageLocked = false;
+                messageLocked = false;
 
-                showStatus(
+                showTextStatus(
                     "Please allow the next student to place their face within the scan area.",
                     "info"
                 );
             }, 4000);
         } else {
-            successMessageLocked = true;
+            messageLocked = true;
 
-            showStatus(result.message, "error");
+            showTextStatus(result.message, "error");
 
             setTimeout(() => {
-                successMessageLocked = false;
+                messageLocked = false;
 
-                showStatus(
+                showTextStatus(
                     "Waiting for face. Please place face within the scan area.",
                     "info"
                 );
@@ -212,17 +213,31 @@ async function captureAndVerify() {
     }
     catch (error) {
         console.error("Verification error:", error);
-        showStatus("Verification failed. Please try again.", "error");
+        showTextStatus("Verification failed. Please try again.", "error");
     }
     finally {
         isProcessing = false;
     }
 }
 
-function showStatus(message, type) {
+function showTextStatus(message, type) {
     resultBox.classList.remove("success", "error", "info");
     resultBox.classList.add(type);
     resultBox.innerText = message;
+}
+
+function showSuccessStatus(title, studentName, studentNumber) {
+    resultBox.classList.remove("success", "error", "info");
+    resultBox.classList.add("success");
+
+    resultBox.innerHTML = `
+        <div class="attendance-success">
+            <div class="success-check">✓</div>
+            <div class="success-title">${title}</div>
+            <div class="success-student">${studentName}</div>
+            <div class="success-number">Student No: ${studentNumber}</div>
+        </div>
+    `;
 }
 
 window.addEventListener("load", async () => {
@@ -231,6 +246,6 @@ window.addEventListener("load", async () => {
         await startCamera();
     }
     catch {
-        showStatus("Unable to initialise facial verification.", "error");
+        showTextStatus("Unable to initialise facial verification.", "error");
     }
 });

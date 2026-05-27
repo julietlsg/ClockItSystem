@@ -59,6 +59,18 @@ namespace ClockItSystem.Controllers
                 });
             }
 
+            var student = await _context.Students
+                .FirstOrDefaultAsync(x => x.Id == faceMatch.StudentId);
+
+            if (student == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Matched student record could not be found."
+                });
+            }
+
             var capturedImagePath = await SaveCapturedAttendanceImageAsync(request.ImageBase64);
 
             var attendanceRecordId = await _attendanceService.RecordAttendanceAsync(
@@ -70,9 +82,10 @@ namespace ClockItSystem.Controllers
             return Json(new
             {
                 success = true,
-                message = faceMatch.Message,
-                studentId = faceMatch.StudentId,
-                score = faceMatch.Score,
+                message = "Attendance Recorded",
+                studentId = student.Id,
+                studentName = $"{student.FirstName} {student.LastName}",
+                studentNumber = student.StudentNumber,
                 attendanceRecordId
             });
         }

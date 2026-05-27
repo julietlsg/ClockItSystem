@@ -71,14 +71,14 @@
 
         @if (User.IsInRole("Facilitator"))
         {
-            <li class="nav-item">
+@*             <li class="nav-item">
                 <a class="nav-link"
                    asp-controller="Biometric"
                    asp-action="Verify">
                     Facial Verification
                 </a>
             </li>
-        }
+ *@        }
 
         @if (User.IsInRole("Admin") || User.IsInRole("Facilitator"))
         {

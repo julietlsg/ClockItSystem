@@ -46,6 +46,7 @@
                         <th>Student No.</th>
                         <th>Student</th>
                         <th>ProgrammeOrCourse</th>
+                        <th>AttendanceDate</th>
                         <th>Clock Time</th>
                         <th>Method</th>
                         <th>Score</th>
@@ -75,6 +76,7 @@
                             <td>@item.StudentNumber</td>
                             <td>@item.StudentName</td>
                             <td>@item.ProgrammeOrCourse</td>
+                            <td>@item.AttendanceDate.ToString("yyyy-MM-dd")</td>
                             <td>@item.ClockTime.ToString("HH:mm")</td>
                             <td>@item.VerificationMethod</td>
                             <td>@(item.VerificationScore?.ToString("0.00") ?? "-")%</td>
