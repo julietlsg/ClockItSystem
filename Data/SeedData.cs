@@ -13,7 +13,8 @@ namespace ClockItSystem.Data
             string[] roles =
             {
                 "Admin",
-                "Facilitator"
+                "Facilitator",
+                "Project Manager"
             };
 
             foreach (var role in roles)
