@@ -40,7 +40,9 @@ namespace ClockItSystem.Services.Api
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<bool> EnrollFingerprintAsync(int studentId, string fingerprintTemplate)
+        public async Task<bool> EnrollFingerprintAsync(
+            int studentId,
+            string fingerprintTemplate)
         {
             var response =
                 await _httpClient.PostAsJsonAsync(
@@ -50,9 +52,9 @@ namespace ClockItSystem.Services.Api
                         studentId,
                         biometricType = "Fingerprint",
                         template = fingerprintTemplate,
-                        deviceVendor = "Unknown",
-                        deviceModel = "Unknown",
-                        templateFormat = "FINGERPRINT_TEMPLATE"
+                        deviceVendor = "ClockIT",
+                        deviceModel = "Generic",
+                        templateFormat = "FINGERPRINT"
                     });
 
             return response.IsSuccessStatusCode;

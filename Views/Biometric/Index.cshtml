@@ -1,5 +1,121 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ClockItSystem.Models.Student
+
 @{
+    ViewData["Title"] = "Student Biometrics";
+
+    var faceProfile = Model.BiometricProfiles?
+        .FirstOrDefault(x => x.BiometricType == "Face");
+
+    var fingerprintProfile = Model.BiometricProfiles?
+        .FirstOrDefault(x => x.BiometricType == "Fingerprint");
 }
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3>Student Biometrics</h3>
+        </div>
+
+        <div class="card-body">
+
+            <h5>
+                @Model.FirstName @Model.LastName
+            </h5>
+
+            <hr />
+
+            <table class="table table-bordered">
+
+                <thead>
+                    <tr>
+                        <th>Biometric Type</th>
+                        <th>Status</th>
+                        <th>Enrolled On</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Face</td>
+
+                        <td>
+                            @if (faceProfile != null)
+                            {
+                                <span class="badge bg-success">
+                                    Enrolled
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Not Enrolled
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            @(faceProfile?.EnrolledAt.ToString("yyyy-MM-dd HH:mm") ?? "-")
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Fingerprint</td>
+
+                        <td>
+                            @if (fingerprintProfile != null)
+                            {
+                                <span class="badge bg-success">
+                                    Enrolled
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Not Enrolled
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            @(fingerprintProfile?.EnrolledAt.ToString("yyyy-MM-dd HH:mm") ?? "-")
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+            <div class="mt-4">
+
+                <a asp-action="Enroll"
+                       asp-route-studentId="@Model.Id"
+                       class="btn btn-primary">
+
+                    Enroll Face
+                </a>
+
+                <a asp-action="EnrollFingerprint"
+                       asp-route-studentId="@Model.Id"
+                       class="btn btn-success">
+
+                    Enroll Fingerprint
+                </a>
+
+                <a asp-controller="Students"
+                       asp-action="Details"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-secondary">
+
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
