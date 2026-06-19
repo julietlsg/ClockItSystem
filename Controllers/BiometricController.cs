@@ -1,6 +1,7 @@
 ﻿using ClockItSystem.Data;
 using ClockItSystem.Models;
 using ClockItSystem.Models.Requests;
+using ClockItSystem.Services.Api;
 using ClockItSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,17 +16,20 @@ namespace ClockItSystem.Controllers
         private readonly IAttendanceService _attendanceService;
         private readonly IWebHostEnvironment _environment;
         private readonly ApplicationDbContext _context;
+        private readonly BiometricApiClient _biometricApi;
 
         public BiometricController(
             IFaceRecognitionService faceRecognitionService,
             IAttendanceService attendanceService,
             IWebHostEnvironment environment,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            BiometricApiClient biometricApiClient)
         {
             _faceRecognitionService = faceRecognitionService;
             _attendanceService = attendanceService;
             _environment = environment;
             _context = context;
+            _biometricApi = biometricApiClient;
         }
 
         [HttpGet]
@@ -72,6 +76,11 @@ namespace ClockItSystem.Controllers
             }
 
             var capturedImagePath = await SaveCapturedAttendanceImageAsync(request.ImageBase64);
+
+            var apiSuccess =
+    await _biometricApi.EnrollFaceAsync(
+        request.StudentId,
+        request.DescriptorJson);
 
             var attendanceRecordId = await _attendanceService.RecordAttendanceAsync(
                 faceMatch.StudentId,

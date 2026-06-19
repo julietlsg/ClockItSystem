@@ -1,6 +1,8 @@
 using ClockItSystem.Data;
 using ClockItSystem.Models;
+using ClockItSystem.Models.Config;
 using ClockItSystem.Services;
+using ClockItSystem.Services.Api;
 using ClockItSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +35,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.AddScoped<IFaceRecognitionService, FaceRecognitionService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+
+builder.Services.Configure<ConfigSettings>(
+    builder.Configuration.GetSection("ConfigSettings"));
+
+builder.Services.AddHttpClient<BiometricApiClient>(); 
 
 var app = builder.Build();
 

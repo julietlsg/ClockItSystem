@@ -38,11 +38,32 @@
             Initialising camera...
         </div>
 
+
+        <div id="postEnrollmentActions">
+
+            <a class="btn btn-success"
+                   href="/Biometric/EnrollFingerprint?studentId=...">
+
+                Enrol Fingerprint
+
+            </a>
+@*             can later remove this 
+ *@            
+ <a class="btn btn-secondary"
+                   href="/Students/Details/...">
+
+                Finish
+
+            </a>
+
+        </div>
+
         <div class="mt-4">
             <a asp-controller="Students" asp-action="Details" asp-route-id="@studentId" class="btn btn-secondary">
                 Back to Student
             </a>
         </div>
+
 
     </div>
 
