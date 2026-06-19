@@ -90,16 +90,42 @@ namespace ClockItSystem.Controllers
             });
         }
 
+        //[HttpGet]
+        //public async Task<IActionResult> Enroll(int studentId)
+        //{
+        //    var student = await _context.Students.FindAsync(studentId);
+
+        //    if (student == null)
+        //        return NotFound();
+
+        //    ViewBag.StudentId = student.Id;
+        //    ViewBag.StudentName = $"{student.FirstName} {student.LastName}";
+
+        //    return View();
+        //}
+
         [HttpGet]
         public async Task<IActionResult> Enroll(int studentId)
         {
-            var student = await _context.Students.FindAsync(studentId);
+            var student = await _context.Students
+                .Include(x => x.BiometricProfiles)
+                .FirstOrDefaultAsync(x => x.Id == studentId);
 
             if (student == null)
                 return NotFound();
 
             ViewBag.StudentId = student.Id;
             ViewBag.StudentName = $"{student.FirstName} {student.LastName}";
+
+            ViewBag.FaceEnrolled =
+                student.BiometricProfiles.Any(x =>
+                    x.BiometricType == "Face" &&
+                    x.IsVerified);
+
+            ViewBag.FingerprintEnrolled =
+                student.BiometricProfiles.Any(x =>
+                    x.BiometricType == "Fingerprint" &&
+                    x.IsVerified);
 
             return View();
         }
@@ -170,6 +196,21 @@ namespace ClockItSystem.Controllers
             });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EnrollFingerprint(int studentId)
+        {
+            var student = await _context.Students
+                .FirstOrDefaultAsync(x => x.Id == studentId);
+
+            if (student == null)
+                return NotFound();
+
+            ViewBag.StudentId = student.Id;
+            ViewBag.StudentName =
+                $"{student.FirstName} {student.LastName}";
+
+            return View();
+        }
         private async Task<string?> SaveCapturedAttendanceImageAsync(string imageBase64)
         {
             if (string.IsNullOrWhiteSpace(imageBase64))

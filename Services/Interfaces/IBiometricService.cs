@@ -1,7 +1,10 @@
-﻿namespace ClockItSystem.Services.Interfaces
+﻿using ClockItSystem.Models.ResultModels;
+
+namespace ClockItSystem.Services.Interfaces
 {
     public interface IBiometricService
     {
-        //Task<BiometricVerificationResult> VerifyAsync(string capturedImageBase64);
+        Task<BiometricVerificationResult> VerifyAsync(
+            string biometricTemplate);
     }
 }

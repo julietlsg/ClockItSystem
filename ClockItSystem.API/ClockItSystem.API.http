@@ -1,0 +1,6 @@
+@ClockItSystem.API_HostAddress = http://localhost:5208
+
+GET {{ClockItSystem.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
