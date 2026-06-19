@@ -32,6 +32,18 @@ namespace ClockItSystem.Controllers
             _biometricApi = biometricApiClient;
         }
 
+        public async Task<IActionResult> Index(int studentId)
+        {
+            var student = await _context.Students
+                .Include(x => x.BiometricProfiles)
+                .FirstOrDefaultAsync(x => x.Id == studentId);
+
+            if (student == null)
+                return NotFound();
+
+            return View(student);
+        }
+
         [HttpGet]
         public IActionResult Verify()
         {
