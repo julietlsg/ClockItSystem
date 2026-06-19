@@ -15,6 +15,10 @@
         public string? BiometricTemplate { get; set; }
         // This will store the face descriptor JSON from face-api.js
 
+        public string? FingerprintTemplate { get; set; }
+
+        public string? DeviceSerialNumber { get; set; }
+
         public bool IsVerified { get; set; }
 
         public DateTime EnrolledAt { get; set; } = DateTime.Now;

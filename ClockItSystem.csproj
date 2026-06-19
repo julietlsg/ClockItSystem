@@ -28,4 +28,10 @@
     <PackageReference Include="QuestPDF" Version="2026.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="libzkfpcsharp">
+      <HintPath>..\..\ZKT Drivers\ZKFingerSDK_Windows_Standard\ZKFinger Standard SDK 5.3.0.33\C#\lib\x64\libzkfpcsharp.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

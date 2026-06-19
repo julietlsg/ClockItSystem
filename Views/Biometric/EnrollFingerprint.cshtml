@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Fingerprint Enrollment";
+}
+
+<div class="container">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            Fingerprint Enrollment
+        </div>
+
+        <div class="card-body">
+
+            <h5>
+                @ViewBag.StudentName
+            </h5>
+
+            <input type="hidden"
+                   id="studentId"
+                   value="@ViewBag.StudentId" />
+
+            <div id="scannerStatus"
+                 class="alert alert-info">
+
+                Scanner not connected.
+
+            </div>
+
+            <button id="btnEnrollFingerprint"
+                    class="btn btn-success">
+
+                Capture Fingerprint
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script src="~/js/fingerprint-enrollment.js"></script>
+}

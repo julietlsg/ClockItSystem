@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../ClockItSystem.API/ClockItSystem.API.csproj" Id="fd98ef38-4b06-4e2c-83d2-63d90afc9713" />
   <Project Path="ClockItSystem.csproj" />
 </Solution>
