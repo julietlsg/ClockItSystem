@@ -79,4 +79,40 @@ public class FingerprintController : ControllerBase
             });
         }
     }
+
+    [HttpGet("db")]
+    public IActionResult Database()
+    {
+        try
+        {
+            zkfp2.Init();
+
+            IntPtr dbHandle = zkfp2.DBInit();
+
+            return Ok(new
+            {
+                success = dbHandle != IntPtr.Zero,
+                handle = dbHandle.ToInt64()
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                error = ex.Message
+            });
+        }
+    }
+
+    [HttpPost("capture")]
+    public async Task<IActionResult> Capture()
+    {
+        var result = await _fingerprintService.CaptureAsync();
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }
