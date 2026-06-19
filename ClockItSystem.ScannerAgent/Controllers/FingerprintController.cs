@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using libzkfpcsharp;
+using ClockItSystem.ScannerAgent.Services;
 
 namespace ClockItSystem.ScannerAgent.Controllers;
 
@@ -7,6 +8,12 @@ namespace ClockItSystem.ScannerAgent.Controllers;
 [Route("api/fingerprint")]
 public class FingerprintController : ControllerBase
 {
+    private readonly IFingerprintService _fingerprintService;
+    public FingerprintController(IFingerprintService fingerprintService)
+    {
+        _fingerprintService = fingerprintService;
+    }   
+
     [HttpGet("health")]
     public IActionResult Health()
     {
