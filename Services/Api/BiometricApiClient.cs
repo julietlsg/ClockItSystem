@@ -60,15 +60,21 @@ namespace ClockItSystem.Services.Api
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<HttpResponseMessage> VerifyFingerprintAsync(string fingerprintTemplate)
+        public async Task<object?> VerifyFingerprintAsync(string template)
         {
-            return await _httpClient.PostAsJsonAsync(
-                "/api/biometric/verify",
-                new
-                {
-                    biometricType = "Fingerprint",
-                    template = fingerprintTemplate
-                });
+            var response =
+                await _httpClient.PostAsJsonAsync(
+                    "/api/biometric/verify",
+                    new
+                    {
+                        biometricType = "Fingerprint",
+                        template = template,
+                        deviceVendor = "ZKTeco",
+                        templateFormat = "ZKFP"
+                    });
+
+            return await response.Content
+                .ReadFromJsonAsync<object>();
         }
 
         public async Task<HttpResponseMessage> VerifyFaceAsync(string descriptorJson)

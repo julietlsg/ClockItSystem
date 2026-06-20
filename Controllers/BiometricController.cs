@@ -6,6 +6,7 @@ using ClockItSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static ClockItSystem.Services.Api.ScannerAgentClient;
 
 namespace ClockItSystem.Controllers
 {
@@ -223,8 +224,7 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CaptureAndEnrollFingerprint(
-            int studentId)
+        public async Task<IActionResult> CaptureAndEnrollFingerprint(int studentId)
         {
             var fingerprintTemplate =
                 await _scannerAgentClient
@@ -258,6 +258,66 @@ namespace ClockItSystem.Controllers
             {
                 success = true,
                 message = "Fingerprint enrolled successfully."
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyFingerprintCapture()
+        {
+            var templates = await _context.BiometricProfiles
+                .Where(x =>
+                    x.BiometricType == "Fingerprint" &&
+                    !string.IsNullOrEmpty(x.FingerprintTemplate))
+                .Select(x => new FingerprintTemplateDto
+                {
+                    StudentId = x.StudentId,
+                    Template = x.FingerprintTemplate!
+                })
+                .ToListAsync();
+
+            if (!templates.Any())
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "No enrolled fingerprints found."
+                });
+            }
+
+            var result =
+                await _scannerAgentClient
+                    .IdentifyFingerprintAsync(templates);
+
+            if (!result.Success)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Fingerprint not recognised."
+                });
+            }
+
+            var student = await _context.Students
+                .FirstOrDefaultAsync(x =>
+                    x.Id == result.StudentId);
+
+            if (student == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Student not found."
+                });
+            }
+
+            return Json(new
+            {
+                success = true,
+                studentId = student.Id,
+                studentNumber = student.StudentNumber,
+                studentName =
+                    $"{student.FirstName} {student.LastName}",
+                score = result.Score
             });
         }
 
