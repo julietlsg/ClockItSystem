@@ -39,6 +39,9 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.Configure<ConfigSettings>(
     builder.Configuration.GetSection("ConfigSettings"));
 
+builder.Services.Configure<ConfigSettings>(
+    builder.Configuration.GetSection("ScannerAgent"));
+
 builder.Services.AddHttpClient<BiometricApiClient>(); 
 
 var app = builder.Build();

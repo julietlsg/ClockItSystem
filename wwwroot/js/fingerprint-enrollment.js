@@ -5,14 +5,14 @@
         const studentId =
             document.getElementById("studentId").value;
 
-        /*
-          TEMPORARY
-          Replace with scanner later
-        */
+        const status =
+            document.getElementById("statusMessage");
 
-        const template =
-            "TEST_TEMPLATE_" +
-            Date.now();
+        status.className =
+            "alert alert-info";
+
+        status.innerText =
+            "Place finger on scanner...";
 
         const response =
             await fetch(
@@ -24,15 +24,11 @@
                             "application/x-www-form-urlencoded"
                     },
                     body:
-                        `studentId=${studentId}` +
-                        `&fingerprintTemplate=${template}`
+                        `studentId=${studentId}`
                 });
 
         const result =
             await response.json();
-
-        const status =
-            document.getElementById("statusMessage");
 
         if (result.success) {
 
