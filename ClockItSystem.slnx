@@ -1,5 +1,6 @@
 <Solution>
-  <Project Path="../ClockItSystem.API/ClockItSystem.API.csproj" Id="fd98ef38-4b06-4e2c-83d2-63d90afc9713" />
+  <Project Path="../ClockItSystem.API/ClockItSystem.API.csproj" Id="fd98ef38-4b06-4e2c-83d2-63d90afc9713"
+  />
+  <Project Path="../ClockItSystem.ScannerAgent/ClockItSystem.ScannerAgent.csproj" Id="b2ff0296-ec8b-486b-aed8-213ff32884d6" />
   <Project Path="ClockItSystem.csproj" />
-  <Project Path="ClockItSystem.ScannerAgent/ClockItSystem.ScannerAgent.csproj" Id="b2ff0296-ec8b-486b-aed8-213ff32884d6" />
 </Solution>

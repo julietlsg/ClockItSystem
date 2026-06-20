@@ -223,7 +223,7 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EnrollFingerprint(
+        public async Task<IActionResult> CaptureAndEnrollFingerprint(
             int studentId)
         {
             var fingerprintTemplate =
@@ -260,22 +260,24 @@ namespace ClockItSystem.Controllers
                 message = "Fingerprint enrolled successfully."
             });
         }
-        //public async Task<IActionResult> EnrollFingerprint(int studentId)
-        //{
-        //    var student = await _context.Students
-        //        .FirstOrDefaultAsync(x => x.Id == studentId);
 
-        //    if (student == null)
-        //    {
-        //        return NotFound();
-        //    }
+        [HttpGet]
+        public async Task<IActionResult> EnrollFingerprint(int studentId)
+        {
+            var student = await _context.Students
+                .FirstOrDefaultAsync(x => x.Id == studentId);
 
-        //    ViewBag.StudentId = studentId;
-        //    ViewBag.StudentName =
-        //        $"{student.FirstName} {student.LastName}";
+            if (student == null)
+            {
+                return NotFound();
+            }
 
-        //    return View();
-        //}
+            ViewBag.StudentId = studentId;
+            ViewBag.StudentName =
+                $"{student.FirstName} {student.LastName}";
+
+            return View();
+        }
         private async Task<string?> SaveCapturedAttendanceImageAsync(string imageBase64)
         {
             if (string.IsNullOrWhiteSpace(imageBase64))

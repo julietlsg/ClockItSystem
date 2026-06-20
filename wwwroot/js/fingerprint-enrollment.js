@@ -16,7 +16,7 @@
 
         const response =
             await fetch(
-                "/Biometric/EnrollFingerprint",
+                "/Biometric/CaptureAndEnrollFingerprint",
                 {
                     method: "POST",
                     headers: {

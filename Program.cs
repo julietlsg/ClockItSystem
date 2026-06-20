@@ -36,13 +36,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<IFaceRecognitionService, FaceRecognitionService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
+
 builder.Services.Configure<ConfigSettings>(
     builder.Configuration.GetSection("ConfigSettings"));
 
 builder.Services.Configure<ConfigSettings>(
     builder.Configuration.GetSection("ScannerAgent"));
 
-builder.Services.AddHttpClient<BiometricApiClient>(); 
+builder.Services.AddHttpClient<BiometricApiClient>();
+builder.Services.AddHttpClient<ScannerAgentClient>();
 
 var app = builder.Build();
 
