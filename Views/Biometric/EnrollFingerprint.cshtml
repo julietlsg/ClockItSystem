@@ -1,12 +1,13 @@
 ﻿@{
     ViewData["Title"] = "Fingerprint Enrollment";
+    var studentId = ViewBag.StudentId;
 }
 
 <div class="container mt-4">
 
-    <div class="card shadow">
+    <div class="clockit-card">
 
-        <div class="card-header bg-success text-white">
+        <div>
             <h3>Fingerprint Enrollment</h3>
         </div>
 
@@ -27,17 +28,23 @@
             <div class="text-center">
 
                 <button id="captureBtn"
-                        class="btn btn-success btn-lg">
+                        class="btn btn-primary">
 
                     Capture Fingerprint
                 </button>
+
+                <a asp-controller="Biometric"
+                       asp-action="Index"
+                       asp-route-studentId="@studentId"
+                       class="btn btn-secondary">
+                    Cancel
+                </a>
 
             </div>
 
             <input type="hidden"
                    id="studentId"
                    value="@ViewBag.StudentId" />
-
         </div>
 
     </div>

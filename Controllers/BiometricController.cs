@@ -56,6 +56,12 @@ namespace ClockItSystem.Controllers
             return View();
         }
 
+        [HttpGet]
+        public IActionResult VerifyFingerprint()
+        {
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> VerifyFace([FromBody] FaceCaptureRequest request)
         {
@@ -268,7 +274,7 @@ namespace ClockItSystem.Controllers
                 .Where(x =>
                     x.BiometricType == "Fingerprint" &&
                     !string.IsNullOrEmpty(x.FingerprintTemplate))
-                .Select(x => new FingerprintTemplateDto
+                .Select(x => new ScannerAgentClient.FingerprintTemplateDto
                 {
                     StudentId = x.StudentId,
                     Template = x.FingerprintTemplate!
@@ -284,22 +290,27 @@ namespace ClockItSystem.Controllers
                 });
             }
 
-            var result =
+            var identifyResult =
                 await _scannerAgentClient
                     .IdentifyFingerprintAsync(templates);
 
-            if (!result.Success)
+
+            if (!identifyResult.Success)
             {
                 return Json(new
                 {
                     success = false,
                     message = "Fingerprint not recognised."
+                    //templateCount = templates.Count,
+                    //identifyResult.Success,
+                    //identifyResult.StudentId,
+                    //identifyResult.Score
                 });
             }
 
             var student = await _context.Students
                 .FirstOrDefaultAsync(x =>
-                    x.Id == result.StudentId);
+                    x.Id == identifyResult.StudentId);
 
             if (student == null)
             {
@@ -310,14 +321,23 @@ namespace ClockItSystem.Controllers
                 });
             }
 
+            var attendanceRecordId =
+                await _attendanceService.RecordAttendanceAsync(
+                    student.Id,
+                    "Fingerprint",
+                    identifyResult.Score,
+                    null);
+
             return Json(new
             {
                 success = true,
+                message = "Attendance Recorded",
                 studentId = student.Id,
-                studentNumber = student.StudentNumber,
                 studentName =
                     $"{student.FirstName} {student.LastName}",
-                score = result.Score
+                studentNumber = student.StudentNumber,
+                attendanceRecordId,
+                score = identifyResult.Score
             });
         }
 

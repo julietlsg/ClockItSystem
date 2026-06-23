@@ -33,7 +33,12 @@
         <div id="resultBox" class="biometric-status">
             Initialising camera...
         </div>
-
+        <a asp-controller="Biometric"
+               asp-action="VerifyFingerprint"
+               class="biometric-status">
+            <i class="fas fa-fingerprint"></i>
+            Fingerprint Verification
+        </a>
     </div>
 
 </div>

@@ -37,36 +37,27 @@
         <div id="resultBox" class="biometric-status">
             Initialising camera...
         </div>
-
-
-        <div id="postEnrollmentActions">
-
-            <a class="btn btn-success"
-                   href="/Biometric/EnrollFingerprint?studentId=...">
-
-                Enrol Fingerprint
-
-            </a>
-@*             can later remove this 
- *@            
- <a class="btn btn-secondary"
-                   href="/Students/Details/...">
-
-                Finish
-
-            </a>
-
-        </div>
-
+        
         <div class="mt-4">
-            <a asp-controller="Students" asp-action="Details" asp-route-id="@studentId" class="btn btn-secondary">
-                Back to Student
-            </a>
+            <div id="postEnrollmentActions">
+
+                <a asp-controller="Biometric"
+                       asp-action="EnrollFingerprint"
+                       asp-route-studentId="@studentId"
+                       class="btn btn-primary">
+                    Enroll Fingerprint
+                </a>
+
+                <a asp-controller="Biometric"
+                       asp-action="Index"
+                       asp-route-studentId="@studentId"
+                       class="btn btn-secondary">
+                    Cancel
+                </a>
+
+            </div>
         </div>
-
-
     </div>
-
 </div>
 
 <script defer src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
