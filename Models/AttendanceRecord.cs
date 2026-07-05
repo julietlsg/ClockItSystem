@@ -21,5 +21,10 @@
         public string? CapturedImagePath { get; set; }
 
         public string? CreatedByUserId { get; set; }
+        public int ClientId { get; set; }
+        public Client? Client { get; set; }
+
+        public int SiteId { get; set; }
+        public Site? Site { get; set; }
     }
 }

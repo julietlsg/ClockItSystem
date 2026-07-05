@@ -1,0 +1,75 @@
+﻿.admin-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+    .admin-card .card-header {
+        background: #0d6efd;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+.admin-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .admin-table thead {
+        background: #0d6efd;
+        color: white;
+    }
+
+    .admin-table tbody tr:hover {
+        background: #eef6ff;
+        transition: .2s;
+    }
+
+.admin-stat {
+    text-align: center;
+    padding: 25px;
+}
+
+    .admin-stat h2 {
+        font-size: 40px;
+        color: #0d6efd;
+        margin-bottom: 0;
+    }
+
+.page-title {
+    font-weight: 700;
+}
+
+.page-subtitle {
+    color: #6c757d;
+}
+
+.search-box {
+    max-width: 350px;
+}
+.badge-active {
+    background: #198754;
+    color: white;
+}
+
+.badge-inactive {
+    background: #dc3545;
+    color: white;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    flex-wrap: nowrap;
+}
+
+    .action-buttons .btn {
+        min-width: 90px;
+    }
+
+.table td {
+    vertical-align: middle;
+}

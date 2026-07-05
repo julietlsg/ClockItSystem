@@ -35,5 +35,7 @@ namespace ClockItSystem.Models
 
         public ICollection<Student> Students { get; set; }
             = new List<Student>();
+
+        public int SiteCount => Sites?.Count ?? 0;
     }
 }

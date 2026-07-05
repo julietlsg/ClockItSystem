@@ -1,0 +1,320 @@
+﻿@model ClockItSystem.Models.Client
+
+@{
+    ViewData["Title"] = "Client Details";
+}
+
+<div class="container mt-4">
+
+    <div class="clockit-card shadow-sm">
+
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+
+            <h4 class="mb-0">
+
+                <i class="bi bi-buildings"></i>
+
+                Client Details
+
+            </h4>
+
+            <div>
+
+                <a asp-action="Edit"
+                       asp-route-id="@Model.ClientId"
+                       class="btn btn-warning">
+
+                    <i class="bi bi-pencil-square"></i>
+
+                    Edit
+
+                </a>
+
+                <a asp-action="Index"
+                       class="btn btn-secondary">
+
+                    <i class="bi bi-arrow-left-circle"></i>
+
+                    Back
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-8">
+
+                    <table class="table table-borderless">
+
+                        <tbody>
+
+                            <tr>
+
+                                <th style="width:220px;">
+                                    Client Name
+                                </th>
+
+                                <td>
+                                    @Model.Name
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Client Code
+                                </th>
+
+                                <td>
+                                    @Model.Code
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Contact Person
+                                </th>
+
+                                <td>
+
+                                    @(string.IsNullOrWhiteSpace(Model.ContactPerson)
+                                        ? "-"
+                                        : Model.ContactPerson)
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Email Address
+                                </th>
+
+                                <td>
+
+                                    @(string.IsNullOrWhiteSpace(Model.Email)
+                                        ? "-"
+                                        : Model.Email)
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Telephone
+                                </th>
+
+                                <td>
+
+                                    @(string.IsNullOrWhiteSpace(Model.Phone)
+                                        ? "-"
+                                        : Model.Phone)
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <td>
+
+                                    <partial name="_StatusBadge"
+                                             model="Model.IsActive" />
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Created
+                                </th>
+
+                                <td>
+
+                                    @Model.CreatedDate.ToString("dd MMM yyyy HH:mm")
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Last Updated
+                                </th>
+
+                                <td>
+
+                                    @(Model.UpdatedDate.HasValue
+                                        ? Model.UpdatedDate.Value.ToString("dd MMM yyyy HH:mm")
+                                        : "-")
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="card border-primary mb-3">
+
+                        <div class="card-header bg-primary text-white">
+
+                            Statistics
+
+                        </div>
+
+                        <div class="card-body text-center">
+
+                            <h1 class="display-5 text-primary">
+
+                                @(Model.Sites?.Count ?? 0)
+
+                            </h1>
+
+                            <p class="mb-0">
+
+                                Registered Site(s)
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card border-success">
+
+                        <div class="card-header bg-success text-white">
+
+                            Students
+
+                        </div>
+
+                        <div class="card-body text-center">
+
+                            <h1 class="display-5 text-success">
+
+                                @(Model.Students?.Count ?? 0)
+
+                            </h1>
+
+                            <p class="mb-0">
+
+                                Registered Student(s)
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            @if (Model.Sites != null && Model.Sites.Any())
+            {
+                <hr />
+
+                <h5>
+
+                    <i class="bi bi-geo-alt-fill"></i>
+
+                    Sites
+
+                </h5>
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>Site</th>
+
+                                <th>Code</th>
+
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var site in Model.Sites.OrderBy(s => s.SiteName))
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        @site.SiteName
+
+                                    </td>
+
+                                    <td>
+
+                                        @site.SiteCode
+
+                                    </td>
+
+                                    <td>
+
+                                        @if (site.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+
+                                                Active
+
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+
+                                                Inactive
+
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

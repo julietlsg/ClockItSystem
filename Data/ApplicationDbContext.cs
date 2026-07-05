@@ -27,27 +27,95 @@ namespace ClockItSystem.Data
         {
             base.OnModelCreating(builder);
 
+            // ============================================
+            // Attendance
+            // ============================================
+
             builder.Entity<AttendanceRecord>()
                 .Property(x => x.VerificationScore)
                 .HasPrecision(5, 2);
+
+            // ============================================
+            // Student Relationships
+            // ============================================
 
             builder.Entity<Student>()
                 .HasMany(x => x.BiometricProfiles)
                 .WithOne(x => x.Student)
                 .HasForeignKey(x => x.StudentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<Student>()
                 .HasMany(x => x.AttendanceRecords)
                 .WithOne(x => x.Student)
                 .HasForeignKey(x => x.StudentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<Student>()
+                .HasOne(x => x.Client)
+                .WithMany(x => x.Students)
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<Student>()
+                .HasOne(x => x.Site)
+                .WithMany(x => x.Students)
+                .HasForeignKey(x => x.SiteId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // ============================================
+            // Site Relationships
+            // ============================================
+
+            builder.Entity<Site>()
+                .HasOne(x => x.Client)
+                .WithMany(x => x.Sites)
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // ============================================
+            // Attendance Relationships
+            // ============================================
+
+            builder.Entity<AttendanceRecord>()
+                .HasOne(x => x.Student)
+                .WithMany(x => x.AttendanceRecords)
+                .HasForeignKey(x => x.StudentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<AttendanceRecord>()
+                .HasOne(x => x.Client)
+                .WithMany()
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<AttendanceRecord>()
+                .HasOne(x => x.Site)
+                .WithMany()
+                .HasForeignKey(x => x.SiteId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // ============================================
+            // Attendance Approval
+            // ============================================
 
             builder.Entity<AttendanceApproval>()
                 .HasOne(x => x.AttendanceRecord)
                 .WithMany()
                 .HasForeignKey(x => x.AttendanceRecordId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<AttendanceApproval>()
+                .HasOne(x => x.Client)
+                .WithMany()
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<AttendanceApproval>()
+                .HasOne(x => x.Site)
+                .WithMany()
+                .HasForeignKey(x => x.SiteId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

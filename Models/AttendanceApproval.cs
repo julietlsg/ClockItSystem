@@ -13,5 +13,10 @@
         public string? Comment { get; set; }
 
         public DateTime ApprovedAt { get; set; } = DateTime.UtcNow;
+        public int ClientId { get; set; }
+        public Client? Client { get; set; }
+
+        public int SiteId { get; set; }
+        public Site? Site { get; set; }
     }
 }

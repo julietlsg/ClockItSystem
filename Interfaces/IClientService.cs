@@ -6,7 +6,7 @@ namespace ClockItSystem.Interfaces
 {
     public interface IClientService
     {
-        Task<List<Client>> GetAllAsync();
+        Task<(List<Client> Clients, int TotalRecords)> GetAllAsync(PagedRequest request);
 
         Task<Client?> GetByIdAsync(int id);
 
@@ -14,7 +14,7 @@ namespace ClockItSystem.Interfaces
 
         Task<ServiceResult> UpdateAsync(ClientViewModel model);
 
-        Task<ServiceResult> DeactivateAsync(int id);
+        Task<ServiceResult> ToggleStatusAsync(int id);
 
         Task<bool> ExistsAsync(string code);
     }
