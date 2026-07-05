@@ -10,7 +10,7 @@ using QuestPDF.Infrastructure;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize(Roles = "Admin,Facilitator")]
+    [Authorize(Roles = "Admin,Project Manager")]
     public class ReportsController : Controller
     {
         private readonly ApplicationDbContext _context;

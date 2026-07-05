@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Fingerprint Verification";
+}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-8 col-lg-6">
+
+            <div class="verification-container">
+
+                <div class="verification-panel">
+
+                    <i class="fas fa-fingerprint fingerprint-icon"></i>
+
+                    <h1>Fingerprint Attendance Verification</h1>
+
+                    <p class="verification-subtitle">
+                        Place your finger on the scanner and click Verify.
+                    </p>
+
+                    <button id="verifyFingerprintBtn"
+                            class="verify-btn">
+                        <i class="fas fa-fingerprint"></i>
+                        Verify Fingerprint
+                    </button>
+
+                    <div id="resultBox"
+                         class="status-panel">
+                        Awaiting fingerprint verification...
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    const verifyButton =
+        document.getElementById("verifyFingerprintBtn");
+
+    const resultBox =
+        document.getElementById("resultBox");
+
+    function resetMessage() {
+
+        resultBox.className =
+            "alert alert-info mt-4 text-center";
+
+        resultBox.innerHTML =
+            "Awaiting fingerprint verification...";
+    }
+
+    verifyButton.addEventListener("click", async () => {
+
+        verifyButton.disabled = true;
+
+        resultBox.className =
+            "alert alert-info mt-4 text-center";
+
+        resultBox.innerHTML =
+            `
+            <div class="spinner-border spinner-border-sm me-2"
+                 role="status">
+            </div>
+            Waiting for fingerprint...
+            `;
+
+        try {
+
+            const response =
+                await fetch(
+                    "/Biometric/VerifyFingerprintCapture",
+                    {
+                        method: "POST"
+                    });
+
+            const result =
+                await response.json();
+
+            if (result.success) {
+
+                resultBox.className =
+                    "alert alert-success mt-4 text-center";
+
+                resultBox.innerHTML =
+                    `
+                    <h4 class="mb-2">
+                        <i class="fas fa-check-circle"></i>
+                        Attendance Recorded
+                    </h4>
+
+                    <strong>${result.studentName}</strong>
+                    <br />
+                    ${result.studentNumber}
+                    `;
+
+            }
+            else {
+
+                resultBox.className =
+                    "alert alert-danger mt-4 text-center";
+
+                resultBox.innerHTML =
+                    `
+                    <i class="fas fa-times-circle"></i>
+                    ${result.message}
+                    `;
+            }
+
+            setTimeout(resetMessage, 3000);
+        }
+        catch {
+
+            resultBox.className =
+                "alert alert-danger mt-4 text-center";
+
+            resultBox.innerHTML =
+                `
+                <i class="fas fa-times-circle"></i>
+                Error communicating with server.
+                `;
+
+            setTimeout(resetMessage, 1000);
+        }
+        finally {
+
+            verifyButton.disabled = false;
+        }
+    });
+
+</script>

@@ -126,8 +126,9 @@ namespace ClockItSystem.Controllers
             return new List<SelectListItem>
             {
                 new SelectListItem { Text = "Admin", Value = "Admin" },
-                //new SelectListItem { Text = "Assessor", Value = "Assessor" },
-                new SelectListItem { Text = "Facilitator", Value = "Facilitator" }
+                new SelectListItem { Text = "Facilitator", Value = "Facilitator" },
+                new SelectListItem { Text = "Project Manager", Value = "Project Manager" }
+
             };
         }
     }

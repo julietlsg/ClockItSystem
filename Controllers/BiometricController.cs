@@ -1,10 +1,12 @@
 ﻿using ClockItSystem.Data;
 using ClockItSystem.Models;
 using ClockItSystem.Models.Requests;
+using ClockItSystem.Services.Api;
 using ClockItSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static ClockItSystem.Services.Api.ScannerAgentClient;
 
 namespace ClockItSystem.Controllers
 {
@@ -15,21 +17,47 @@ namespace ClockItSystem.Controllers
         private readonly IAttendanceService _attendanceService;
         private readonly IWebHostEnvironment _environment;
         private readonly ApplicationDbContext _context;
+        private readonly BiometricApiClient _biometricApiClient;
+        private readonly ScannerAgentClient _scannerAgentClient;
 
         public BiometricController(
             IFaceRecognitionService faceRecognitionService,
             IAttendanceService attendanceService,
             IWebHostEnvironment environment,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            BiometricApiClient biometricApiClient,
+            ScannerAgentClient scannerAgentClient)
         {
             _faceRecognitionService = faceRecognitionService;
             _attendanceService = attendanceService;
             _environment = environment;
             _context = context;
+            _biometricApiClient = biometricApiClient;
+            _scannerAgentClient = scannerAgentClient;
+        }
+
+        public async Task<IActionResult> Index(int studentId)
+        {
+            var student = await _context.Students
+                .Include(x => x.BiometricProfiles)
+                .FirstOrDefaultAsync(x => x.Id == studentId);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return View(student);
         }
 
         [HttpGet]
         public IActionResult Verify()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult VerifyFingerprint()
         {
             return View();
         }
@@ -72,6 +100,11 @@ namespace ClockItSystem.Controllers
             }
 
             var capturedImagePath = await SaveCapturedAttendanceImageAsync(request.ImageBase64);
+
+            var apiSuccess =
+    await _biometricApiClient.EnrollFaceAsync(
+        request.StudentId,
+        request.DescriptorJson);
 
             var attendanceRecordId = await _attendanceService.RecordAttendanceAsync(
                 faceMatch.StudentId,
@@ -196,6 +229,118 @@ namespace ClockItSystem.Controllers
             });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CaptureAndEnrollFingerprint(int studentId)
+        {
+            var fingerprintTemplate =
+                await _scannerAgentClient
+                    .CaptureFingerprintAsync();
+
+            if (string.IsNullOrWhiteSpace(fingerprintTemplate))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Fingerprint capture failed."
+                });
+            }
+
+            var result =
+                await _biometricApiClient
+                    .EnrollFingerprintAsync(
+                        studentId,
+                        fingerprintTemplate);
+
+            if (!result)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Fingerprint enrollment failed."
+                });
+            }
+
+            return Json(new
+            {
+                success = true,
+                message = "Fingerprint enrolled successfully."
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyFingerprintCapture()
+        {
+            var templates = await _context.BiometricProfiles
+                .Where(x =>
+                    x.BiometricType == "Fingerprint" &&
+                    !string.IsNullOrEmpty(x.FingerprintTemplate))
+                .Select(x => new ScannerAgentClient.FingerprintTemplateDto
+                {
+                    StudentId = x.StudentId,
+                    Template = x.FingerprintTemplate!
+                })
+                .ToListAsync();
+
+            if (!templates.Any())
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "No enrolled fingerprints found."
+                });
+            }
+
+            var identifyResult =
+                await _scannerAgentClient
+                    .IdentifyFingerprintAsync(templates);
+
+
+            if (!identifyResult.Success)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Fingerprint not recognised."
+                    //templateCount = templates.Count,
+                    //identifyResult.Success,
+                    //identifyResult.StudentId,
+                    //identifyResult.Score
+                });
+            }
+
+            var student = await _context.Students
+                .FirstOrDefaultAsync(x =>
+                    x.Id == identifyResult.StudentId);
+
+            if (student == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Student not found."
+                });
+            }
+
+            var attendanceRecordId =
+                await _attendanceService.RecordAttendanceAsync(
+                    student.Id,
+                    "Fingerprint",
+                    identifyResult.Score,
+                    null);
+
+            return Json(new
+            {
+                success = true,
+                message = "Attendance Recorded",
+                studentId = student.Id,
+                studentName =
+                    $"{student.FirstName} {student.LastName}",
+                studentNumber = student.StudentNumber,
+                attendanceRecordId,
+                score = identifyResult.Score
+            });
+        }
+
         [HttpGet]
         public async Task<IActionResult> EnrollFingerprint(int studentId)
         {
@@ -203,9 +348,11 @@ namespace ClockItSystem.Controllers
                 .FirstOrDefaultAsync(x => x.Id == studentId);
 
             if (student == null)
+            {
                 return NotFound();
+            }
 
-            ViewBag.StudentId = student.Id;
+            ViewBag.StudentId = studentId;
             ViewBag.StudentName =
                 $"{student.FirstName} {student.LastName}";
 
