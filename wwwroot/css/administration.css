@@ -73,3 +73,39 @@
 .table td {
     vertical-align: middle;
 }
+
+/* ==========================
+   Live Search Loading Overlay
+   ========================== */
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+    .loading-overlay.d-none {
+        display: none;
+    }
+
+/* ===============================
+   AJAX Loading Overlay
+==================================*/
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+    .loading-overlay.d-none {
+        display: none;
+    }

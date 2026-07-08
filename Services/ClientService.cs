@@ -16,7 +16,7 @@ namespace ClockItSystem.Services
             _context = context;
         }
 
-        public async Task<(List<Client> Clients, int TotalRecords)> GetAllAsync(PagedRequest request)
+        public async Task<ListViewModel<Client>> GetAllAsync(PagedRequest request)
         {
             var query = _context.Clients
                 .Include(c => c.Sites)
@@ -24,13 +24,14 @@ namespace ClockItSystem.Services
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                string search = request.SearchTerm.Trim();
+                var search = request.SearchTerm.Trim();
 
                 query = query.Where(c =>
                     c.Name.Contains(search) ||
                     c.Code.Contains(search) ||
-                    (c.ContactPerson != null &&
-                     c.ContactPerson.Contains(search)));
+                    (c.ContactPerson != null && c.ContactPerson.Contains(search)) ||
+                    (c.Email != null && c.Email.Contains(search)) ||
+                    (c.Phone != null && c.Phone.Contains(search)));
             }
 
             if (request.IsActive.HasValue)
@@ -39,7 +40,7 @@ namespace ClockItSystem.Services
                     c.IsActive == request.IsActive.Value);
             }
 
-            int totalRecords = await query.CountAsync();
+            var totalRecords = await query.CountAsync();
 
             var clients = await query
                 .OrderBy(c => c.Name)
@@ -47,9 +48,20 @@ namespace ClockItSystem.Services
                 .Take(request.PageSize)
                 .ToListAsync();
 
-            return (clients, totalRecords);
-        }
+            return new ListViewModel<Client>
+            {
+                Items = clients,
 
+                Filter = request,
+
+                Pagination = new PagedResult
+                {
+                    CurrentPage = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalRecords = totalRecords
+                }
+            };
+        }
         public async Task<Client?> GetByIdAsync(int id)
         {
             return await _context.Clients

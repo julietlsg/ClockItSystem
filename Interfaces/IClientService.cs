@@ -6,8 +6,7 @@ namespace ClockItSystem.Interfaces
 {
     public interface IClientService
     {
-        Task<(List<Client> Clients, int TotalRecords)> GetAllAsync(PagedRequest request);
-
+        Task<ListViewModel<Client>> GetAllAsync(PagedRequest request);
         Task<Client?> GetByIdAsync(int id);
 
         Task<ServiceResult> CreateAsync(ClientViewModel model);

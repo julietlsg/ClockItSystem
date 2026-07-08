@@ -17,27 +17,18 @@ namespace ClockItSystem.Controllers
 
         #region Index
 
+        [HttpGet]
         public async Task<IActionResult> Index(PagedRequest request)
         {
-            var result = await _clientService.GetAllAsync(request);
+            var model = await _clientService.GetAllAsync(request);
 
-            var model = new ListViewModel<Client>
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                Items = result.Clients,
-
-                Filter = request,
-
-                Pagination = new PagedResult
-                {
-                    CurrentPage = request.PageNumber,
-                    PageSize = request.PageSize,
-                    TotalRecords = result.TotalRecords
-                }
-            };
+                return PartialView("_ClientTable", model);
+            }
 
             return View(model);
-        }
-
+        }        
         #endregion
 
         #region Details
