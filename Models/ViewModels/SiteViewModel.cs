@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace ClockItSystem.Models.ViewModels
 {
@@ -6,18 +8,27 @@ namespace ClockItSystem.Models.ViewModels
     {
         public int SiteId { get; set; }
 
-        [Required]
+        [Display(Name = "Client")]
+        [Required(ErrorMessage = "Please select a client.")]
         public int ClientId { get; set; }
 
-        [Required]
         [Display(Name = "Site Name")]
-        public string Name { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Site name is required.")]
+        [StringLength(100)]
+        public string SiteName { get; set; } = string.Empty;
 
-        [Required]
-        public string Code { get; set; } = string.Empty;
+        [Display(Name = "Site Code")]
+        [Required(ErrorMessage = "Site code is required.")]
+        [StringLength(20)]
+        public string SiteCode { get; set; } = string.Empty;
 
+        [StringLength(150)]
         public string? Address { get; set; }
 
+        [Display(Name = "Active")]
         public bool IsActive { get; set; } = true;
+
+        public List<SelectListItem> Clients { get; set; }
+            = new();
     }
 }

@@ -1,19 +1,24 @@
-﻿using ClockItSystem.Models;
+﻿using ClockItSystem.Helpers;
+using ClockItSystem.Models;
+using ClockItSystem.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ClockItSystem.Interfaces
 {
     public interface ISiteService
     {
-        Task<IEnumerable<Site>> GetAllAsync();
-
-        Task<IEnumerable<Site>> GetByClientAsync(int clientId);
+        Task<ListViewModel<Site>> GetAllAsync(PagedRequest request);
 
         Task<Site?> GetByIdAsync(int id);
 
-        Task CreateAsync(Site site);
+        Task<ServiceResult> CreateAsync(SiteViewModel model);
 
-        Task UpdateAsync(Site site);
+        Task<ServiceResult> UpdateAsync(SiteViewModel model);
 
-        Task<bool> DeleteAsync(int id);
+        Task<ServiceResult> ToggleStatusAsync(int id);
+
+        Task<bool> ExistsAsync(string code);
+
+        Task<List<SelectListItem>> GetClientDropdownAsync();
     }
 }
