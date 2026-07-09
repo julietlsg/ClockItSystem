@@ -32,14 +32,31 @@ namespace ClockItSystem.Services
                 return existingRecord.Id;
             }
 
+            var student = await _context.Students
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+
+            if (student == null)
+                throw new Exception($"Student {studentId} not found.");
+
             var attendanceRecord = new AttendanceRecord
             {
-                StudentId = studentId,
+                StudentId = student.Id,
+
+                ClientId = student.ClientId,
+
+                SiteId = student.SiteId,
+
                 AttendanceDate = today,
+
                 ClockTime = DateTime.Now,
+
                 VerificationMethod = method,
+
                 VerificationScore = score,
+
                 CapturedImagePath = capturedImagePath,
+
                 Status = "PendingApproval"
             };
 

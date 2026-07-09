@@ -66,6 +66,7 @@ namespace ClockItSystem.Services
         {
             return await _context.Clients
                 .Include(c => c.Sites)
+                .Include(c => c.Students)
                 .FirstOrDefaultAsync(c => c.ClientId == id);
         }
 

@@ -199,7 +199,13 @@ namespace ClockItSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DeviceModel")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DeviceSerialNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceVendor")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("EnrolledAt")
@@ -216,6 +222,12 @@ namespace ClockItSystem.Migrations
 
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TemplateFormat")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClockItSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260705182153_InitialCreate")]
+    [Migration("20260709100213_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -202,7 +202,13 @@ namespace ClockItSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DeviceModel")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DeviceSerialNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceVendor")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("EnrolledAt")
@@ -219,6 +225,12 @@ namespace ClockItSystem.Migrations
 
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TemplateFormat")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

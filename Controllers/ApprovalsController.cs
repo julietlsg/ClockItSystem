@@ -70,7 +70,9 @@ namespace ClockItSystem.Controllers
                 ApprovedByUserId = User.Identity?.Name ?? "System",
                 IsApproved = true,
                 Comment = "Approved",
-                ApprovedAt = DateTime.Now
+                ApprovedAt = DateTime.Now, 
+                ClientId = record.ClientId,
+                SiteId   = record.SiteId
             });
 
             await _context.SaveChangesAsync();
@@ -98,7 +100,9 @@ namespace ClockItSystem.Controllers
                 ApprovedByUserId = User.Identity?.Name ?? "System",
                 IsApproved = false,
                 Comment = string.IsNullOrWhiteSpace(comment) ? "Rejected" : comment,
-                ApprovedAt = DateTime.Now
+                ApprovedAt = DateTime.Now,
+                ClientId = record.ClientId,
+                SiteId = record.SiteId
             });
 
             await _context.SaveChangesAsync();

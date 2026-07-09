@@ -4,6 +4,7 @@ using ClockItSystem.Models.ViewModels;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -27,8 +28,30 @@ namespace ClockItSystem.Controllers
         {
             var selectedDate = date?.Date ?? DateTime.Today;
             ViewBag.SelectedDate = selectedDate;
+            ViewBag.ClientId = clientId;
+            ViewBag.SiteId = siteId;
 
             var records = await GetReportRecordsAsync(selectedDate, "Approved", clientId, siteId);
+            var clients = await GetClientsAsync();
+            var sites = await GetSitesAsync(clientId);
+
+            if (!records.Any())
+            {
+                records.Add(new AttendanceReportViewModel
+                {
+                    Clients = clients,
+                    Sites = sites
+                });
+            }
+            else
+            {
+                foreach (var row in records)
+                {
+                    row.Clients = clients;
+                    row.Sites = sites;
+                }
+            }
+
             return View(records);
         }
 
@@ -37,8 +60,30 @@ namespace ClockItSystem.Controllers
         {
             var selectedDate = date?.Date ?? DateTime.Today;
             ViewBag.SelectedDate = selectedDate;
+            ViewBag.ClientId = clientId;
+            ViewBag.SiteId = siteId;
 
             var records = await GetReportRecordsAsync(selectedDate, "PendingApproval", clientId, siteId);
+            var clients = await GetClientsAsync();
+            var sites = await GetSitesAsync(clientId);
+
+            if (!records.Any())
+            {
+                records.Add(new AttendanceReportViewModel
+                {
+                    Clients = clients,
+                    Sites = sites
+                });
+            }
+            else
+            {
+                foreach (var row in records)
+                {
+                    row.Clients = clients;
+                    row.Sites = sites;
+                }
+            }
+
             return View(records);
         }
 
@@ -47,8 +92,30 @@ namespace ClockItSystem.Controllers
         {
             var selectedDate = date?.Date ?? DateTime.Today;
             ViewBag.SelectedDate = selectedDate;
+            ViewBag.ClientId = clientId;
+            ViewBag.SiteId = siteId;
 
             var records = await GetReportRecordsAsync(selectedDate, "Rejected", clientId, siteId);
+            var clients = await GetClientsAsync();
+            var sites = await GetSitesAsync(clientId);
+
+            if (!records.Any())
+            {
+                records.Add(new AttendanceReportViewModel
+                {
+                    Clients = clients,
+                    Sites = sites
+                });
+            }
+            else
+            {
+                foreach (var row in records)
+                {
+                    row.Clients = clients;
+                    row.Sites = sites;
+                }
+            }
+
             return View(records);
         }
 
@@ -184,6 +251,39 @@ namespace ClockItSystem.Controllers
                         .OrderByDescending(a => a.ApprovedAt)
                         .Select(a => a.Comment)
                         .FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetClientsAsync()
+        {
+            return await _context.Clients
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.ClientId.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetSitesAsync(int? clientId = null)
+        {
+            var query = _context.Sites
+                .Where(x => x.IsActive);
+
+            if (clientId.HasValue)
+            {
+                query = query.Where(x => x.ClientId == clientId);
+            }
+
+            return await query
+                .OrderBy(x => x.SiteName)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.SiteId.ToString(),
+                    Text = x.SiteName
                 })
                 .ToListAsync();
         }

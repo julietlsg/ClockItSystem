@@ -282,8 +282,12 @@ namespace ClockItSystem.Migrations
                     BiometricTemplate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FingerprintTemplate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeviceSerialNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DeviceVendor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DeviceModel = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TemplateFormat = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsVerified = table.Column<bool>(type: "bit", nullable: false),
-                    EnrolledAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    EnrolledAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

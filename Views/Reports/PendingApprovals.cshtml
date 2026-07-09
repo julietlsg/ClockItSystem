@@ -31,20 +31,21 @@
 
                     <label class="form-label">Client</label>
 
-                    <select name="clientId" class="form-select">
+                    <select name="clientId"
+                            class="form-select"
+                            onchange="document.getElementById('reportFilterForm').submit();">
 
                         <option value="">All Clients</option>
 
-                        @foreach (var client in Model.FirstOrDefault()?.Clients ?? Enumerable.Empty<SelectListItem>())
+                        @foreach (var client in Model.First().Clients)
                         {
                             <option value="@client.Value"
-                                    selected="@(Context.Request.Query["clientId"] == client.Value)">
+                                    selected="@(client.Value == ViewBag.ClientId?.ToString())">
                                 @client.Text
                             </option>
                         }
 
                     </select>
-
                 </div>
 
                 <div class="col-md-3">
@@ -67,7 +68,7 @@
 
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-4">
 
                     <label class="form-label">Attendance Date</label>
 
@@ -77,38 +78,29 @@
                            class="form-control" />
 
                 </div>
+            </form>
 
-                <div class="col-md-3">
+            <div class="col-md-6">
 
-                    <button class="btn btn-clockit w-100">
+                <div class="d-flex gap-2">
 
+                    <button class="btn btn-clockit flex-fill">
                         Generate Report
+                    </button>
 
+                    <button class="btn btn-success flex-fill"
+                            formaction="@Url.Action("ExportPendingExcel")">
+                        Export Excel
+                    </button>
+
+                    <button class="btn btn-danger flex-fill"
+                            formaction="@Url.Action("ExportPendingPdf")">
+                        Export PDF
                     </button>
 
                 </div>
 
-            </form>
-
-            <a asp-action="ExportOfficialExcel"
-                   asp-route-date="@selectedDate.ToString("yyyy-MM-dd")"
-                   asp-route-clientId="@Context.Request.Query["clientId"]"
-                   asp-route-siteId="@Context.Request.Query["siteId"]"
-                   class="btn btn-success">
-
-                Export Excel
-
-            </a>
-            <a asp-action="ExportOfficialPdf"
-                   asp-route-date="@selectedDate.ToString("yyyy-MM-dd")"
-                   asp-route-clientId="@Context.Request.Query["clientId"]"
-                   asp-route-siteId="@Context.Request.Query["siteId"]"
-                   class="btn btn-danger">
-
-                Export PDF
-
-            </a>
-
+            </div>
     </div>
 </div>
     <div class="clockit-card">
@@ -140,8 +132,8 @@
                     @foreach (var item in Model)
                     {
                         <tr>
-                            <td>
-@*                                 @if (!string.IsNullOrEmpty(item.CapturedImagePath))
+@*                             <td>
+                                @if (!string.IsNullOrEmpty(item.CapturedImagePath))
                                 {
                                     <img src="@item.CapturedImagePath"
                                          width="55"

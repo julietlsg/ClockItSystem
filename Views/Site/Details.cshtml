@@ -4,26 +4,37 @@
     ViewData["Title"] = "Site Details";
 }
 
-<div class="container-fluid mt-4">
+<div class="container mt-4">
 
     <div class="clockit-card shadow-sm">
 
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
 
             <h4 class="mb-0">
-
-                <i class="bi bi-info-circle-fill me-2"></i>
-
+                <i class="bi bi-building"></i>
                 Site Details
-
             </h4>
 
-            <span>
+            <div>
 
-                <partial name="_StatusBadge"
-                         model="Model.IsActive" />
+                <a asp-action="Edit"
+                       asp-route-id="@Model.SiteId"
+                       class="btn btn-clockit">
 
-            </span>
+                    <i class="bi bi-pencil-square"></i>
+                    Edit
+
+                </a>
+
+                <a asp-action="Index"
+                       class="btn btn-secondary">
+
+                    <i class="bi bi-arrow-left-circle"></i>
+                    Back
+
+                </a>
+
+            </div>
 
         </div>
 
@@ -31,140 +42,107 @@
 
             <div class="row">
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-8">
 
-                    <label class="form-label text-muted">
+                    <table class="table table-borderless">
 
-                        Client
+                        <tbody>
 
-                    </label>
+                            <tr>
 
-                    <div class="fw-semibold fs-5">
+                                <th style="width:220px;">
+                                    Client
+                                </th>
 
-                        @Model.Client.Name
+                                <td>
+                                    @(Model.Client?.Name ?? "-")
+                                </td>
 
-                    </div>
+                            </tr>
 
-                </div>
+                            <tr>
 
-                <div class="col-md-6 mb-4">
+                                <th>
+                                    Site Name
+                                </th>
 
-                    <label class="form-label text-muted">
+                                <td>
+                                    @Model.SiteName
+                                </td>
 
-                        Site Name
+                            </tr>
 
-                    </label>
+                            <tr>
 
-                    <div class="fw-semibold fs-5">
+                                <th>
+                                    Site Code
+                                </th>
 
-                        @Model.SiteName
+                                <td>
+                                    @Model.SiteCode
+                                </td>
 
-                    </div>
+                            </tr>
 
-                </div>
+                            <tr>
 
-            </div>
+                                <th>
+                                    Address
+                                </th>
 
-            <div class="row">
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(Model.Address)
+                                        ? "-"
+                                        : Model.Address)
+                                </td>
 
-                <div class="col-md-6 mb-4">
+                            </tr>
 
-                    <label class="form-label text-muted">
+                            <tr>
 
-                        Site Code
+                                <th>
+                                    Students
+                                </th>
 
-                    </label>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        @(Model.Students?.Count ?? 0)
+                                    </span>
+                                </td>
 
-                    <div>
+                            </tr>
 
-                        @Model.SiteCode
+                            <tr>
 
-                    </div>
+                                <th>
+                                    Status
+                                </th>
 
-                </div>
+                                <td>
 
-                <div class="col-md-6 mb-4">
+                                    <partial name="_StatusBadge"
+                                             model="Model.IsActive" />
 
-                    <label class="form-label text-muted">
+                                </td>
 
-                        Address
+                            </tr>
 
-                    </label>
+                            <tr>
 
-                    <div>
+                                <th>
+                                    Created
+                                </th>
 
-                        @(string.IsNullOrWhiteSpace(Model.Address)
-                            ? "-"
-                            : Model.Address)
+                                <td>
+                                    @Model.CreatedDate.ToString("dd MMM yyyy HH:mm")
+                                </td>
 
-                    </div>
+                            </tr>
+                        </tbody>
 
-                </div>
-
-            </div>
-
-            <div class="row">
-
-                <div class="col-md-6 mb-4">
-
-                    <label class="form-label text-muted">
-
-                        Students
-
-                    </label>
-
-                    <div>
-
-                        <span class="badge bg-primary fs-6">
-
-                            @(Model.Students?.Count ?? 0)
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="col-md-6 mb-4">
-
-                    <label class="form-label text-muted">
-
-                        Created
-
-                    </label>
-
-                    <div>
-
-                        @Model.CreatedDate.ToString("dd MMM yyyy HH:mm")
-
-                    </div>
+                    </table>
 
                 </div>
-
-            </div>
-
-            <hr />
-
-            <div class="d-flex justify-content-end gap-2">
-
-                <a asp-action="Index"
-                       class="btn btn-outline-secondary">
-
-                    <i class="bi bi-arrow-left me-1"></i>
-
-                    Back
-
-                </a>
-
-                <a asp-action="Edit"
-                       asp-route-id="@Model.SiteId"
-                       class="btn btn-primary">
-
-                    <i class="bi bi-pencil-square me-1"></i>
-
-                    Edit
-
-                </a>
 
             </div>
 
