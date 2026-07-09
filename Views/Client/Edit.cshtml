@@ -104,18 +104,37 @@
 
                 </div>
 
-                <div class="mb-3">
+                                <div class="row">
 
-                    <label asp-for="Email"
-                           class="form-label fw-semibold">
-                    </label>
+                    <div class="col-md-6 mb-3">
 
-                    <input asp-for="Email"
-                           class="form-control"
-                           placeholder="Enter Email Address" />
+                        <label asp-for="Address"
+                               class="form-label fw-semibold">
+                        </label>
 
-                    <span asp-validation-for="Email"
-                          class="text-danger"></span>
+                        <input asp-for="Address"
+                               class="form-control"
+                               placeholder="Enter Client Address" />
+
+                        <span asp-validation-for="Address"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="Email"
+                               class="form-label fw-semibold">
+                        </label>
+
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="Enter Email Address" />
+
+                        <span asp-validation-for="Email"
+                              class="text-danger"></span>
+
+                    </div>
 
                 </div>
 

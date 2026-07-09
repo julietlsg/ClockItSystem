@@ -1,6 +1,8 @@
 ﻿using ClockItSystem.Data;
+using ClockItSystem.Interfaces;
 using ClockItSystem.Models;
 using ClockItSystem.Models.ViewModels;
+using ClockItSystem.Services.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,11 +15,15 @@ namespace ClockItSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly IPersonValidationService _personValidation;
 
-        public StudentsController(ApplicationDbContext context, IWebHostEnvironment environment)
+        public StudentsController(ApplicationDbContext context, 
+            IWebHostEnvironment environment,
+            IPersonValidationService validationService)
         {
             _context = context;
             _environment = environment;
+            _personValidation = validationService;
         }
 
         public async Task<IActionResult> Index()
@@ -71,9 +77,22 @@ namespace ClockItSystem.Controllers
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(StudentViewModel model)
         {
+            if (!_personValidation.IsValidSouthAfricanId(model.IdNumber))
+            {
+                ModelState.AddModelError(nameof(model.IdNumber),
+                    "Please enter a valid 13-digit South African ID number.");
+            }
+
+            if (!_personValidation.IsValidCellphone(model.ContactNumber))
+            {
+                ModelState.AddModelError(nameof(model.ContactNumber),
+                    "Please enter a valid South African cellphone number.");
+            }
+
             if (!ModelState.IsValid)
             {
                 model.Clients = await GetClientsAsync();
+                //model.Sites = await GetSitesAsync(model.ClientId);
 
                 model.Sites = model.ClientId > 0
                     ? await _context.Sites
@@ -92,7 +111,7 @@ namespace ClockItSystem.Controllers
             }
 
             var site = await _context.Sites
-    .FirstOrDefaultAsync(s => s.SiteId == model.SiteId);
+                .FirstOrDefaultAsync(s => s.SiteId == model.SiteId);
 
             if (site == null || site.ClientId != model.ClientId)
             {
@@ -210,8 +229,19 @@ namespace ClockItSystem.Controllers
             if (student == null)
                 return NotFound();
 
-            var site = await _context.Sites
-    .FirstOrDefaultAsync(s => s.SiteId == model.SiteId);
+            if (!_personValidation.IsValidSouthAfricanId(model.IdNumber))
+            {
+                ModelState.AddModelError(nameof(model.IdNumber),
+                    "Please enter a valid 13-digit South African ID number.");
+            }
+
+            if (!_personValidation.IsValidCellphone(model.ContactNumber))
+            {
+                ModelState.AddModelError(nameof(model.ContactNumber),
+                    "Please enter a valid South African cellphone number.");
+            }
+
+            var site = await _context.Sites.FirstOrDefaultAsync(s => s.SiteId == model.SiteId);
 
             if (site == null || site.ClientId != model.ClientId)
             {

@@ -1,169 +1,679 @@
-﻿@model IEnumerable<ClockItSystem.Models.ViewModels.DailyApprovalViewModel>
+﻿@model List<ClockItSystem.Models.ViewModels.DailyApprovalViewModel>
 
 @{
-    ViewData["Title"] = "Daily Attendance Approvals";
-    var selectedDate = (DateTime)ViewBag.SelectedDate;
+    ViewData["Title"] = "Daily Attendance Approval";
+
+    var filter = Model.FirstOrDefault() ?? new ClockItSystem.Models.ViewModels.DailyApprovalViewModel();
 }
 
-<div class="container mt-4">
+<div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Daily Attendance Approvals</h2>
+    <div class="clockit-card shadow-sm">
+        <div class="d-flex justify-content-center gap-2">
+            <div class="card-header">
 
-        <form asp-action="Daily" method="get" class="d-flex gap-2">
-            <input type="date"
-                   name="date"
-                   value="@selectedDate.ToString("yyyy-MM-dd")"
-                   class="form-control" />
+                <h4 class="mb-0">
 
-            <button type="submit" class="btn btn-clockit">
-                Filter
-            </button>
-        </form>
-    </div>
+                    <i class="bi bi-check2-square"></i>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["Success"]
-        </div>
-    }
 
-    <div class="clockit-card">
+                </h4>
+                    Daily Attendance Approval
 
-        @if (!Model.Any())
-        {
-            <div class="text-center p-4">
-                <h5>No attendance records found for this date.</h5>
             </div>
-        }
-        else
-        {
-            <table class="table table-dark table-hover align-middle">
-                <thead>
+        </div>
+        <hr />
+
+        <div class="card-body">
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+
+                    @TempData["Success"]
+
+                </div>
+            }
+
+            <form asp-action="Daily"
+                  method="get"
+                  id="filterForm">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Client -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+
+                            Client
+
+                        </label>
+
+                        <select class="form-select"
+                                id="ClientId"
+                                name="clientId">
+
+                            <option value="">All Clients</option>
+
+                            @foreach (var client in filter.Clients)
+                            {
+                                <option value="@client.Value"
+                                        selected="@(filter.SelectedClientId?.ToString()==client.Value)">
+
+                                    @client.Text
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <!-- Site -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+
+                            Site
+
+                        </label>
+
+                        <select class="form-select"
+                                id="SiteId"
+                                name="siteId">
+
+                            <option value="">All Sites</option>
+
+                            @foreach (var site in filter.Sites)
+                            {
+                                <option value="@site.Value"
+                                        selected="@(filter.SelectedSiteId?.ToString()==site.Value)">
+
+                                    @site.Text
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <!-- Programme -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+
+                            Programme
+
+                        </label>
+
+                        <select class="form-select"
+                                name="programme">
+
+                            <option value="">All Programmes</option>
+
+                            @foreach (var programme in filter.Programmes)
+                            {
+                                <option value="@programme.Value"
+                                        selected="@(filter.SelectedProgramme==programme.Value)">
+
+                                    @programme.Text
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <!-- Search -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+
+                            Student
+
+                        </label>
+
+                        <input class="form-control"
+                               name="searchTerm"
+                               value="@filter.SearchTerm"
+                               placeholder="Student No / Name" />
+
+                    </div>
+
+                    <!-- Date -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+
+                            Date
+
+                        </label>
+
+                        <input class="form-control"
+                               type="date"
+                               name="date"
+                               value="@filter.SelectedDate?.ToString("yyyy-MM-dd")" />
+
+                    </div>
+
+                    <!-- Buttons -->
+
+                    <div class="col-md-2">
+
+                        <div class="d-grid gap-2">
+
+                            <button class="btn btn-clockit">
+
+                                <i class="bi bi-search"></i>
+
+                                Generate
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+            <hr />
+            <table class="table table-hover table-striped align-middle">
+
+                <thead class="table-dark">
+
                     <tr>
-                        <th>Photo</th>
-                        <th>Student No.</th>
+
+                        <th>Student No</th>
+
                         <th>Student</th>
-                        <th>ProgrammeOrCourse</th>
+
                         <th>Client</th>
+
                         <th>Site</th>
-                        <th>AttendanceDate</th>
-                        <th>Clock Time</th>
+
+                        <th>Programme</th>
+
+                        <th>Date</th>
+
+                        <th>Time</th>
+
                         <th>Method</th>
+
                         <th>Score</th>
+
                         <th>Status</th>
-                        <th>Action</th>
+
+                        <th style="width:120px">Face</th>
+
+                        <th style="width:220px">Actions</th>
+
                     </tr>
+
                 </thead>
 
                 <tbody>
-                    @foreach (var item in Model)
+
+                    @if (Model.Any(x => x.AttendanceRecordId > 0))
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+
+                                <td>@item.StudentNumber</td>
+
+                                <td>@item.StudentName</td>
+
+                                <td>@item.ClientName</td>
+
+                                <td>@item.SiteName</td>
+
+                                <td>@item.ProgrammeOrCourse</td>
+
+                                <td>@item.AttendanceDate.ToString("dd MMM yyyy")</td>
+
+                                <td>@item.ClockTime.ToString("HH:mm")</td>
+
+                                <td>
+
+                                    @if (item.VerificationMethod == "Face")
+                                    {
+                                        <span class="badge bg-primary">
+
+                                            Face
+
+                                        </span>
+                                    }
+                                    else if (item.VerificationMethod == "Fingerprint")
+                                    {
+                                        <span class="badge bg-success">
+
+                                            Fingerprint
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+
+                                            @item.VerificationMethod
+
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @(item.VerificationScore?.ToString("0.00") ?? "-")
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.Status == "Approved")
+                                    {
+                                        <span class="badge bg-success">
+
+                                            Approved
+
+                                        </span>
+                                    }
+                                    else if (item.Status == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">
+
+                                            Rejected
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">
+
+                                            Pending
+
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (!string.IsNullOrWhiteSpace(item.CapturedImagePath))
+                                    {
+                                        <a href="@item.CapturedImagePath"
+                                               target="_blank"
+                                               class="btn btn-outline-info btn-sm">
+
+                                            View
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+
+                                            -
+
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.Status == "PendingApproval")
+                                    {
+                                        <div class="d-flex gap-2">
+
+                                            <form asp-action="Approve"
+                                                  method="post">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="attendanceRecordId"
+                                                       value="@item.AttendanceRecordId" />
+
+                                                <button class="btn btn-success btn-sm">
+
+                                                    <i class="bi bi-check-circle"></i>
+
+                                                    Approve
+
+                                                </button>
+
+                                            </form>
+
+                                            <button class="btn btn-danger btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#rejectModal"
+                                                    data-id="@item.AttendanceRecordId">
+
+                                                <i class="bi bi-x-circle"></i>
+
+                                                Reject
+
+                                            </button>
+
+                                        </div>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.CapturedImagePath))
-                                {
-                                    <img src="@item.CapturedImagePath"
-                                         width="55"
-                                         height="55"
-                                         style="border-radius:50%; object-fit:cover;" />
-                                }
-                                else
-                                {
-                                    <span>No Image</span>
-                                }
+
+                            <td colspan="12"
+                                class="text-center text-muted py-5">
+
+                                No attendance records found.
+
                             </td>
 
-                            <td>@item.StudentNumber</td>
-                            <td>@item.StudentName</td>
-                            <td>@item.ProgrammeOrCourse</td>
-                            <td>@item.ClientName</td>
-                            <td>@item.SiteName</td>
-                            <td>@item.AttendanceDate.ToString("yyyy-MM-dd")</td>
-                            <td>@item.ClockTime.ToString("HH:mm")</td>
-                            <td>@item.VerificationMethod</td>
-                            <td>@(item.VerificationScore?.ToString("0.00") ?? "-")%</td>
-
-                            <td>
-                                @switch (item.Status)
-                                {
-                                    case "Approved":
-                                        <span class="badge bg-success">Approved</span>
-                                        break;
-
-                                    case "Rejected":
-                                        <span class="badge bg-danger">Rejected</span>
-                                        break;
-
-                                    default:
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                        break;
-                                }
-
-
-@*                                 @if (item.Status == "Approved")
-                                {
-                                    <span class="badge status-approved">Approved</span>
-                                }
-                                else if (item.Status == "Rejected")
-                                {
-                                    <span class="badge status-rejected">Rejected</span>
-                                }
-                                else
-                                {
-                                    <span class="badge status-pending">Pending</span>
-                                }
- *@                            </td>
-
-                            <td>
-                                @if (item.Status == "PendingApproval")
-                                {
-                                    <form asp-action="Approve"
-                                          method="post"
-                                          class="d-inline">
-                                        @Html.AntiForgeryToken()
-
-                                        <input type="hidden"
-                                               name="attendanceRecordId"
-                                               value="@item.AttendanceRecordId" />
-
-                                        <button type="submit"
-                                                class="btn btn-sm btn-success">
-                                            Approve
-                                        </button>
-                                    </form>
-
-                                    <form asp-action="Reject"
-                                          method="post"
-                                          class="d-inline">
-                                        @Html.AntiForgeryToken()
-
-                                        <input type="hidden"
-                                               name="attendanceRecordId"
-                                               value="@item.AttendanceRecordId" />
-
-                                        <input type="hidden"
-                                               name="comment"
-                                               value="Rejected by facilitator" />
-
-                                        <button type="submit"
-                                                class="btn btn-sm btn-danger">
-                                            Reject
-                                        </button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span>Reviewed</span>
-                                }
-                            </td>
                         </tr>
                     }
+
                 </tbody>
+
             </table>
+            <hr />
+
+<nav aria-label="Daily Attendance Pagination">
+
+    <ul class="pagination justify-content-center">
+
+        @if (filter.CurrentPage > 1)
+        {
+            <li class="page-item">
+
+                <a class="page-link"
+                   asp-action="Daily"
+                   asp-route-page="@(filter.CurrentPage-1)"
+                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
+                   asp-route-clientId="@filter.SelectedClientId"
+                   asp-route-siteId="@filter.SelectedSiteId"
+                   asp-route-programme="@filter.SelectedProgramme"
+                   asp-route-searchTerm="@filter.SearchTerm">
+
+                    Previous
+
+                </a>
+
+            </li>
         }
+
+        @for (int i = 1; i <= filter.TotalPages; i++)
+        {
+            <li class="page-item @(i==filter.CurrentPage ? "active" : "")">
+
+                <a class="page-link"
+                   asp-action="Daily"
+                   asp-route-page="@i"
+                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
+                   asp-route-clientId="@filter.SelectedClientId"
+                   asp-route-siteId="@filter.SelectedSiteId"
+                   asp-route-programme="@filter.SelectedProgramme"
+                   asp-route-searchTerm="@filter.SearchTerm">
+
+                    @i
+
+                </a>
+
+            </li>
+        }
+
+        @if (filter.CurrentPage < filter.TotalPages)
+        {
+            <li class="page-item">
+
+                <a class="page-link"
+                   asp-action="Daily"
+                   asp-route-page="@(filter.CurrentPage+1)"
+                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
+                   asp-route-clientId="@filter.SelectedClientId"
+                   asp-route-siteId="@filter.SelectedSiteId"
+                   asp-route-programme="@filter.SelectedProgramme"
+                   asp-route-searchTerm="@filter.SearchTerm">
+
+                    Next
+
+                </a>
+
+            </li>
+        }
+
+    </ul>
+
+</nav>
+
+</div>
+
+</div>
+
+</div>
+<div class="modal fade"
+     id="rejectModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form asp-action="Reject"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       id="attendanceRecordId"
+                       name="attendanceRecordId" />
+
+                <div class="modal-header bg-danger text-white">
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-exclamation-circle"></i>
+
+                        Select Reason for Student Absent
+
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-bold">
+
+                            Reason
+
+                        </label>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input reject-reason"
+                                   type="radio"
+                                   name="reason"
+                                   id="leave"
+                                   value="Leave" />
+
+                            <label class="form-check-label" for="leave">
+
+                                Leave
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input reject-reason"
+                                   type="radio"
+                                   name="reason"
+                                   id="sickLeave"
+                                   value="SickLeave" />
+
+                            <label class="form-check-label" for="sickLeave">
+
+                                Sick Leave
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input reject-reason"
+                                   type="radio"
+                                   name="reason"
+                                   id="family"
+                                   value="FamilyResponsibilityLeave" />
+
+                            <label class="form-check-label" for="family">
+
+                                Family Responsibility Leave
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input reject-reason"
+                                   type="radio"
+                                   name="reason"
+                                   id="absent"
+                                   value="StudentAbsent" />
+
+                            <label class="form-check-label" for="absent">
+
+                                Student Absent
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-bold">
+
+                            Supporting Document
+
+                        </label>
+
+                        <input type="file"
+                               class="form-control"
+                               name="supportingDocument"
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+
+                        <small class="text-muted">
+
+                            Upload a sick note, leave form or any supporting document.
+
+                        </small>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-bold">
+
+                            Additional Comment (Optional)
+
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="3"
+                                  name="comment"></textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit"
+                            id="rejectButton"
+                            class="btn btn-danger"
+                            disabled>
+
+                        Reject Attendance
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
 
     </div>
 
 </div>
+@section Scripts
+{
+    <script>
+
+        const rejectModal = document.getElementById('rejectModal');
+
+        rejectModal.addEventListener('show.bs.modal', function (event) {
+
+            const button = event.relatedTarget;
+
+            document.getElementById('attendanceRecordId').value =
+                button.getAttribute('data-id');
+
+            document
+                .querySelectorAll('.reject-reason')
+                .forEach(r => r.checked = false);
+
+            document.getElementById('rejectButton').disabled = true;
+
+        });
+
+        document
+            .querySelectorAll('.reject-reason')
+            .forEach(radio => {
+
+                radio.addEventListener('change', function () {
+
+                    document.getElementById('rejectButton').disabled = false;
+
+                });
+
+        });    </script>
+}
