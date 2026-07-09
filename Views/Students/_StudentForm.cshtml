@@ -7,10 +7,13 @@
     <div class="col-md-6 mb-3">
 
         <label asp-for="ClientId" class="form-label fw-semibold"></label>
+
         <select asp-for="ClientId"
                 asp-items="Model.Clients"
-                class="form-select">
-        <option value="">-- Select Client --</option>
+                class="form-select"
+                id="ClientId">
+
+            <option value="">-- Select Client --</option>
 
         </select>
 
@@ -24,7 +27,8 @@
 
         <select asp-for="SiteId"
                 asp-items="Model.Sites"
-                class="form-select">
+                class="form-select"
+                id="SiteId">
 
             <option value="">-- Select Site --</option>
 
@@ -42,11 +46,9 @@
 
         <label asp-for="StudentNumber" class="form-label fw-semibold"></label>
 
-        <input asp-for="StudentNumber"
-               class="form-control" />
+        <input asp-for="StudentNumber" class="form-control" />
 
-        <span asp-validation-for="StudentNumber"
-              class="text-danger"></span>
+        <span asp-validation-for="StudentNumber" class="text-danger"></span>
 
     </div>
 
@@ -54,11 +56,9 @@
 
         <label asp-for="IdNumber" class="form-label fw-semibold"></label>
 
-        <input asp-for="IdNumber"
-               class="form-control" />
+        <input asp-for="IdNumber" class="form-control" />
 
-        <span asp-validation-for="IdNumber"
-              class="text-danger"></span>
+        <span asp-validation-for="IdNumber" class="text-danger"></span>
 
     </div>
 
@@ -70,11 +70,9 @@
 
         <label asp-for="FirstName" class="form-label fw-semibold"></label>
 
-        <input asp-for="FirstName"
-               class="form-control" />
+        <input asp-for="FirstName" class="form-control" />
 
-        <span asp-validation-for="FirstName"
-              class="text-danger"></span>
+        <span asp-validation-for="FirstName" class="text-danger"></span>
 
     </div>
 
@@ -82,11 +80,9 @@
 
         <label asp-for="LastName" class="form-label fw-semibold"></label>
 
-        <input asp-for="LastName"
-               class="form-control" />
+        <input asp-for="LastName" class="form-control" />
 
-        <span asp-validation-for="LastName"
-              class="text-danger"></span>
+        <span asp-validation-for="LastName" class="text-danger"></span>
 
     </div>
 
@@ -96,27 +92,21 @@
 
     <div class="col-md-6 mb-3">
 
-        <label asp-for="ProgrammeOrCourse"
-               class="form-label fw-semibold"></label>
+        <label asp-for="ProgrammeOrCourse" class="form-label fw-semibold"></label>
 
-        <input asp-for="ProgrammeOrCourse"
-               class="form-control" />
+        <input asp-for="ProgrammeOrCourse" class="form-control" />
 
-        <span asp-validation-for="ProgrammeOrCourse"
-              class="text-danger"></span>
+        <span asp-validation-for="ProgrammeOrCourse" class="text-danger"></span>
 
     </div>
 
     <div class="col-md-6 mb-3">
 
-        <label asp-for="ContactNumber"
-               class="form-label fw-semibold"></label>
+        <label asp-for="ContactNumber" class="form-label fw-semibold"></label>
 
-        <input asp-for="ContactNumber"
-               class="form-control" />
+        <input asp-for="ContactNumber" class="form-control" />
 
-        <span asp-validation-for="ContactNumber"
-              class="text-danger"></span>
+        <span asp-validation-for="ContactNumber" class="text-danger"></span>
 
     </div>
 
@@ -124,16 +114,14 @@
 
 <div class="mb-3">
 
-    <label asp-for="FaceImage"
-           class="form-label fw-semibold"></label>
+    <label asp-for="FaceImage" class="form-label fw-semibold"></label>
 
     <input asp-for="FaceImage"
            type="file"
            class="form-control"
            accept=".jpg,.jpeg,.png" />
 
-    <span asp-validation-for="FaceImage"
-          class="text-danger"></span>
+    <span asp-validation-for="FaceImage" class="text-danger"></span>
 
 </div>
 
@@ -142,9 +130,7 @@
     <div class="mb-3">
 
         <label class="form-label fw-semibold">
-
             Current Face Image
-
         </label>
 
         <div>
@@ -160,10 +146,8 @@
 
 <div class="form-check mb-4">
 
-    <input asp-for="IsActive"
-           class="form-check-input" />
+    <input asp-for="IsActive" class="form-check-input" />
 
-    <label asp-for="IsActive"
-           class="form-check-label"></label>
+    <label asp-for="IsActive" class="form-check-label"></label>
 
 </div>
