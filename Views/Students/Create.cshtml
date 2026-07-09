@@ -22,6 +22,75 @@
     </div>
 </div>
 
-@section Scripts {
+@section Scripts
+{
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const clientDropdown = document.getElementById("ClientId");
+            const siteDropdown = document.getElementById("SiteId");
+
+            async function loadSites(clientId, selectedSiteId = null) {
+
+                siteDropdown.innerHTML = "";
+
+                const defaultOption = document.createElement("option");
+                defaultOption.value = "";
+                defaultOption.text = "-- Select Site --";
+                siteDropdown.appendChild(defaultOption);
+
+                if (!clientId)
+                    return;
+
+                try {
+
+                    const response = await fetch(`/Students/GetSitesByClient?clientId=${clientId}`);
+
+                    if (!response.ok)
+                        throw new Error("Unable to load sites.");
+
+                    const sites = await response.json();
+
+                    sites.forEach(site => {
+
+                        const option = document.createElement("option");
+
+                        option.value = site.value;
+                        option.text = site.text;
+
+                        if (selectedSiteId && selectedSiteId == site.value)
+                            option.selected = true;
+
+                        siteDropdown.appendChild(option);
+
+                    });
+
+                }
+                catch (err) {
+
+                    console.error(err);
+
+                }
+
+            }
+
+            // Edit page
+            if (clientDropdown.value) {
+
+                loadSites(clientDropdown.value, siteDropdown.value);
+
+            }
+
+            clientDropdown.addEventListener("change", function () {
+
+                loadSites(this.value);
+
+            });
+
+        });
+
+    </script>
 }

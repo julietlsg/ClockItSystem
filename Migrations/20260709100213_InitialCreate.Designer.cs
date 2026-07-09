@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClockItSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260512231417_AddStudentFaceImagePath")]
-    partial class AddStudentFaceImagePath
+    [Migration("20260709100213_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.8")
+                .HasAnnotation("ProductVersion", "8.0.17")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -112,15 +112,25 @@ namespace ClockItSystem.Migrations
                     b.Property<int>("AttendanceRecordId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Comment")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AttendanceRecordId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("SiteId");
 
                     b.ToTable("AttendanceApprovals");
                 });
@@ -139,11 +149,17 @@ namespace ClockItSystem.Migrations
                     b.Property<string>("CapturedImagePath")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("ClockTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedByUserId")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -161,6 +177,10 @@ namespace ClockItSystem.Migrations
                         .HasColumnType("decimal(5,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("SiteId");
 
                     b.HasIndex("StudentId");
 
@@ -182,10 +202,22 @@ namespace ClockItSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DeviceModel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceSerialNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceVendor")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FaceImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FingerprintTemplate")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsVerified")
@@ -194,11 +226,99 @@ namespace ClockItSystem.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
+                    b.Property<string>("TemplateFormat")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
 
                     b.ToTable("BiometricProfiles");
+                });
+
+            modelBuilder.Entity("ClockItSystem.Models.Client", b =>
+                {
+                    b.Property<int>("ClientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClientId"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ContactPerson")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ClientId");
+
+                    b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("ClockItSystem.Models.Site", b =>
+                {
+                    b.Property<int>("SiteId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SiteId"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SiteCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SiteName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("SiteId");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("Sites");
                 });
 
             modelBuilder.Entity("ClockItSystem.Models.Student", b =>
@@ -209,6 +329,12 @@ namespace ClockItSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContactNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -217,12 +343,6 @@ namespace ClockItSystem.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GuardianName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GuardianPhone")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdNumber")
@@ -238,11 +358,18 @@ namespace ClockItSystem.Migrations
                     b.Property<string>("ProgrammeOrCourse")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
                     b.Property<string>("StudentNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("SiteId");
 
                     b.ToTable("Students");
                 });
@@ -385,19 +512,51 @@ namespace ClockItSystem.Migrations
                     b.HasOne("ClockItSystem.Models.AttendanceRecord", "AttendanceRecord")
                         .WithMany()
                         .HasForeignKey("AttendanceRecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ClockItSystem.Models.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ClockItSystem.Models.Site", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("AttendanceRecord");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Site");
                 });
 
             modelBuilder.Entity("ClockItSystem.Models.AttendanceRecord", b =>
                 {
+                    b.HasOne("ClockItSystem.Models.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ClockItSystem.Models.Site", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("ClockItSystem.Models.Student", "Student")
                         .WithMany("AttendanceRecords")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Site");
 
                     b.Navigation("Student");
                 });
@@ -407,10 +566,40 @@ namespace ClockItSystem.Migrations
                     b.HasOne("ClockItSystem.Models.Student", "Student")
                         .WithMany("BiometricProfiles")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("ClockItSystem.Models.Site", b =>
+                {
+                    b.HasOne("ClockItSystem.Models.Client", "Client")
+                        .WithMany("Sites")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("ClockItSystem.Models.Student", b =>
+                {
+                    b.HasOne("ClockItSystem.Models.Client", "Client")
+                        .WithMany("Students")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ClockItSystem.Models.Site", "Site")
+                        .WithMany("Students")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Site");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -462,6 +651,18 @@ namespace ClockItSystem.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ClockItSystem.Models.Client", b =>
+                {
+                    b.Navigation("Sites");
+
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("ClockItSystem.Models.Site", b =>
+                {
+                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("ClockItSystem.Models.Student", b =>

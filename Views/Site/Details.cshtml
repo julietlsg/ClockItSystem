@@ -1,0 +1,153 @@
+﻿@model ClockItSystem.Models.Site
+
+@{
+    ViewData["Title"] = "Site Details";
+}
+
+<div class="container mt-4">
+
+    <div class="clockit-card shadow-sm">
+
+        <div>
+
+            <h4 class="mb-0">
+                <i class="bi bi-building"></i>
+                Site Details
+            </h4>
+
+            <div>
+
+                <a asp-action="Edit"
+                       asp-route-id="@Model.SiteId"
+                       class="btn btn-clockit">
+
+                    <i class="bi bi-pencil-square"></i>
+                    Edit
+
+                </a>
+
+                <a asp-action="Index"
+                       class="btn btn-secondary">
+
+                    <i class="bi bi-arrow-left-circle"></i>
+                    Back
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-8">
+
+                    <table class="table table-borderless">
+
+                        <tbody>
+
+                            <tr>
+
+                                <th style="width:220px;">
+                                    Client
+                                </th>
+
+                                <td>
+                                    @(Model.Client?.Name ?? "-")
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Site Name
+                                </th>
+
+                                <td>
+                                    @Model.SiteName
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Site Code
+                                </th>
+
+                                <td>
+                                    @Model.SiteCode
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Address
+                                </th>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(Model.Address)
+                                        ? "-"
+                                        : Model.Address)
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Students
+                                </th>
+
+                                <td>
+                                    <span class="badge bg-primary">
+                                        @(Model.Students?.Count ?? 0)
+                                    </span>
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <td>
+
+                                    <partial name="_StatusBadge"
+                                             model="Model.IsActive" />
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    Created
+                                </th>
+
+                                <td>
+                                    @Model.CreatedDate.ToString("dd MMM yyyy HH:mm")
+                                </td>
+
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

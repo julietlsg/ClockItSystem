@@ -1,8 +1,10 @@
 ﻿using ClockItSystem.Data;
+using ClockItSystem.Models;
 using ClockItSystem.Models.ViewModels;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -22,119 +24,228 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> OfficialAttendance(DateTime? date)
+        public async Task<IActionResult> OfficialAttendance(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
             ViewBag.SelectedDate = selectedDate;
+            ViewBag.ClientId = clientId;
+            ViewBag.SiteId = siteId;
 
-            var records = await GetReportRecordsAsync(selectedDate, "Approved");
+            var records = await GetReportRecordsAsync(selectedDate, "Approved", clientId, siteId);
+            var clients = await GetClientsAsync();
+            var sites = await GetSitesAsync(clientId);
+
+            if (!records.Any())
+            {
+                records.Add(new AttendanceReportViewModel
+                {
+                    Clients = clients,
+                    Sites = sites
+                });
+            }
+            else
+            {
+                foreach (var row in records)
+                {
+                    row.Clients = clients;
+                    row.Sites = sites;
+                }
+            }
+
             return View(records);
         }
 
         [HttpGet]
-        public async Task<IActionResult> PendingApprovals(DateTime? date)
+        public async Task<IActionResult> PendingApprovals(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
             ViewBag.SelectedDate = selectedDate;
+            ViewBag.ClientId = clientId;
+            ViewBag.SiteId = siteId;
 
-            var records = await GetReportRecordsAsync(selectedDate, "PendingApproval");
+            var records = await GetReportRecordsAsync(selectedDate, "PendingApproval", clientId, siteId);
+            var clients = await GetClientsAsync();
+            var sites = await GetSitesAsync(clientId);
+
+            if (!records.Any())
+            {
+                records.Add(new AttendanceReportViewModel
+                {
+                    Clients = clients,
+                    Sites = sites
+                });
+            }
+            else
+            {
+                foreach (var row in records)
+                {
+                    row.Clients = clients;
+                    row.Sites = sites;
+                }
+            }
+
             return View(records);
         }
 
         [HttpGet]
-        public async Task<IActionResult> RejectedAttendance(DateTime? date)
+        public async Task<IActionResult> RejectedAttendance(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
             ViewBag.SelectedDate = selectedDate;
+            ViewBag.ClientId = clientId;
+            ViewBag.SiteId = siteId;
 
-            var records = await GetReportRecordsAsync(selectedDate, "Rejected");
+            var records = await GetReportRecordsAsync(selectedDate, "Rejected", clientId, siteId);
+            var clients = await GetClientsAsync();
+            var sites = await GetSitesAsync(clientId);
+
+            if (!records.Any())
+            {
+                records.Add(new AttendanceReportViewModel
+                {
+                    Clients = clients,
+                    Sites = sites
+                });
+            }
+            else
+            {
+                foreach (var row in records)
+                {
+                    row.Clients = clients;
+                    row.Sites = sites;
+                }
+            }
+
             return View(records);
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportOfficialExcel(DateTime? date)
+        public async Task<IActionResult> ExportOfficialExcel(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
-            var records = await GetReportRecordsAsync(selectedDate, "Approved");
+            var records = await GetReportRecordsAsync(selectedDate, "Approved", clientId, siteId);
 
             return GenerateExcel(records, "Official Attendance", $"OfficialAttendance_{selectedDate:yyyyMMdd}.xlsx");
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportPendingExcel(DateTime? date)
+        public async Task<IActionResult> ExportPendingExcel(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
-            var records = await GetReportRecordsAsync(selectedDate, "PendingApproval");
+            var records = await GetReportRecordsAsync(selectedDate, "PendingApproval", clientId, siteId);
 
             return GenerateExcel(records, "Pending Approvals", $"PendingApprovals_{selectedDate:yyyyMMdd}.xlsx");
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportRejectedExcel(DateTime? date)
+        public async Task<IActionResult> ExportRejectedExcel(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
-            var records = await GetReportRecordsAsync(selectedDate, "Rejected");
+            var records = await GetReportRecordsAsync(selectedDate, "Rejected", clientId, siteId);
 
             return GenerateExcel(records, "Rejected Attendance", $"RejectedAttendance_{selectedDate:yyyyMMdd}.xlsx");
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportOfficialPdf(DateTime? date)
+        public async Task<IActionResult> ExportOfficialPdf(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
-            var records = await GetReportRecordsAsync(selectedDate, "Approved");
+            var records = await GetReportRecordsAsync(selectedDate, "Approved", clientId, siteId);
 
             return GeneratePdf(records, "Official Attendance Report", $"OfficialAttendance_{selectedDate:yyyyMMdd}.pdf");
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportPendingPdf(DateTime? date)
+        public async Task<IActionResult> ExportPendingPdf(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
-            var records = await GetReportRecordsAsync(selectedDate, "PendingApproval");
+            var records = await GetReportRecordsAsync(selectedDate, "PendingApproval", clientId, siteId);
 
             return GeneratePdf(records, "Pending Approvals Report", $"PendingApprovals_{selectedDate:yyyyMMdd}.pdf");
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportRejectedPdf(DateTime? date)
+        public async Task<IActionResult> ExportRejectedPdf(DateTime? date, int? clientId, int? siteId)
         {
             var selectedDate = date?.Date ?? DateTime.Today;
-            var records = await GetReportRecordsAsync(selectedDate, "Rejected");
+            var records = await GetReportRecordsAsync(selectedDate, "Rejected", clientId, siteId);
 
             return GeneratePdf(records, "Rejected Attendance Report", $"RejectedAttendance_{selectedDate:yyyyMMdd}.pdf");
         }
 
-        private async Task<List<AttendanceReportViewModel>> GetReportRecordsAsync(DateTime selectedDate, string status)
+        private async Task<List<AttendanceReportViewModel>> GetReportRecordsAsync(
+            DateTime selectedDate,
+            string status,
+            int? clientId,
+            int? siteId)
         {
-            return await _context.AttendanceRecords
+            var query = _context.AttendanceRecords
                 .Include(x => x.Student)
+                .Include(x => x.Client)
+                .Include(x => x.Site)
                 .Where(x =>
                     x.AttendanceDate.Date == selectedDate &&
-                    x.Status == status)
-                .OrderBy(x => x.Student.LastName)
+                    x.Status == status);
+
+            if (clientId.HasValue)
+            {
+                query = query.Where(x => x.ClientId == clientId.Value);
+            }
+
+            if (siteId.HasValue)
+            {
+                query = query.Where(x => x.SiteId == siteId.Value);
+            }
+
+            return await query
+                .OrderBy(x => x.Client.Name)
+                .ThenBy(x => x.Site.SiteName)
+                .ThenBy(x => x.Student.LastName)
                 .Select(x => new AttendanceReportViewModel
                 {
                     AttendanceRecordId = x.Id,
+
+                    ClientId = x.ClientId,
+                    SiteId = x.SiteId,
+
+                    ClientName = x.Client != null
+                        ? x.Client.Name
+                        : string.Empty,
+
+                    SiteName = x.Site != null
+                        ? x.Site.SiteName
+                        : string.Empty,
+
                     StudentNumber = x.Student.StudentNumber,
+
                     StudentName = x.Student.FirstName + " " + x.Student.LastName,
+
                     ProgrammeOrCourse = x.Student.ProgrammeOrCourse,
+
                     AttendanceDate = x.AttendanceDate,
+
                     ClockTime = x.ClockTime,
+
                     VerificationMethod = x.VerificationMethod,
+
                     VerificationScore = x.VerificationScore,
+
                     Status = x.Status,
+
                     CapturedImagePath = x.CapturedImagePath,
+
                     ApprovedBy = _context.AttendanceApprovals
                         .Where(a => a.AttendanceRecordId == x.Id)
                         .OrderByDescending(a => a.ApprovedAt)
                         .Select(a => a.ApprovedByUserId)
                         .FirstOrDefault(),
+
                     ApprovedAt = _context.AttendanceApprovals
                         .Where(a => a.AttendanceRecordId == x.Id)
                         .OrderByDescending(a => a.ApprovedAt)
                         .Select(a => (DateTime?)a.ApprovedAt)
                         .FirstOrDefault(),
+
                     Comment = _context.AttendanceApprovals
                         .Where(a => a.AttendanceRecordId == x.Id)
                         .OrderByDescending(a => a.ApprovedAt)
@@ -144,6 +255,38 @@ namespace ClockItSystem.Controllers
                 .ToListAsync();
         }
 
+        private async Task<List<SelectListItem>> GetClientsAsync()
+        {
+            return await _context.Clients
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.ClientId.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetSitesAsync(int? clientId = null)
+        {
+            var query = _context.Sites
+                .Where(x => x.IsActive);
+
+            if (clientId.HasValue)
+            {
+                query = query.Where(x => x.ClientId == clientId);
+            }
+
+            return await query
+                .OrderBy(x => x.SiteName)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.SiteId.ToString(),
+                    Text = x.SiteName
+                })
+                .ToListAsync();
+        }
         private FileResult GenerateExcel(List<AttendanceReportViewModel> records, string worksheetName, string fileName)
         {
             using var workbook = new XLWorkbook();

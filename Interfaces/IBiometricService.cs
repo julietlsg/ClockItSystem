@@ -1,6 +1,6 @@
 ﻿using ClockItSystem.Models.ResultModels;
 
-namespace ClockItSystem.Services.Interfaces
+namespace ClockItSystem.Interfaces
 {
     public interface IBiometricService
     {

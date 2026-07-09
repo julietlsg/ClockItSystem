@@ -1,0 +1,57 @@
+﻿@model List<ClockItSystem.Models.ViewModels.ActionItem>
+
+<div class="dropdown">
+
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown">
+
+        Actions
+
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end">
+
+        @foreach (var item in Model)
+        {
+            <li>
+
+                @if (!item.IsPost)
+                {
+                    <a asp-action="@item.Action"
+                           asp-route-id="@item.RouteId"
+                           class="@item.ButtonClass">
+
+                        <i class="@item.Icon"></i>
+
+                        @item.Text
+
+                    </a>
+                }
+                else
+                {
+                    <form asp-action="@item.Action"
+                          asp-route-id="@item.RouteId"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="dropdown-item"
+                                onclick="return confirm('@item.ConfirmMessage');">
+
+                            <i class="@item.Icon"></i>
+
+                            @item.Text
+
+                        </button>
+
+                    </form>
+                }
+
+            </li>
+        }
+
+    </ul>
+
+</div>

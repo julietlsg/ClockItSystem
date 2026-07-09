@@ -1,6 +1,6 @@
 ﻿using ClockItSystem.Data;
+using ClockItSystem.Interfaces;
 using ClockItSystem.Models.ResultModels;
-using ClockItSystem.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 

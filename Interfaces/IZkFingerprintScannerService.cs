@@ -1,4 +1,4 @@
-﻿namespace ClockItSystem.Services.Interfaces
+﻿namespace ClockItSystem.Interfaces
 {
     public interface IZkFingerprintScannerService
     {

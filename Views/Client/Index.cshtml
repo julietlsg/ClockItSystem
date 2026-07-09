@@ -1,0 +1,128 @@
+﻿@using ClockItSystem.Models
+@using ClockItSystem.Models.ViewModels
+
+@model ListViewModel<Client>
+
+@{
+    ViewData["Title"] = "Client Management";
+
+    var header = new AdminHeaderViewModel
+    {
+        Title = "Client Management",
+        SubTitle = "Manage organisations and institutions",
+        Icon = "bi bi-buildings",
+        ButtonText = "Add Client",
+        ButtonAction = "Create"
+    };
+
+    var searchFilter = new SearchFilterViewModel
+    {
+        Action = "Index",
+        Filter = Model.Filter,
+        ShowStatus = true
+    };
+}
+
+<div class="container-fluid mt-4">
+
+    <partial name="_AdminHeader"
+             model="header" />
+
+    <div class="clockit-card shadow-sm">
+
+        <div class="card-body">
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show">
+
+                    <i class="bi bi-check-circle-fill me-2"></i>
+
+                    @TempData["Success"]
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                    @TempData["Error"]
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+
+                </div>
+            }
+
+            <partial name="_SearchFilter"
+                     model="searchFilter" />
+
+            <div id="tableContainer" class="position-relative">
+
+                <div id="loadingOverlay"
+                     class="loading-overlay d-none">
+
+                    <div class="text-center">
+
+                        <div class="spinner-border text-primary"
+                             role="status">
+
+                            <span class="visually-hidden">
+
+                                Loading...
+
+                            </span>
+
+                        </div>
+
+                        <div class="mt-2">
+
+                            Searching...
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <partial name="_ClientTable"
+                         model="Model" />
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            ClockIT.LiveSearch.init({
+
+                formId: "searchForm",
+
+                tableContainerId: "tableContainer",
+
+                debounceDelay: 400
+
+            });
+
+        });
+
+    </script>
+}

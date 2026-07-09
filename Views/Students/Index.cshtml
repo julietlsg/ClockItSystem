@@ -23,6 +23,8 @@
                     <th>Student No.</th>
                     <th>Name</th>
                     <th>Programme/Course</th>
+                    <th>Client</th>
+                    <th>Site</th>
                     <th>Status</th>
                     <th style="width:220px;">Actions</th>
                 </tr>
@@ -44,6 +46,17 @@
                         <td>@student.StudentNumber</td>
                         <td>@student.FirstName @student.LastName</td>
                         <td>@student.ProgrammeOrCourse</td>
+                        <td>
+
+                            @(student.Client?.Name ?? "-")
+
+                        </td>
+
+                        <td>
+
+                            @(student.Site?.SiteName ?? "-")
+
+                        </td>
                         <td>
                             @if (student.IsActive)
                             {

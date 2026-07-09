@@ -23,5 +23,8 @@
         public string Status { get; set; } = string.Empty;
 
         public string? CapturedImagePath { get; set; }
+        public string ClientName { get; set; } = string.Empty;
+
+        public string SiteName { get; set; } = string.Empty;
     }
 }

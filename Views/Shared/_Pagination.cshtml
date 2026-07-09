@@ -1,0 +1,94 @@
+﻿@model ClockItSystem.Models.ViewModels.PaginationViewModel
+
+@if (Model.Pagination.TotalPages > 1)
+{
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+
+            <small class="text-muted">
+
+                Showing page
+
+                <strong>@Model.Pagination.CurrentPage</strong>
+
+                of
+
+                <strong>@Model.Pagination.TotalPages</strong>
+
+                (
+
+                @Model.Pagination.TotalRecords
+
+                total records)
+
+            </small>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <nav>
+
+                <ul class="pagination justify-content-end mb-0">
+
+                    @{
+                        var previousRoute = new Dictionary<string, string?>(Model.RouteValues);
+                        previousRoute["PageNumber"] = (Model.Pagination.CurrentPage - 1).ToString();
+                    }
+
+                    <li class="page-item @(Model.Pagination.HasPreviousPage ? "" : "disabled")">
+
+                        <a asp-action="@Model.Action"
+                               asp-all-route-data="previousRoute"
+                               class="page-link ajax-page">
+
+                            Previous
+
+                        </a>
+
+                    </li>
+
+                    @for (int i = 1; i <= Model.Pagination.TotalPages; i++)
+                    {
+                        var pageRoute = new Dictionary<string, string?>(Model.RouteValues);
+                        pageRoute["PageNumber"] = i.ToString();
+
+                        <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+
+                            <a asp-action="@Model.Action"
+                                   asp-all-route-data="pageRoute"
+                                   class="page-link ajax-page">
+
+                                @i
+
+                            </a>
+
+                        </li>
+                    }
+
+                    @{
+                        var nextRoute = new Dictionary<string, string?>(Model.RouteValues);
+                        nextRoute["PageNumber"] = (Model.Pagination.CurrentPage + 1).ToString();
+                    }
+
+                    <li class="page-item @(Model.Pagination.HasNextPage ? "" : "disabled")">
+
+                        <a asp-action="@Model.Action"
+                               asp-all-route-data="nextRoute"
+                               class="page-link ajax-page">
+
+                            Next
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+    </div>
+}

@@ -8,6 +8,8 @@
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/clockit-theme.css" asp-append-version="true" />
+    <link rel="stylesheet"
+      href="~/css/administration.css" />
 </head>
 
 <body>
@@ -71,14 +73,22 @@
 
                             </ul>
                         </li>
-@*                     }
- *@
-    @if (User.Identity != null && User.Identity.IsAuthenticated)
-    {
+        <li class="nav-item dropdown">
+
+    <a class="nav-link dropdown-toggle"
+       href="#"
+       role="button"
+       data-bs-toggle="dropdown">
+
+        Administration
+    </a>
+
+    <ul class="dropdown-menu">
+
         @if (User.IsInRole("Admin"))
         {
-            <li class="nav-item">
-                <a class="nav-link"
+            <li>
+                <a class="dropdown-item"
                    asp-controller="Students"
                    asp-action="Index">
                     Students
@@ -86,6 +96,47 @@
             </li>
 
         }
+
+        <li>
+
+            <a class="dropdown-item"
+               asp-controller="Client"
+               asp-action="Index">
+
+                Clients
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="dropdown-item"
+               asp-controller="Site"
+               asp-action="Index">
+
+                Sites
+
+            </a>
+
+        </li>
+                @if (User.IsInRole("Admin"))
+        {
+            <li>
+            <a class="dropdown-item"
+                   asp-controller="Account"
+                   asp-action="Register">
+                    Register User
+                </a>
+            </li>
+        }
+
+    </ul>
+
+</li>
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
 
         @if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
         {
@@ -127,16 +178,6 @@
             </li>
         }
 
-        @if (User.IsInRole("Admin"))
-        {
-            <li class="nav-item">
-                <a class="nav-link"
-                   asp-controller="Account"
-                   asp-action="Register">
-                    Register User
-                </a>
-            </li>
-        }
 
         <li class="nav-item">
             <form asp-controller="Account"
@@ -166,6 +207,7 @@
     </main>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/live-search.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

@@ -46,6 +46,8 @@
                         <th>Student No.</th>
                         <th>Student</th>
                         <th>ProgrammeOrCourse</th>
+                        <th>Client</th>
+                        <th>Site</th>
                         <th>AttendanceDate</th>
                         <th>Clock Time</th>
                         <th>Method</th>
@@ -76,13 +78,31 @@
                             <td>@item.StudentNumber</td>
                             <td>@item.StudentName</td>
                             <td>@item.ProgrammeOrCourse</td>
+                            <td>@item.ClientName</td>
+                            <td>@item.SiteName</td>
                             <td>@item.AttendanceDate.ToString("yyyy-MM-dd")</td>
                             <td>@item.ClockTime.ToString("HH:mm")</td>
                             <td>@item.VerificationMethod</td>
                             <td>@(item.VerificationScore?.ToString("0.00") ?? "-")%</td>
 
                             <td>
-                                @if (item.Status == "Approved")
+                                @switch (item.Status)
+                                {
+                                    case "Approved":
+                                        <span class="badge bg-success">Approved</span>
+                                        break;
+
+                                    case "Rejected":
+                                        <span class="badge bg-danger">Rejected</span>
+                                        break;
+
+                                    default:
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        break;
+                                }
+
+
+@*                                 @if (item.Status == "Approved")
                                 {
                                     <span class="badge status-approved">Approved</span>
                                 }
@@ -94,7 +114,7 @@
                                 {
                                     <span class="badge status-pending">Pending</span>
                                 }
-                            </td>
+ *@                            </td>
 
                             <td>
                                 @if (item.Status == "PendingApproval")

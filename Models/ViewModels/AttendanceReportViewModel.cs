@@ -1,4 +1,6 @@
-﻿namespace ClockItSystem.Models.ViewModels
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace ClockItSystem.Models.ViewModels
 {
     public class AttendanceReportViewModel
     {
@@ -27,5 +29,16 @@
         public DateTime? ApprovedAt { get; set; }
 
         public string? Comment { get; set; }
+        public int? ClientId { get; set; }
+
+        public int? SiteId { get; set; }
+
+        public string ClientName { get; set; } = string.Empty;
+
+        public string SiteName { get; set; } = string.Empty;
+
+        public List<SelectListItem> Clients { get; set; } = new();
+
+        public List<SelectListItem> Sites { get; set; } = new();
     }
 }

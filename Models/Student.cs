@@ -33,7 +33,11 @@ namespace ClockItSystem.Models
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; }
+        public int ClientId { get; set; }
+        public Client? Client { get; set; }
 
+        public int SiteId { get; set; }
+        public Site? Site { get; set; }
         public ICollection<BiometricProfile> BiometricProfiles { get; set; } = new List<BiometricProfile>();
 
         public ICollection<AttendanceRecord> AttendanceRecords { get; set; } = new List<AttendanceRecord>();

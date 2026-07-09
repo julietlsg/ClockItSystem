@@ -1,8 +1,8 @@
 ﻿using ClockItSystem.Data;
+using ClockItSystem.Interfaces;
 using ClockItSystem.Models;
 using ClockItSystem.Models.Requests;
 using ClockItSystem.Services.Api;
-using ClockItSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
