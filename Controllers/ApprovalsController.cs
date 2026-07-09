@@ -24,6 +24,8 @@ namespace ClockItSystem.Controllers
 
             var records = await _context.AttendanceRecords
                 .Include(x => x.Student)
+                .Include(x => x.Client)
+                .Include(x => x.Site)
                 .Where(x => x.AttendanceDate.Date == selectedDate)
                 .OrderBy(x => x.Student.LastName)
                 .Select(x => new DailyApprovalViewModel
@@ -38,7 +40,10 @@ namespace ClockItSystem.Controllers
                     VerificationMethod = x.VerificationMethod,
                     VerificationScore = x.VerificationScore,
                     Status = x.Status,
-                    CapturedImagePath = x.CapturedImagePath
+                    CapturedImagePath = x.CapturedImagePath,
+                    ClientName = x.Client != null ? x.Client.Name : string.Empty,
+                    SiteName = x.Site != null ? x.Site.SiteName : string.Empty,
+
                 })
                 .ToListAsync();
 
@@ -108,7 +113,11 @@ namespace ClockItSystem.Controllers
         {
             var records = await _context.AttendanceApprovals
                 .Include(x => x.AttendanceRecord)
-                .ThenInclude(x => x.Student)
+                .ThenInclude(a => a.Student)
+                .Include(x => x.AttendanceRecord)
+                .ThenInclude(a => a.Client)
+                .Include(x => x.AttendanceRecord)
+                .ThenInclude(a => a.Site)
                 .OrderByDescending(x => x.ApprovedAt)
                 .ToListAsync();
 

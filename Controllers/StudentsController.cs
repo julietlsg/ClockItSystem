@@ -3,6 +3,7 @@ using ClockItSystem.Models;
 using ClockItSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClockItSystem.Controllers
@@ -22,7 +23,9 @@ namespace ClockItSystem.Controllers
         public async Task<IActionResult> Index()
         {
             var students = await _context.Students
-                .OrderBy(x => x.LastName)
+                .Include(s => s.Client)
+                .Include(s => s.Site)
+                .OrderBy(s => s.LastName)
                 .ToListAsync();
 
             return View(students);
@@ -31,18 +34,42 @@ namespace ClockItSystem.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var student = await _context.Students
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .Include(s => s.Client)
+                .Include(s => s.Site)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (student == null)
                 return NotFound();
 
             return View(student);
         }
-
         //[Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            return View(new StudentViewModel());
+            var model = new StudentViewModel
+            {
+                Clients = _context.Clients
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.ClientId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToList(),
+
+                Sites = _context.Sites
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.SiteName)
+                    .Select(s => new SelectListItem
+                    {
+                        Value = s.SiteId.ToString(),
+                        Text = $"{s.Client.Name} - {s.SiteName}"
+                    })
+                    .ToList()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
@@ -65,7 +92,9 @@ namespace ClockItSystem.Controllers
                 ContactNumber = model.ContactNumber,
                 FaceImagePath = imagePath,
                 IsActive = model.IsActive,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                SiteId = model.SiteId,
+                ClientId = model.ClientId
             };
 
             _context.Students.Add(student);
@@ -75,10 +104,10 @@ namespace ClockItSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
-            var student = await _context.Students.FindAsync(id);
+            var student = await _context.Students
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (student == null)
                 return NotFound();
@@ -86,14 +115,47 @@ namespace ClockItSystem.Controllers
             var model = new StudentViewModel
             {
                 Id = student.Id,
+
+                ClientId = student.ClientId,
+
+                SiteId = student.SiteId,
+
                 StudentNumber = student.StudentNumber,
+
                 IdNumber = student.IdNumber,
+
                 FirstName = student.FirstName,
+
                 LastName = student.LastName,
+
                 ProgrammeOrCourse = student.ProgrammeOrCourse,
+
                 ContactNumber = student.ContactNumber,
+
                 ExistingFaceImagePath = student.FaceImagePath,
-                IsActive = student.IsActive
+
+                IsActive = student.IsActive,
+
+                Clients = await _context.Clients
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.ClientId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToListAsync(),
+
+                Sites = await _context.Sites
+                    .Include(s => s.Client)
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.SiteName)
+                    .Select(s => new SelectListItem
+                    {
+                        Value = s.SiteId.ToString(),
+                        Text = $"{s.Client.Name} - {s.SiteName}"
+                    })
+                    .ToListAsync()
             };
 
             return View(model);
@@ -112,6 +174,7 @@ namespace ClockItSystem.Controllers
 
             var student = await _context.Students.FindAsync(id);
 
+
             if (student == null)
                 return NotFound();
 
@@ -122,6 +185,9 @@ namespace ClockItSystem.Controllers
             student.ProgrammeOrCourse = model.ProgrammeOrCourse;
             student.ContactNumber = model.ContactNumber;
             student.IsActive = model.IsActive;
+            student.ClientId = model.ClientId;
+            student.SiteId = model.SiteId;
+
 
             if (model.FaceImage != null)
             {

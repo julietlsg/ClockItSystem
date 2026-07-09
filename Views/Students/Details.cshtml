@@ -37,6 +37,12 @@
                     <dt class="col-sm-4">Contact Number</dt>
                     <dd class="col-sm-8">@Model.ContactNumber</dd>
 
+                    <dt class="col-sm-4">Client</dt>
+                    <dd class="col-sm-8">@(Model.Client?.Name ?? "-")</dd>
+
+                    <dt class="col-sm-4">Site</dt>
+                    <dd class="col-sm-8">@(Model.Site?.SiteName ?? "-")</dd>
+
                     <dt class="col-sm-4">Status</dt>
                     <dd class="col-sm-8">
                         @if (Model.IsActive)

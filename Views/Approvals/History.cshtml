@@ -27,11 +27,12 @@
             <table class="table table-dark table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Student</th>
+                        <th>Client</th>
+                        <th>Site</th>
+                         <th>Student</th>
                         <th>Date</th>
                         <th>Clock Time</th>
-@*                         <th>Decision</th>
- *@                        <th>Comment</th>
+                        <th>Comment</th>
                         <th>Reviewed By</th>
                         <th>Reviewed At</th>
                     </tr>
@@ -41,6 +42,17 @@
                     @foreach (var item in Model)
                     {
                         <tr>
+                             <td>
+
+                                @(item.AttendanceRecord.Client?.Name ?? "-")
+                            </td>
+
+                            <td>
+
+                                @(item.AttendanceRecord.Site?.SiteName ?? "-")
+
+                            </td>
+
                             <td>
                                 @item.AttendanceRecord.Student.FirstName
                                 @item.AttendanceRecord.Student.LastName
@@ -52,11 +64,11 @@
                             <td>
                                 @if (item.IsApproved)
                                 {
-                                    <span class="badge status-approved">Approved</span>
+                                    <span class="badge bg-success">Approved</span>
                                 }
                                 else
                                 {
-                                    <span class="badge status-rejected">Rejected</span>
+                                    <span class="badge bg-danger">Rejected</span>
                                 }
                             </td>
 

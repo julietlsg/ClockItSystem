@@ -4,15 +4,15 @@
     ViewData["Title"] = "Edit Client";
 }
 
-<div class="container mt-4">
+<div class="container-fluid mt-4">
 
     <div class="clockit-card shadow-sm">
 
-        <div class="card-header bg-warning text-dark">
+        <div class="card-header ">
 
             <h4 class="mb-0">
 
-                <i class="bi bi-pencil-square"></i>
+                <i class="bi bi-pencil-square me-2"></i>
 
                 Edit Client
 
@@ -22,22 +22,21 @@
 
         <div class="card-body">
 
-            <form asp-action="Edit"
-                  method="post">
+            <form asp-action="Edit" method="post">
 
                 @Html.AntiForgeryToken()
 
                 <input asp-for="ClientId" type="hidden" />
 
                 <div asp-validation-summary="ModelOnly"
-                     class="alert alert-danger"></div>
+                     class="alert alert-danger mb-3"></div>
 
                 <div class="row">
 
                     <div class="col-md-6 mb-3">
 
                         <label asp-for="Name"
-                               class="form-label fw-bold">
+                               class="form-label fw-semibold">
                         </label>
 
                         <input asp-for="Name"
@@ -52,7 +51,7 @@
                     <div class="col-md-6 mb-3">
 
                         <label asp-for="Code"
-                               class="form-label fw-bold">
+                               class="form-label fw-semibold">
                         </label>
 
                         <input asp-for="Code"
@@ -71,7 +70,7 @@
                     <div class="col-md-6 mb-3">
 
                         <label asp-for="ContactPerson"
-                               class="form-label fw-bold">
+                               class="form-label fw-semibold">
                         </label>
 
                         <input asp-for="ContactPerson"
@@ -86,7 +85,7 @@
                     <div class="col-md-6 mb-3">
 
                         <label asp-for="Phone"
-                               class="form-label fw-bold">
+                               class="form-label fw-semibold">
                         </label>
 
                         <input asp-for="Phone"
@@ -103,7 +102,7 @@
                 <div class="mb-3">
 
                     <label asp-for="Email"
-                           class="form-label fw-bold">
+                           class="form-label fw-semibold">
                     </label>
 
                     <input asp-for="Email"
@@ -121,7 +120,7 @@
                            class="form-check-input" />
 
                     <label asp-for="IsActive"
-                           class="form-check-label fw-bold">
+                           class="form-check-label">
                     </label>
 
                 </div>
@@ -152,7 +151,7 @@
                         </a>
 
                         <button type="submit"
-                                class="btn btn-warning">
+                                class="btn btn-clockit">
 
                             <i class="bi bi-save"></i>
 
