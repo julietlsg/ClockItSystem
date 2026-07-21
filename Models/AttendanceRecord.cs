@@ -22,6 +22,7 @@
 
         public string? CreatedByUserId { get; set; }
         public int ClientId { get; set; }
+        public AttendanceApproval? AttendanceApproval { get; set; }
         public Client? Client { get; set; }
 
         public int SiteId { get; set; }

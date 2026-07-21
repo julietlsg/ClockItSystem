@@ -18,7 +18,7 @@
 
 
                 </h4>
-                    Daily Attendance Approval
+                Daily Attendance Approval
 
             </div>
         </div>
@@ -60,7 +60,7 @@
                             @foreach (var client in filter.Clients)
                             {
                                 <option value="@client.Value"
-                                        selected="@(filter.SelectedClientId?.ToString()==client.Value)">
+                                        selected="@(filter.SelectedClientId?.ToString() == client.Value)">
 
                                     @client.Text
 
@@ -90,7 +90,7 @@
                             @foreach (var site in filter.Sites)
                             {
                                 <option value="@site.Value"
-                                        selected="@(filter.SelectedSiteId?.ToString()==site.Value)">
+                                        selected="@(filter.SelectedSiteId?.ToString() == site.Value)">
 
                                     @site.Text
 
@@ -119,7 +119,7 @@
                             @foreach (var programme in filter.Programmes)
                             {
                                 <option value="@programme.Value"
-                                        selected="@(filter.SelectedProgramme==programme.Value)">
+                                        selected="@(filter.SelectedProgramme == programme.Value)">
 
                                     @programme.Text
 
@@ -223,7 +223,7 @@
 
                 <tbody>
 
-                    @if (Model.Any(x => x.AttendanceRecordId > 0))
+                    @if (Model != null && Model.Any())
                     {
                         @foreach (var item in Model)
                         {
@@ -249,13 +249,17 @@
                                     {
                                         <span class="badge bg-primary">
 
+                                            <i class="bi bi-person-bounding-box"></i>
+
                                             Face
 
                                         </span>
                                     }
                                     else if (item.VerificationMethod == "Fingerprint")
                                     {
-                                        <span class="badge bg-success">
+                                        <span class="badge bg-info text-dark">
+
+                                            <i class="bi bi-fingerprint"></i>
 
                                             Fingerprint
 
@@ -265,11 +269,10 @@
                                     {
                                         <span class="badge bg-secondary">
 
-                                            @item.VerificationMethod
+                                            Not Verified
 
                                         </span>
                                     }
-
                                 </td>
 
                                 <td>
@@ -332,7 +335,39 @@
 
                                 <td>
 
-                                    @if (item.Status == "PendingApproval")
+                                    @if (item.Status == "Approved")
+                                    {
+                                        <span class="badge bg-success">
+
+                                            Approved
+
+                                        </span>
+                                    }
+                                    else if (item.Status == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">
+
+                                            Rejected
+
+                                        </span>
+                                    }
+                                    else if (item.Status == "Not Verified")
+                                    {
+                                        <button type="button"
+                                                class="btn btn-warning btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#rejectModal"
+                                                data-student-id="@item.StudentId"
+                                                data-attendance-date="@item.AttendanceDate.ToString("yyyy-MM-dd")"
+                                                data-student="@item.StudentName">
+
+                                            <i class="bi bi-person-x"></i>
+
+                                            Mark Absent
+
+                                        </button>
+                                    }
+                                    else
                                     {
                                         <div class="d-flex gap-2">
 
@@ -342,8 +377,12 @@
                                                 @Html.AntiForgeryToken()
 
                                                 <input type="hidden"
-                                                       name="attendanceRecordId"
-                                                       value="@item.AttendanceRecordId" />
+                                                       name="studentId"
+                                                       value="@item.StudentId" />
+
+                                                <input type="hidden"
+                                                       name="attendanceDate"
+                                                       value="@item.AttendanceDate.ToString("yyyy-MM-dd")" />
 
                                                 <button class="btn btn-success btn-sm">
 
@@ -355,10 +394,13 @@
 
                                             </form>
 
-                                            <button class="btn btn-danger btn-sm"
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#rejectModal"
-                                                    data-id="@item.AttendanceRecordId">
+                                                    data-student-id="@item.StudentId"
+                                                    data-attendance-date="@item.AttendanceDate.ToString("yyyy-MM-dd")"
+                                                    data-student="@item.StudentName">
 
                                                 <i class="bi bi-x-circle"></i>
 
@@ -370,7 +412,6 @@
                                     }
 
                                 </td>
-
                             </tr>
                         }
                     }
@@ -393,82 +434,83 @@
             </table>
             <hr />
 
-<nav aria-label="Daily Attendance Pagination">
+            <nav aria-label="Daily Attendance Pagination">
 
-    <ul class="pagination justify-content-center">
+                <ul class="pagination justify-content-center">
 
-        @if (filter.CurrentPage > 1)
-        {
-            <li class="page-item">
+                    @if (filter.CurrentPage > 1)
+                    {
+                        <li class="page-item">
 
-                <a class="page-link"
-                   asp-action="Daily"
-                   asp-route-page="@(filter.CurrentPage-1)"
-                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
-                   asp-route-clientId="@filter.SelectedClientId"
-                   asp-route-siteId="@filter.SelectedSiteId"
-                   asp-route-programme="@filter.SelectedProgramme"
-                   asp-route-searchTerm="@filter.SearchTerm">
+                            <a class="page-link"
+                                   asp-action="Daily"
+                                   asp-route-page="@(filter.CurrentPage - 1)"
+                                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-clientId="@filter.SelectedClientId"
+                                   asp-route-siteId="@filter.SelectedSiteId"
+                                   asp-route-programme="@filter.SelectedProgramme"
+                                   asp-route-searchTerm="@filter.SearchTerm">
 
-                    Previous
+                                Previous
 
-                </a>
+                            </a>
 
-            </li>
-        }
+                        </li>
+                    }
 
-        @for (int i = 1; i <= filter.TotalPages; i++)
-        {
-            <li class="page-item @(i==filter.CurrentPage ? "active" : "")">
+                    @for (int i = 1; i <= filter.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == filter.CurrentPage ? "active" : "")">
 
-                <a class="page-link"
-                   asp-action="Daily"
-                   asp-route-page="@i"
-                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
-                   asp-route-clientId="@filter.SelectedClientId"
-                   asp-route-siteId="@filter.SelectedSiteId"
-                   asp-route-programme="@filter.SelectedProgramme"
-                   asp-route-searchTerm="@filter.SearchTerm">
+                            <a class="page-link"
+                                   asp-action="Daily"
+                                   asp-route-page="@i"
+                                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-clientId="@filter.SelectedClientId"
+                                   asp-route-siteId="@filter.SelectedSiteId"
+                                   asp-route-programme="@filter.SelectedProgramme"
+                                   asp-route-searchTerm="@filter.SearchTerm">
 
-                    @i
+                                @i
 
-                </a>
+                            </a>
 
-            </li>
-        }
+                        </li>
+                    }
 
-        @if (filter.CurrentPage < filter.TotalPages)
-        {
-            <li class="page-item">
+                    @if (filter.CurrentPage < filter.TotalPages)
+                    {
+                        <li class="page-item">
 
-                <a class="page-link"
-                   asp-action="Daily"
-                   asp-route-page="@(filter.CurrentPage+1)"
-                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
-                   asp-route-clientId="@filter.SelectedClientId"
-                   asp-route-siteId="@filter.SelectedSiteId"
-                   asp-route-programme="@filter.SelectedProgramme"
-                   asp-route-searchTerm="@filter.SearchTerm">
+                            <a class="page-link"
+                                   asp-action="Daily"
+                                   asp-route-page="@(filter.CurrentPage + 1)"
+                                   asp-route-date="@filter.SelectedDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-clientId="@filter.SelectedClientId"
+                                   asp-route-siteId="@filter.SelectedSiteId"
+                                   asp-route-programme="@filter.SelectedProgramme"
+                                   asp-route-searchTerm="@filter.SearchTerm">
 
-                    Next
+                                Next
 
-                </a>
+                            </a>
 
-            </li>
-        }
+                        </li>
+                    }
 
-    </ul>
+                </ul>
 
-</nav>
+            </nav>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 </div>
 <div class="modal fade"
      id="rejectModal"
      tabindex="-1"
+     aria-labelledby="rejectModalLabel"
      aria-hidden="true">
 
     <div class="modal-dialog">
@@ -481,47 +523,80 @@
 
                 @Html.AntiForgeryToken()
 
-                <input type="hidden"
-                       id="attendanceRecordId"
-                       name="attendanceRecordId" />
+                <div class="modal-header">
 
-                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"
+                        id="rejectModalLabel">
 
-                    <h5 class="modal-title">
-
-                        <i class="bi bi-exclamation-circle"></i>
-
-                        Select Reason for Student Absent
+                        Student Attendance
 
                     </h5>
 
                     <button type="button"
-                            class="btn-close btn-close-white"
-                            data-bs-dismiss="modal"
-                            aria-label="Close">
+                            class="btn-close"
+                            data-bs-dismiss="modal">
                     </button>
 
                 </div>
 
                 <div class="modal-body">
 
+                    <input type="hidden"
+                           id="studentId"
+                           name="studentId" />
+
+                    <input type="hidden"
+                           id="attendanceDate"
+                           name="attendanceDate" />
+
+                    <div class="alert alert-info">
+
+                        <strong>
+
+                            Student:
+
+                        </strong>
+
+                        <span id="studentName"></span>
+
+                    </div>
+
                     <div class="mb-3">
 
-                        <label class="form-label fw-bold">
+                        <label class="form-label">
 
-                            Reason
+                            Select Reason
 
                         </label>
 
                         <div class="form-check">
 
-                            <input class="form-check-input reject-reason"
+                            <input class="form-check-input"
                                    type="radio"
                                    name="reason"
-                                   id="leave"
+                                   id="Absent"
+                                   value="StudentAbsent"
+                                   checked />
+
+                            <label class="form-check-label"
+                                   for="Absent">
+
+                                Student Absent
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="reason"
+                                   id="Leave"
                                    value="Leave" />
 
-                            <label class="form-check-label" for="leave">
+                            <label class="form-check-label"
+                                   for="Leave">
 
                                 Leave
 
@@ -531,13 +606,14 @@
 
                         <div class="form-check">
 
-                            <input class="form-check-input reject-reason"
+                            <input class="form-check-input"
                                    type="radio"
                                    name="reason"
-                                   id="sickLeave"
+                                   id="SickLeave"
                                    value="SickLeave" />
 
-                            <label class="form-check-label" for="sickLeave">
+                            <label class="form-check-label"
+                                   for="SickLeave">
 
                                 Sick Leave
 
@@ -547,13 +623,14 @@
 
                         <div class="form-check">
 
-                            <input class="form-check-input reject-reason"
+                            <input class="form-check-input"
                                    type="radio"
                                    name="reason"
-                                   id="family"
+                                   id="FamilyResponsibilityLeave"
                                    value="FamilyResponsibilityLeave" />
 
-                            <label class="form-check-label" for="family">
+                            <label class="form-check-label"
+                                   for="FamilyResponsibilityLeave">
 
                                 Family Responsibility Leave
 
@@ -561,27 +638,25 @@
 
                         </div>
 
-                        <div class="form-check">
+                    </div>
 
-                            <input class="form-check-input reject-reason"
-                                   type="radio"
-                                   name="reason"
-                                   id="absent"
-                                   value="StudentAbsent" />
+                    <div class="mb-3">
 
-                            <label class="form-check-label" for="absent">
+                        <label class="form-label">
 
-                                Student Absent
+                            Comment
 
-                            </label>
+                        </label>
 
-                        </div>
+                        <textarea class="form-control"
+                                  rows="3"
+                                  name="comment"></textarea>
 
                     </div>
 
                     <div class="mb-3">
 
-                        <label class="form-label fw-bold">
+                        <label class="form-label">
 
                             Supporting Document
 
@@ -589,28 +664,13 @@
 
                         <input type="file"
                                class="form-control"
-                               name="supportingDocument"
-                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                               name="supportingDocument" />
 
                         <small class="text-muted">
 
-                            Upload a sick note, leave form or any supporting document.
+                            Optional
 
                         </small>
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label fw-bold">
-
-                            Additional Comment (Optional)
-
-                        </label>
-
-                        <textarea class="form-control"
-                                  rows="3"
-                                  name="comment"></textarea>
 
                     </div>
 
@@ -627,11 +687,9 @@
                     </button>
 
                     <button type="submit"
-                            id="rejectButton"
-                            class="btn btn-danger"
-                            disabled>
+                            class="btn btn-clockit">
 
-                        Reject Attendance
+                        Save
 
                     </button>
 
@@ -646,34 +704,98 @@
 </div>
 @section Scripts
 {
+    <partial name="_ValidationScriptsPartial" />
+
     <script>
 
-        const rejectModal = document.getElementById('rejectModal');
+        document.addEventListener("DOMContentLoaded", function () {
 
-        rejectModal.addEventListener('show.bs.modal', function (event) {
+            const rejectModal = document.getElementById("rejectModal");
 
-            const button = event.relatedTarget;
+            if (!rejectModal)
+                return;
 
-            document.getElementById('attendanceRecordId').value =
-                button.getAttribute('data-id');
+            rejectModal.addEventListener("show.bs.modal", function (event) {
 
-            document
-                .querySelectorAll('.reject-reason')
-                .forEach(r => r.checked = false);
+                const button = event.relatedTarget;
 
-            document.getElementById('rejectButton').disabled = true;
+                if (!button)
+                    return;
+
+                const studentId =
+                    button.getAttribute("data-student-id");
+
+                const attendanceDate =
+                    button.getAttribute("data-attendance-date");
+
+                const studentName =
+                    button.getAttribute("data-student");
+
+                document.getElementById("studentId").value =
+                    studentId;
+
+                document.getElementById("attendanceDate").value =
+                    attendanceDate;
+
+                document.getElementById("studentName").textContent =
+                    studentName;
+
+            });
 
         });
 
-        document
-            .querySelectorAll('.reject-reason')
-            .forEach(radio => {
+    </script>
 
-                radio.addEventListener('change', function () {
+    <script>
 
-                    document.getElementById('rejectButton').disabled = false;
+        $(function () {
 
-                });
+            $("#SelectedClientId").change(function () {
 
-        });    </script>
+                let clientId = $(this).val();
+
+                $("#SelectedSiteId").empty();
+
+                $("#SelectedSiteId").append(
+                    $('<option>',
+                    {
+                        value: '',
+                        text: '-- Loading Sites --'
+                    }));
+
+                $.get("/Students/GetSitesByClient",
+                    {
+                        clientId: clientId
+                    },
+                    function (data) {
+
+                        $("#SelectedSiteId").empty();
+
+                        $("#SelectedSiteId").append(
+                            $('<option>',
+                            {
+                                value: '',
+                                text: '-- All Sites --'
+                            }));
+
+                        $.each(data, function (i, site) {
+
+                            $("#SelectedSiteId").append(
+
+                                $('<option>',
+                                {
+                                    value: site.value,
+                                    text: site.text
+                                }));
+
+                        });
+
+                    });
+
+            });
+
+        });
+
+    </script>
+
 }

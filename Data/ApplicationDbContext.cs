@@ -1,6 +1,7 @@
 ﻿using ClockItSystem.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace ClockItSystem.Data
 {
@@ -116,6 +117,12 @@ namespace ClockItSystem.Data
                 .WithMany()
                 .HasForeignKey(x => x.SiteId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<AttendanceApproval>()
+                .HasOne(a => a.AttendanceRecord)
+                .WithOne(r => r.AttendanceApproval)
+                .HasForeignKey<AttendanceApproval>(a => a.AttendanceRecordId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
