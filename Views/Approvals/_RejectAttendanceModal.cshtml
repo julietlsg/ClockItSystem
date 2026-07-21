@@ -1,0 +1,197 @@
+﻿<!-- Reject Modal -->
+
+<div class="modal fade"
+     id="rejectModal"
+     tabindex="-1"
+     aria-labelledby="rejectModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form asp-action="Reject"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title"
+                        id="rejectModalLabel">
+
+                        Student Attendance
+
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                           id="studentId"
+                           name="studentId" />
+
+                    <input type="hidden"
+                           id="attendanceDate"
+                           name="attendanceDate" />
+
+                    <div class="alert alert-info">
+
+                        <strong>
+
+                            Student:
+
+                        </strong>
+
+                        <span id="studentName"></span>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Select Reason
+
+                        </label>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="reason"
+                                   id="Absent"
+                                   value="StudentAbsent"
+                                   checked />
+
+                            <label class="form-check-label"
+                                   for="Absent">
+
+                                Student Absent
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="reason"
+                                   id="Leave"
+                                   value="Leave" />
+
+                            <label class="form-check-label"
+                                   for="Leave">
+
+                                Leave
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="reason"
+                                   id="SickLeave"
+                                   value="SickLeave" />
+
+                            <label class="form-check-label"
+                                   for="SickLeave">
+
+                                Sick Leave
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="reason"
+                                   id="FamilyResponsibilityLeave"
+                                   value="FamilyResponsibilityLeave" />
+
+                            <label class="form-check-label"
+                                   for="FamilyResponsibilityLeave">
+
+                                Family Responsibility Leave
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Comment
+
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="3"
+                                  name="comment"></textarea>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Supporting Document
+
+                        </label>
+
+                        <input type="file"
+                               class="form-control"
+                               name="supportingDocument" />
+
+                        <small class="text-muted">
+
+                            Optional
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-clockit">
+
+                        Save
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,9 +1,8 @@
-﻿using ClockItSystem.Models.Enums;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ClockItSystem.Models.ViewModels
 {
-    public class DailyApprovalViewModel
+    public class DailyAttendanceRowViewModel
     {
         #region Attendance Record
 
@@ -63,7 +62,6 @@ namespace ClockItSystem.Models.ViewModels
         public List<SelectListItem> Sites { get; set; } = new();
 
         public List<SelectListItem> Programmes { get; set; } = new();
-        public DataEnums.AttendanceRejectionReason? RejectionReason { get; set; }
 
         #endregion
 
@@ -79,5 +77,6 @@ namespace ClockItSystem.Models.ViewModels
             (int)Math.Ceiling((double)TotalRecords / PageSize);
 
         #endregion
+
     }
 }

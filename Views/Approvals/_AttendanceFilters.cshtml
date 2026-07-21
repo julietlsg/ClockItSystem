@@ -1,0 +1,147 @@
+﻿@model ClockItSystem.Models.ViewModels.AttendanceFilterViewModel
+
+<form asp-action="Daily"
+      method="get"
+      id="filterForm">
+
+    <div class="row g-3 align-items-end">
+
+        <div class="col-md-2">
+
+            <label class="form-label fw-semibold">
+                Client
+            </label>
+
+            <select asp-for="ClientId"
+                    asp-items="Model.Clients"
+                    class="form-select"
+                    onchange="this.form.submit()">
+
+                <option value="">All Clients</option>
+
+            </select>
+
+        </div>
+
+        <!-- Site -->
+
+        <div class="col-md-2">
+
+            <label class="form-label fw-semibold">
+                Site
+            </label>
+
+            <select class="form-select"
+                    id="SiteId"
+                    name="siteId"
+                @(Model.ClientId == null ? "disabled" : "")>
+
+                <option value="">All Sites</option>
+
+                @foreach (var site in Model.Sites)
+                {
+                    <option value="@site.Value"
+                            selected="@(Model.SiteId?.ToString() == site.Value)">
+
+                        @site.Text
+
+                    </option>
+                }
+
+            </select>
+
+        </div>
+        <!-- Programme -->
+
+        <div class="col-md-2">
+
+            <label class="form-label fw-semibold">
+
+                Programme
+
+            </label>
+
+            <select class="form-select"
+                    name="programme">
+
+                <option value="">All Programmes</option>
+
+                @foreach (var programme in Model.Programmes)
+                {
+                    <option value="@programme.Value"
+                            selected="@(Model.Programme == programme.Value)">
+
+                        @programme.Text
+
+                    </option>
+                }
+
+            </select>
+
+        </div>
+
+        <!-- Search -->
+
+        <div class="col-md-2">
+
+            <label class="form-label fw-semibold">
+
+                Student
+
+            </label>
+
+            <input class="form-control"
+                   name="searchTerm"
+                   value="@Model.SearchTerm"
+                   placeholder="Student No / Name" />
+
+        </div>
+
+        <!-- Date -->
+
+        <div class="col-md-2">
+
+            <label class="form-label fw-semibold">
+
+                Date
+
+            </label>
+
+            <input class="form-control"
+                   type="date"
+                   name="date"
+                   value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+
+        </div>
+
+        <!-- Generate -->
+
+        <div class="col-md-1 d-grid">
+
+            <button type="submit"
+                    class="btn btn-clockit">
+
+                <i class="bi bi-search"></i>
+
+                Generate
+
+            </button>
+
+        </div>
+
+        <!-- Reset -->
+
+        <div class="col-md-1 d-grid">
+
+            <a asp-action="Daily"
+               class="btn btn-secondary">
+
+                Reset Filters
+
+            </a>
+
+        </div>
+
+    </div>
+
+</form>

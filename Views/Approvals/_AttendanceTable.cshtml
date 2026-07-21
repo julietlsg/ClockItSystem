@@ -1,0 +1,258 @@
+﻿@model List<ClockItSystem.Models.ViewModels.DailyApprovalViewModel>
+@using ClockItSystem.Extensions
+
+<table class="table table-hover table-striped align-middle">
+
+    <thead class="table-dark">
+
+        <tr>
+
+            <th>Student No</th>
+
+            <th>Student</th>
+
+            <th>Client</th>
+
+            <th>Site</th>
+
+            <th>Programme</th>
+
+            <th>Date</th>
+
+            <th>Time</th>
+
+            <th>Method</th>
+
+            <th>Score</th>
+
+            <th>Status</th>
+
+            <th style="width:120px">Face</th>
+
+            <th style="width:220px">Actions</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+
+                    <td>@item.StudentNumber</td>
+
+                    <td>@item.StudentName</td>
+
+                    <td>@item.ClientName</td>
+
+                    <td>@item.SiteName</td>
+
+                    <td>@item.ProgrammeOrCourse</td>
+
+                    <td>@item.AttendanceDate.ToString("dd MMM yyyy")</td>
+
+                    <td>@item.ClockTime.ToString("HH:mm")</td>
+
+                    <td>
+
+                        @if (item.VerificationMethod == "Face")
+                        {
+                            <span class="badge bg-primary">
+
+                                <i class="bi bi-person-bounding-box"></i>
+
+                                Face
+
+                            </span>
+                        }
+                        else if (item.VerificationMethod == "Fingerprint")
+                        {
+                            <span class="badge bg-info text-dark">
+
+                                <i class="bi bi-fingerprint"></i>
+
+                                Fingerprint
+
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+
+                                Not Verified
+
+                            </span>
+                        }
+                    </td>
+
+                    <td>
+
+                        @(item.VerificationScore?.ToString("0.00") ?? "-")
+
+                    </td>
+
+                    <td>
+
+                        @if (item.Status == "Approved")
+                        {
+                            <span class="badge bg-success">
+
+                                Approved
+
+                            </span>
+                        }
+                        else if (item.Status == "Rejected")
+                        {
+                            <div>
+
+                                <span class="badge bg-danger">
+                                    Rejected
+                                </span>
+
+                                @if (item.RejectionReason.HasValue)
+                                {
+                                    <div class="small text-muted mt-1">
+                                        @item.RejectionReason.Value.GetDisplayName()
+                                    </div>
+                                }
+
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">
+
+                                Pending
+
+                            </span>
+                        }
+
+                    </td>
+
+                    <td>
+
+                        @if (!string.IsNullOrWhiteSpace(item.CapturedImagePath))
+                        {
+                            <a href="@item.CapturedImagePath"
+                                   target="_blank"
+                                   class="btn btn-outline-info btn-sm">
+
+                                View
+
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+
+                                -
+
+                            </span>
+                        }
+
+                    </td>
+
+                    <td>
+
+                        @if (item.Status == "Approved")
+                        {
+                            <span class="badge bg-success">
+
+                                Approved
+
+                            </span>
+                        }
+                        else if (item.Status == "Rejected")
+                        {
+                            <span class="badge bg-danger">
+
+                                Rejected
+
+                            </span>
+                        }
+                        else if (item.Status == "Not Verified")
+                        {
+                            <button type="button"
+                                    class="btn btn-warning btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#rejectModal"
+                                    data-student-id="@item.StudentId"
+                                    data-attendance-date="@item.AttendanceDate.ToString("yyyy-MM-dd")"
+                                    data-student="@item.StudentName">
+
+                                <i class="bi bi-person-x"></i>
+
+                                Mark Absent
+
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="d-flex gap-2">
+
+                                <form asp-action="Approve"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="studentId"
+                                           value="@item.StudentId" />
+
+                                    <input type="hidden"
+                                           name="attendanceDate"
+                                           value="@item.AttendanceDate.ToString("yyyy-MM-dd")" />
+
+                                    <button class="btn btn-success btn-sm">
+
+                                        <i class="bi bi-check-circle"></i>
+
+                                        Approve
+
+                                    </button>
+
+                                </form>
+
+                                <button type="button"
+                                        class="btn btn-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal"
+                                        data-student-id="@item.StudentId"
+                                        data-attendance-date="@item.AttendanceDate.ToString("yyyy-MM-dd")"
+                                        data-student="@item.StudentName">
+
+                                    <i class="bi bi-x-circle"></i>
+
+                                    Reject
+
+                                </button>
+
+                            </div>
+                        }
+
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+
+                <td colspan="12"
+                    class="text-center text-muted py-5">
+
+                    No attendance records found.
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+<hr />
