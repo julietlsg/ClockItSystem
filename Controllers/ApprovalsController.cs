@@ -545,5 +545,29 @@ namespace ClockItSystem.Controllers
                 })
                 .ToListAsync();
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetSitesByClient(int? clientId)
+        {
+            var query = _context.Sites
+                .Where(x => x.IsActive);
+
+            if (clientId.HasValue)
+            {
+                query = query.Where(x => x.ClientId == clientId.Value);
+            }
+
+            var sites = await query
+                .OrderBy(x => x.SiteName)
+                .Select(x => new
+                {
+                    value = x.SiteId,
+                    text = x.SiteName
+                })
+                .ToListAsync();
+
+            return Json(sites);
+        }
     }
 }

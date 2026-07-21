@@ -168,18 +168,29 @@
 
                     <div class="col-md-2">
 
-                        <div class="d-grid gap-2">
+                    <div class="col-md-2 d-grid">
+                        <button type="submit"
+                                class="btn btn-clockit">
 
-                            <button class="btn btn-clockit">
+                            <i class="bi bi-search"></i>
 
-                                <i class="bi bi-search"></i>
+                            Generate
 
-                                Generate
+                        </button>
+                    </div>
+                    </div>
 
-                            </button>
+                    <div class="col-md-2">
+                    <div class="col-md-2 d-grid">
+                        <a asp-action="Daily"
+                         class="btn btn-secondary">
 
-                        </div>
+@*                             <i class="bi bi-arrow-clockwise"></i>
+ *@
+                            Reset Filters
 
+                        </a>
+                    </div>
                     </div>
 
                 </div>
@@ -750,43 +761,39 @@
 
         $(function () {
 
-            $("#SelectedClientId").change(function () {
+            $("#ClientId").change(function () {
 
                 let clientId = $(this).val();
 
-                $("#SelectedSiteId").empty();
+                $("#SiteId").empty();
 
-                $("#SelectedSiteId").append(
-                    $('<option>',
-                    {
-                        value: '',
-                        text: '-- Loading Sites --'
-                    }));
+                $("#SiteId").append(
+                    $("<option>")
+                        .val("")
+                        .text("Loading...")
+                );
 
-                $.get("/Students/GetSitesByClient",
+                $.get("/Approvals/GetSitesByClient",
                     {
                         clientId: clientId
                     },
                     function (data) {
 
-                        $("#SelectedSiteId").empty();
+                        $("#SiteId").empty();
 
-                        $("#SelectedSiteId").append(
-                            $('<option>',
-                            {
-                                value: '',
-                                text: '-- All Sites --'
-                            }));
+                        $("#SiteId").append(
+                            $("<option>")
+                                .val("")
+                                .text("All Sites")
+                        );
 
                         $.each(data, function (i, site) {
 
-                            $("#SelectedSiteId").append(
-
-                                $('<option>',
-                                {
-                                    value: site.value,
-                                    text: site.text
-                                }));
+                            $("#SiteId").append(
+                                $("<option>")
+                                    .val(site.value)
+                                    .text(site.text)
+                            );
 
                         });
 
@@ -795,7 +802,26 @@
             });
 
         });
+                                        
+     </script>
 
+    <script>
+        function toggleSiteDropdown() {
+
+            const hasClient = $("#ClientId").val() !== "";
+
+            $("#SiteId")
+                .prop("disabled", !hasClient);
+
+        }
+
+        $(document).ready(function () {
+
+            toggleSiteDropdown();
+
+            $("#ClientId").change(toggleSiteDropdown);
+
+        });
     </script>
 
 }
