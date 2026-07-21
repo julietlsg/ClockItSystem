@@ -95,6 +95,7 @@ namespace ClockItSystem.Controllers
                 ContactPerson = client.ContactPerson,
                 Email = client.Email,
                 Phone = client.Phone,
+                Address = client.Address,
                 IsActive = client.IsActive
             };
 

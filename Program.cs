@@ -4,6 +4,7 @@ using ClockItSystem.Models;
 using ClockItSystem.Models.Config;
 using ClockItSystem.Services;
 using ClockItSystem.Services.Api;
+using ClockItSystem.Services.Validation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,6 +38,8 @@ builder.Services.AddScoped<IFaceRecognitionService, FaceRecognitionService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<ISiteService, SiteService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IPersonValidationService, PersonValidationService>();
 
 
 builder.Services.Configure<ConfigSettings>(

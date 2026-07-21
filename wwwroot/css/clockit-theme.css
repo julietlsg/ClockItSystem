@@ -378,3 +378,18 @@ body {
     color: #00d4ff;
     font-weight: 600;
 }
+
+/* Bootstrap modals */
+.modal-content {
+    color: #212529;
+}
+
+    .modal-content .form-label,
+    .modal-content .form-check-label,
+    .modal-content label {
+        color: #212529 !important;
+    }
+
+    .modal-content .text-muted {
+        color: #6c757d !important;
+    }

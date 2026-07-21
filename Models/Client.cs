@@ -14,15 +14,23 @@ namespace ClockItSystem.Models
         [MaxLength(20)]
         public string Code { get; set; } = string.Empty;
 
+        [Required]
         [MaxLength(100)]
         public string? ContactPerson { get; set; }
 
+        [Required]
         [EmailAddress]
         [MaxLength(150)]
         public string? Email { get; set; }
 
+        [Required]
         [MaxLength(30)]
         public string? Phone { get; set; }
+
+        [Required]
+        [MaxLength(150)]
+        public string? Address { get; set; }
+
 
         public bool IsActive { get; set; } = true;
 

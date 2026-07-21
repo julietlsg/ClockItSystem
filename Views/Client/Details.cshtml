@@ -29,14 +29,17 @@
                     Edit
 
                 </a>
+                <a asp-controller="Site"
+                       asp-action="Create"
+                       asp-route-studentId="@Model.ClientId"
+                       class="btn btn-clockit">
 
+                    Add Site
+                </a>
                 <a asp-action="Index"
                        class="btn btn-secondary">
-
                     <i class="bi bi-arrow-left-circle"></i>
-
                     Back
-
                 </a>
 
             </div>
