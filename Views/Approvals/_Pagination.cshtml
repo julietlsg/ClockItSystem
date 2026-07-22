@@ -1,0 +1,60 @@
+﻿@model ClockItSystem.Models.ViewModels.PaginationViewModel
+
+@if (Model.Pagination.TotalPages > 1)
+{
+    <nav aria-label="Daily Attendance Pagination">
+
+        <ul class="pagination justify-content-center">
+
+            @if (Model.Pagination.HasPreviousPage)
+            {
+                <li class="page-item">
+
+                    <a class="page-link"
+                           asp-action="@Model.Action"
+                           asp-all-route-data="Model.RouteValues"
+                           asp-route-page="@(Model.Pagination.CurrentPage - 1)">
+
+                        Previous
+
+                    </a>
+
+                </li>
+            }
+
+            @for (int i = 1; i <= Model.Pagination.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+
+                    <a class="page-link"
+                           asp-action="@Model.Action"
+                           asp-all-route-data="Model.RouteValues"
+                           asp-route-page="@i">
+
+                        @i
+
+                    </a>
+
+                </li>
+            }
+
+            @if (Model.Pagination.HasNextPage)
+            {
+                <li class="page-item">
+
+                    <a class="page-link"
+                           asp-action="@Model.Action"
+                           asp-all-route-data="Model.RouteValues"
+                           asp-route-page="@(Model.Pagination.CurrentPage + 1)">
+
+                        Next
+
+                    </a>
+
+                </li>
+            }
+
+        </ul>
+
+    </nav>
+}

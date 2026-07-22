@@ -1,6 +1,7 @@
 ﻿using ClockItSystem.Data;
 using ClockItSystem.Interfaces;
 using ClockItSystem.Models;
+using ClockItSystem.Models.Enums;
 using ClockItSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,14 +32,14 @@ namespace ClockItSystem.Controllers
             string? searchTerm,
             int page = 1)
         {
-            const int pageSize = 10;
+            const int pageSize = 5;
 
             var selectedDate = date?.Date ?? DateTime.Today;
 
-            // Build the attendance register
+            // Build attendance register
             var query = BuildDailyRegisterQuery(selectedDate);
 
-            // Apply user-selected filters
+            // Apply filters
             query = ApplyFilters(
                 query,
                 clientId,
@@ -46,11 +47,10 @@ namespace ClockItSystem.Controllers
                 programme,
                 searchTerm);
 
-
-            // Get total records for paging
+            // Count records
             var totalRecords = await query.CountAsync();
 
-            // Retrieve current page
+            // Get current page
             var records = await query
                 .OrderBy(x => x.LastName)
                 .ThenBy(x => x.FirstName)
@@ -58,40 +58,48 @@ namespace ClockItSystem.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            // Populate dropdowns and paging information
-            await PopulateDropdowns(
-                records,
-                clientId,
-                siteId,
-                programme,
-                searchTerm,
-                selectedDate,
-                page,
-                pageSize,
-                totalRecords);
-
-            // Ensure filters remain visible even when no students match
-            if (!records.Any())
+            // Build the page model
+            var model = new DailyAttendanceViewModel
             {
-                var emptyRecord = new DailyApprovalViewModel();
+                Filter = new AttendanceFilterViewModel
+                {
+                    SelectedDate = selectedDate,
+                    ClientId = clientId,
+                    SiteId = siteId,
+                    Programme = programme,
+                    SearchTerm = searchTerm,
 
-                await PopulateDropdowns(
-                    new List<DailyApprovalViewModel> { emptyRecord },
-                    clientId,
-                    siteId,
-                    programme,
-                    searchTerm,
-                    selectedDate,
-                    page,
-                    pageSize,
-                    totalRecords);
+                    Clients = await GetClientsAsync(),
+                    Sites = await GetSitesAsync(clientId),
+                    Programmes = await GetProgrammesAsync()
+                },
 
-                records.Add(emptyRecord);
-            }
+                Records = records,
 
-            return View(records);
+                Pagination = new PaginationViewModel
+                {
+                    Pagination = new PagedResult
+                    {
+                        CurrentPage = page,
+                        PageSize = pageSize,
+                        TotalRecords = totalRecords
+                    },
+
+                    Action = nameof(Daily),
+
+                    RouteValues = new Dictionary<string, string?>
+                    {
+                        ["date"] = selectedDate.ToString("yyyy-MM-dd"),
+                        ["clientId"] = clientId?.ToString(),
+                        ["siteId"] = siteId?.ToString(),
+                        ["programme"] = programme,
+                        ["searchTerm"] = searchTerm
+                    }
+                }
+            };
+
+            return View(model);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -337,11 +345,16 @@ namespace ClockItSystem.Controllers
 
                 join attendance in _context.AttendanceRecords
                     .Where(a => a.AttendanceDate.Date == selectedDate)
-
                     on student.Id equals attendance.StudentId
                     into attendanceGroup
 
                 from attendance in attendanceGroup.DefaultIfEmpty()
+
+                join approval in _context.AttendanceApprovals
+                    on attendance != null ? attendance.Id : 0 equals approval.AttendanceRecordId
+                    into approvalGroup
+
+                from approval in approvalGroup.DefaultIfEmpty()
 
                 select new DailyApprovalViewModel
                 {
@@ -353,17 +366,14 @@ namespace ClockItSystem.Controllers
                     StudentId = student.Id,
 
                     StudentNumber = student.StudentNumber,
+
                     FirstName = student.FirstName,
 
                     LastName = student.LastName,
 
                     StudentName = student.FirstName + " " + student.LastName,
 
-                    //StudentName =
-                    //    $"{student.FirstName} {student.LastName}",
-
-                    ProgrammeOrCourse =
-                        student.ProgrammeOrCourse,
+                    ProgrammeOrCourse = student.ProgrammeOrCourse,
 
                     AttendanceDate =
                         attendance != null
@@ -407,9 +417,15 @@ namespace ClockItSystem.Controllers
                     SiteName =
                         student.Site != null
                             ? student.Site.SiteName
-                            : string.Empty
+                            : string.Empty,
+
+                    RejectionReason =
+                        approval != null
+                            ? (DataEnums.AttendanceRejectionReason?)approval.Reason
+                            : null
                 };
         }
+
         private IQueryable<DailyApprovalViewModel> ApplyFilters(
             IQueryable<DailyApprovalViewModel> query,
             int? clientId,
@@ -456,48 +472,6 @@ namespace ClockItSystem.Controllers
                     return query;
                 }
 
-        private async Task PopulateDropdowns(
-            List<DailyApprovalViewModel> records,
-            int? clientId,
-            int? siteId,
-            string? programme,
-            string? searchTerm,
-            DateTime selectedDate,
-            int page,
-            int pageSize,
-            int totalRecords)
-        {
-            var clients = await GetClientsAsync();
-
-            var sites = await GetSitesAsync(clientId);
-
-            var programmes = await GetProgrammesAsync();
-
-            foreach (var row in records)
-            {
-                row.Clients = clients;
-
-                row.Sites = sites;
-
-                row.Programmes = programmes;
-
-                row.SelectedClientId = clientId;
-
-                row.SelectedSiteId = siteId;
-
-                row.SelectedProgramme = programme;
-
-                row.SearchTerm = searchTerm;
-
-                row.SelectedDate = selectedDate;
-
-                row.CurrentPage = page;
-
-                row.PageSize = pageSize;
-
-                row.TotalRecords = totalRecords;
-            }
-        }
         private async Task<List<SelectListItem>> GetClientsAsync()
         {
             return await _context.Clients
