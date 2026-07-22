@@ -19,6 +19,15 @@ namespace ClockItSystem.Models.Enums
             FamilyResponsibilityLeave = 4
         }
 
+        public enum ReportType
+        {
+            NonAttendance = 1,
+            StudentAttendance = 2,
+            ClientAttendance = 3,
+            ClientProgramme = 4,
+            ClientStudentTotals = 5
+        }
+
         public enum Gender
         {
             Unknown = 0,

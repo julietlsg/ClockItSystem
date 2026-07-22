@@ -1,0 +1,326 @@
+﻿@using ClockItSystem.Helpers
+@using ClockItSystem.Models.Enums
+@using static ClockItSystem.Models.Enums.DataEnums
+@model ClockItSystem.Models.ViewModels.ReportViewModel
+
+@{
+    ViewData["Title"] = "Reports";
+
+    var columns = Model.Results != null && Model.Results.Any()
+        ? ReportExportHelper.GetColumns(Model.Results)
+        : new List<ReportColumn>();
+}
+
+<div class="container-fluid">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                Attendance Reports
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Generate" method="post" id="reportForm">
+
+                <div class="row">
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Filter.ReportType" class="form-label"></label>
+
+                        <select asp-for="Filter.ReportType"
+                                asp-items="Html.GetEnumSelectList<ReportType>()"
+                                class="form-select">
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Filter.DateFrom" class="form-label"></label>
+
+                        <input asp-for="Filter.DateFrom"
+                               class="form-control"
+                               type="date" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Filter.DateTo" class="form-label"></label>
+
+                        <input asp-for="Filter.DateTo"
+                               class="form-control"
+                               type="date" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Filter.ClientId" class="form-label"></label>
+
+                        <select asp-for="Filter.ClientId"
+                                asp-items="Model.Clients"
+                                class="form-select">
+
+                            <option value="">All Clients</option>
+
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-3 mb-3">
+
+                        <label asp-for="Filter.SiteId" class="form-label"></label>
+
+                        <select asp-for="Filter.SiteId"
+                                asp-items="Model.Sites"
+                                class="form-select">
+
+                            <option value="">All Sites</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+
+                        <label asp-for="Filter.Programme" class="form-label"></label>
+
+                        <select asp-for="Filter.Programme"
+                                asp-items="Model.Programmes"
+                                class="form-select">
+
+                            <option value="">All Programmes</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+
+                        <label asp-for="Filter.StudentId" class="form-label"></label>
+
+                        <select asp-for="Filter.StudentId"
+                                asp-items="Model.Students"
+                                class="form-select">
+
+                            <option value="">All Students</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            Generate Report
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+            @if (Model.Results != null && Model.Results.Any())
+            {
+                <hr />
+
+                <div class="d-flex justify-content-end mb-3">
+
+                    <form asp-action="ExportExcel" method="post" class="me-2">
+
+                        <input type="hidden" asp-for="Filter.ReportType" />
+                        <input type="hidden" asp-for="Filter.DateFrom" />
+                        <input type="hidden" asp-for="Filter.DateTo" />
+                        <input type="hidden" asp-for="Filter.ClientId" />
+                        <input type="hidden" asp-for="Filter.SiteId" />
+                        <input type="hidden" asp-for="Filter.Programme" />
+                        <input type="hidden" asp-for="Filter.StudentId" />
+
+                        <button class="btn btn-success">
+                            Export Excel
+                        </button>
+
+                    </form>
+
+                    <form asp-action="ExportPdf" method="post">
+
+                        <input type="hidden" asp-for="Filter.ReportType" />
+                        <input type="hidden" asp-for="Filter.DateFrom" />
+                        <input type="hidden" asp-for="Filter.DateTo" />
+                        <input type="hidden" asp-for="Filter.ClientId" />
+                        <input type="hidden" asp-for="Filter.SiteId" />
+                        <input type="hidden" asp-for="Filter.Programme" />
+                        <input type="hidden" asp-for="Filter.StudentId" />
+
+                        <button class="btn btn-danger">
+                            Export PDF
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover table-striped">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                @foreach (var column in columns)
+                                {
+                                    <th>
+                                        @column.Header
+                                    </th>
+                                }
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var row in Model.Results)
+                            {
+                                <tr>
+
+                                    @foreach (var column in columns)
+                                    {
+                                        <td>
+
+                                            @{
+                                                var value = ReportExportHelper.GetValue(row, column);
+
+                                                if (value is DateTime date)
+                                                {
+                                                    @date.ToString("yyyy-MM-dd")
+                                                }
+                                                else if (value is TimeSpan time)
+                                                {
+                                                    @time.ToString(@"hh\:mm")
+                                                }
+                                                else if (value is decimal number)
+                                                {
+                                                    @number.ToString("0.##")
+                                                }
+                                                else
+                                                {
+                                                    @value
+                                                }
+                                            }
+
+                                        </td>
+                                    }
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="text-end mt-2">
+
+                    <strong>
+
+                        @Model.Results.Count record(s) found
+
+                    </strong>
+
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mt-3">
+
+                    No records found.
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+@section Scripts
+{
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const client = document.getElementById("Filter_ClientId");
+            const site = document.getElementById("Filter_SiteId");
+            const student = document.getElementById("Filter_StudentId");
+            const programme = document.getElementById("Filter_Programme");
+
+            if (!client || !site || !student || !programme)
+                return;
+
+            async function loadFilters() {
+
+                const clientId = client.value || "";
+                const siteId = site.value || "";
+
+                const response = await fetch(
+                    `/Reports/GetFilterOptions?clientId=${clientId}&siteId=${siteId}`);
+
+                if (!response.ok)
+                    return;
+
+                const data = await response.json();
+
+                populate(site, data.sites, "All Sites");
+                populate(student, data.students, "All Students");
+                populate(programme, data.programmes, "All Programmes");
+            }
+
+            function populate(select, items, defaultText) {
+
+                const currentValue = select.value;
+
+                select.innerHTML = "";
+
+                const option = document.createElement("option");
+
+                option.value = "";
+                option.text = defaultText;
+
+                select.appendChild(option);
+
+                items.forEach(item => {
+
+                    const opt = document.createElement("option");
+
+                    opt.value = item.value;
+                    opt.text = item.text;
+
+                    if (item.value === currentValue)
+                        opt.selected = true;
+
+                    select.appendChild(opt);
+
+                });
+            }
+
+        client.addEventListener("change", function () {
+
+            site.value = "";
+
+            loadFilters();
+
+        });
+        //     site.addEventListener("change", loadFilters);
+
+        // });
+
+    </script>
+}
