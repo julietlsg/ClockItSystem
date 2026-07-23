@@ -49,11 +49,18 @@ namespace ClockItSystem.Controllers
 
             return View(student);
         }
-        //[Authorize(Roles = "Admin")]
-        public IActionResult Create()
+
+
+        public async Task<IActionResult> Create()
         {
             var model = new StudentViewModel
             {
+                Banks = await GetBanksAsync(),
+
+                AccountTypes = await GetAccountTypesAsync(),
+
+                BankBranches = new List<SelectListItem>(),
+
                 Clients = _context.Clients
                     .Where(c => c.IsActive)
                     .OrderBy(c => c.Name)
@@ -68,13 +75,15 @@ namespace ClockItSystem.Controllers
                 // Do NOT load all sites.
                 // They will be loaded after the user selects a Client.
                 Sites = new List<SelectListItem>()
-            };
 
+            };
+            model.CanEditBankingDetails = CanEditBankingDetails();
             return View(model);
         }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(StudentViewModel model)
         {
             if (!_personValidation.IsValidSouthAfricanId(model.IdNumber))
@@ -109,6 +118,7 @@ namespace ClockItSystem.Controllers
 
                 return View(model);
             }
+
 
             var site = await _context.Sites
                 .FirstOrDefaultAsync(s => s.SiteId == model.SiteId);
@@ -149,8 +159,23 @@ namespace ClockItSystem.Controllers
                 IsActive = model.IsActive,
                 CreatedAt = DateTime.Now,
                 SiteId = model.SiteId,
-                ClientId = model.ClientId
+                ClientId = model.ClientId,
+                BankId = model.BankId,
+                BankBranchId = model.BankBranchId,
+                AccountTypeId = model.AccountTypeId,
+                AccountHolderName = model.AccountHolderName,
+                AccountNumber = model.AccountNumber
+
             };
+            if (CanEditBankingDetails())
+            {
+                student.BankId = model.BankId;
+                student.BankBranchId = model.BankBranchId;
+                student.AccountTypeId = model.AccountTypeId;
+                student.AccountHolderName = model.AccountHolderName;
+                student.AccountNumber = model.AccountNumber;
+            }
+
 
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
@@ -181,6 +206,23 @@ namespace ClockItSystem.Controllers
                 ExistingFaceImagePath = student.FaceImagePath,
 
                 IsActive = student.IsActive,
+                BankId = student.BankId,
+
+                BankBranchId = student.BankBranchId,
+
+                AccountTypeId = student.AccountTypeId,
+
+                AccountHolderName = student.AccountHolderName,
+
+                AccountNumber = student.AccountNumber,
+
+                Banks = await GetBanksAsync(),
+
+                AccountTypes = await GetAccountTypesAsync(),
+
+                BankBranches = student.BankId.HasValue
+                ? await GetBankBranchesAsync(student.BankId.Value)
+                : new List<SelectListItem>(),
 
                 ClientId = student.ClientId,
 
@@ -210,8 +252,12 @@ namespace ClockItSystem.Controllers
                     .ToListAsync()
             };
 
+            model.CanEditBankingDetails = CanEditBankingDetails();
+
             return View(model);
         }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         //[Authorize(Roles = "Admin")]
@@ -274,7 +320,14 @@ namespace ClockItSystem.Controllers
             student.IsActive = model.IsActive;
             student.ClientId = model.ClientId;
             student.SiteId = model.SiteId;
-
+            if (CanEditBankingDetails())
+            {
+                student.BankId = model.BankId;
+                student.BankBranchId = model.BankBranchId;
+                student.AccountTypeId = model.AccountTypeId;
+                student.AccountHolderName = model.AccountHolderName;
+                student.AccountNumber = model.AccountNumber;
+            }
 
             if (model.FaceImage != null)
             {
@@ -359,6 +412,22 @@ namespace ClockItSystem.Controllers
             return Json(sites);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetBankBranches(int bankId)
+        {
+            var branches = await _context.BankBranches
+                .Where(b => b.BankId == bankId && b.IsActive)
+                .OrderBy(b => b.BranchName)
+                .Select(b => new
+                {
+                    value = b.BankBranchId,
+                    text = $"{b.BranchName} ({b.BranchCode})"
+                })
+                .ToListAsync();
+
+            return Json(branches);
+        }
+
         private async Task<List<SelectListItem>> GetClientsAsync()
         {
             return await _context.Clients
@@ -383,6 +452,51 @@ namespace ClockItSystem.Controllers
                     Text = s.SiteName
                 })
                 .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetBanksAsync()
+        {
+            return await _context.Banks
+                .Where(b => b.IsActive)
+                .OrderBy(b => b.BankName)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BankId.ToString(),
+                    Text = b.BankName
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetAccountTypesAsync()
+        {
+            return await _context.AccountTypes
+                .Where(a => a.IsActive)
+                .OrderBy(a => a.AccountTypeName)
+                .Select(a => new SelectListItem
+                {
+                    Value = a.AccountTypeId.ToString(),
+                    Text = a.AccountTypeName
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetBankBranchesAsync(int bankId)
+        {
+            return await _context.BankBranches
+                .Where(b => b.IsActive && b.BankId == bankId)
+                .OrderBy(b => b.BranchName)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BankBranchId.ToString(),
+                    Text = $"{b.BranchName} ({b.BranchCode})"
+                })
+                .ToListAsync();
+        }
+
+        private bool CanEditBankingDetails()
+        {
+            return User.IsInRole("Admin") ||
+                   User.IsInRole("ProjectManager");
         }
     }
 }

@@ -24,6 +24,11 @@ namespace ClockItSystem.Data
         public DbSet<Client> Clients { get; set; }
 
         public DbSet<Site> Sites { get; set; }
+        public DbSet<Bank> Banks { get; set; }
+
+        public DbSet<BankBranch> BankBranches { get; set; }
+
+        public DbSet<AccountType> AccountTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -131,6 +136,35 @@ namespace ClockItSystem.Data
             // ============================================
 
             builder.Entity<ReportResultViewModel>().HasNoKey();
+
+            // ============================================
+            // Bank
+            // ============================================
+
+
+            builder.Entity<Student>()
+                .HasOne(s => s.Bank)
+                .WithMany(b => b.Students)
+                .HasForeignKey(s => s.BankId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Student>()
+                .HasOne(s => s.BankBranch)
+                .WithMany(b => b.Students)
+                .HasForeignKey(s => s.BankBranchId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Student>()
+                .HasOne(s => s.AccountType)
+                .WithMany(a => a.Students)
+                .HasForeignKey(s => s.AccountTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<BankBranch>()
+                .HasOne(b => b.Bank)
+                .WithMany(b => b.BankBranches)
+                .HasForeignKey(b => b.BankId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

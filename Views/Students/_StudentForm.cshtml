@@ -112,6 +112,124 @@
 
 </div>
 
+
+@if (Model.CanEditBankingDetails)
+{
+    <!-- Banking Details Card -->
+    <div class="card shadow-sm mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-university"></i>
+            Banking Details
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="BankId" class="form-label"></label>
+
+                <select asp-for="BankId"
+                        asp-items="Model.Banks"
+                        class="form-select"
+                        id="BankId">
+                    <option value="">-- Select Bank --</option>
+                </select>
+
+                <span asp-validation-for="BankId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="BankBranchId" class="form-label"></label>
+
+                <select asp-for="BankBranchId"
+                        asp-items="Model.BankBranches"
+                        class="form-select"
+                        id="BankBranchId">
+                    <option value="">-- Select Branch --</option>
+                </select>
+
+                <span asp-validation-for="BankBranchId" class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="AccountTypeId" class="form-label"></label>
+
+                <select asp-for="AccountTypeId"
+                        asp-items="Model.AccountTypes"
+                        class="form-select">
+
+                    <option value="">-- Select Account Type --</option>
+
+                </select>
+
+                <span asp-validation-for="AccountTypeId"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <label asp-for="AccountHolderName"
+                       class="form-label"></label>
+
+                <input asp-for="AccountHolderName"
+                       class="form-control" />
+
+                <span asp-validation-for="AccountHolderName"
+                      class="text-danger"></span>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <label asp-for="AccountNumber"
+                       class="form-label"></label>
+
+                <input asp-for="AccountNumber"
+                       class="form-control" />
+
+                <span asp-validation-for="AccountNumber"
+                      class="text-danger"></span>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+}
+else
+{
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-lock"></i>
+                Banking Details
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="alert alert-info mb-0">
+                You do not have permission to edit banking details.
+            </div>
+
+        </div>
+    </div>
+}
+
+
 <div class="mb-3">
 
     <label asp-for="FaceImage" class="form-label fw-semibold"></label>
@@ -151,3 +269,94 @@
     <label asp-for="IsActive" class="form-check-label"></label>
 
 </div>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(function () {
+
+            // ----------------------------
+            // Client -> Site
+            // ----------------------------
+            $("#ClientId").change(function () {
+
+                var clientId = $(this).val();
+
+                var siteDropdown = $("#SiteId");
+
+                siteDropdown.empty();
+
+                siteDropdown.append(
+                    $("<option>")
+                        .val("")
+                        .text("-- Select Site --")
+                );
+
+                if (!clientId)
+                    return;
+
+                $.get("/Students/GetSitesByClient",
+                    { clientId: clientId },
+                    function (data) {
+
+                        $.each(data, function (i, site) {
+
+                            siteDropdown.append(
+
+                                $("<option>")
+                                    .val(site.value)
+                                    .text(site.text)
+
+                            );
+
+                        });
+
+                    });
+
+            });
+
+            // ----------------------------
+            // Bank -> Branch
+            // ----------------------------
+            $("#BankId").change(function () {
+
+                var bankId = $(this).val();
+
+                var branchDropdown = $("#BankBranchId");
+
+                branchDropdown.empty();
+
+                branchDropdown.append(
+                    $("<option>")
+                        .val("")
+                        .text("-- Select Branch --")
+                );
+
+                if (!bankId)
+                    return;
+
+                $.get("/Students/GetBankBranches",
+                    { bankId: bankId },
+                    function (data) {
+
+                        $.each(data, function (i, branch) {
+
+                            branchDropdown.append(
+
+                                $("<option>")
+                                    .val(branch.value)
+                                    .text(branch.text)
+
+                            );
+
+                        });
+
+                    });
+
+            });
+
+
+    </script>
+}

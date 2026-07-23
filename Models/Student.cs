@@ -33,6 +33,28 @@ namespace ClockItSystem.Models
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; }
+        [Display(Name = "Bank")]
+        public int? BankId { get; set; }
+
+        public Bank? Bank { get; set; }
+
+        [Display(Name = "Branch")]
+        public int? BankBranchId { get; set; }
+
+        public BankBranch? BankBranch { get; set; }
+
+        [Display(Name = "Account Type")]
+        public int? AccountTypeId { get; set; }
+
+        public AccountType? AccountType { get; set; }
+
+        [Display(Name = "Account Holder")]
+        [StringLength(150)]
+        public string? AccountHolderName { get; set; }
+
+        [Display(Name = "Account Number")]
+        [StringLength(30)]
+        public string? AccountNumber { get; set; }
         public int ClientId { get; set; }
         public Client? Client { get; set; }
 
