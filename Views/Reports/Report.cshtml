@@ -28,7 +28,7 @@
                 <div class="row">
 
                     <div class="col-md-3 mb-3">
-                        <label asp-for="Filter.ReportType" class="form-label"></label>
+                        <label asp-for="Filter.ReportType" class="form-label"> Report Type</label>
 
                         <select asp-for="Filter.ReportType"
                                 asp-items="Html.GetEnumSelectList<ReportType>()"
@@ -37,7 +37,7 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label asp-for="Filter.DateFrom" class="form-label"></label>
+                        <label asp-for="Filter.DateFrom" class="form-label"> From</label>
 
                         <input asp-for="Filter.DateFrom"
                                class="form-control"
@@ -45,7 +45,7 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label asp-for="Filter.DateTo" class="form-label"></label>
+                        <label asp-for="Filter.DateTo" class="form-label"> To </label>
 
                         <input asp-for="Filter.DateTo"
                                class="form-control"
@@ -53,7 +53,7 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label asp-for="Filter.ClientId" class="form-label"></label>
+                        <label asp-for="Filter.ClientId" class="form-label">Clients</label>
 
                         <select asp-for="Filter.ClientId"
                                 asp-items="Model.Clients"
@@ -70,7 +70,7 @@
 
                     <div class="col-md-3 mb-3">
 
-                        <label asp-for="Filter.SiteId" class="form-label"></label>
+                        <label asp-for="Filter.SiteId" class="form-label">Sites</label>
 
                         <select asp-for="Filter.SiteId"
                                 asp-items="Model.Sites"
@@ -84,7 +84,7 @@
 
                     <div class="col-md-3 mb-3">
 
-                        <label asp-for="Filter.Programme" class="form-label"></label>
+                        <label asp-for="Filter.Programme" class="form-label">Programme/Course</label>
 
                         <select asp-for="Filter.Programme"
                                 asp-items="Model.Programmes"
@@ -98,7 +98,7 @@
 
                     <div class="col-md-3 mb-3">
 
-                        <label asp-for="Filter.StudentId" class="form-label"></label>
+                        <label asp-for="Filter.StudentId" class="form-label">Students</label>
 
                         <select asp-for="Filter.StudentId"
                                 asp-items="Model.Students"

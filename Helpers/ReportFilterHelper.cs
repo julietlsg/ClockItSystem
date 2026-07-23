@@ -15,13 +15,7 @@ namespace ClockItSystem.Helpers
                     ShowStudent = true
                 },
 
-                ReportType.ClientAttendance => new ReportFilterVisibility
-                {
-                    ShowClient = true,
-                    ShowSite = true
-                },
-
-                ReportType.ClientProgramme => new ReportFilterVisibility
+                ReportType.AttendanceRegister => new ReportFilterVisibility
                 {
                     ShowClient = true,
                     ShowSite = true,
@@ -33,12 +27,6 @@ namespace ClockItSystem.Helpers
                     ShowClient = true,
                     ShowSite = true,
                     ShowProgramme = true
-                },
-
-                ReportType.ClientStudentTotals => new ReportFilterVisibility
-                {
-                    ShowClient = true,
-                    ShowSite = true
                 },
 
                 _ => new ReportFilterVisibility()

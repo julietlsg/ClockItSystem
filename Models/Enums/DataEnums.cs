@@ -21,11 +21,12 @@ namespace ClockItSystem.Models.Enums
 
         public enum ReportType
         {
-            NonAttendance = 1,
-            StudentAttendance = 2,
-            ClientAttendance = 3,
-            ClientProgramme = 4,
-            ClientStudentTotals = 5
+            AttendanceRegister = 1,
+            NonAttendance = 2,
+            StudentAttendance = 3
+            //ClientAttendance = 3,
+            //ClientProgramme = 4,
+            //ClientStudentTotals = 5
         }
 
         public enum Gender

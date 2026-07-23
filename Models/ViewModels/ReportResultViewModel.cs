@@ -38,8 +38,14 @@ namespace ClockItSystem.Models.ViewModels
         [Display(Name = "Reason")]
         public string? RejectionReason { get; set; }
 
-        [Display(Name = "Total Days")]
-        public int? TotalDays { get; set; }
+        [Display(Name = "Days Approved")]
+        public int? DaysApproved { get; set; }
+
+        [Display(Name = "Days Absent")]
+        public int? DaysAbsent { get; set; }
+
+        [Display(Name = "Leave Days")]
+        public int? LeaveDays { get; set; }
 
         [Display(Name = "Attendance %")]
         public decimal? AttendancePercentage { get; set; }

@@ -1,5 +1,4 @@
 ﻿using ClockItSystem.Models.Enums;
-using ClockItSystem.Models.ViewModels;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using static ClockItSystem.Models.Enums.DataEnums;
@@ -8,9 +7,9 @@ namespace ClockItSystem.Helpers
 {
     public static class ReportExportHelper
     {
-        public static List<ReportColumn> GetColumns(List<ReportResultViewModel> data)
+        public static List<ReportColumn> GetColumns<T>(List<T> data)
         {
-            var properties = typeof(ReportResultViewModel)
+            var properties = typeof(T)
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             var columns = new List<ReportColumn>();
@@ -36,8 +35,8 @@ namespace ClockItSystem.Helpers
             return columns;
         }
 
-        public static object? GetValue(
-            ReportResultViewModel row,
+        public static object? GetValue<T>(
+            T row,
             ReportColumn column)
         {
             var value = column.Property.GetValue(row);
@@ -66,6 +65,7 @@ namespace ClockItSystem.Helpers
                     return value.ToString();
             }
         }
+
         public static string GetReportTitle(ReportType reportType)
         {
             return reportType switch
@@ -74,11 +74,12 @@ namespace ClockItSystem.Helpers
 
                 ReportType.StudentAttendance => "Student Attendance Report",
 
-                ReportType.ClientAttendance => "Client Attendance Report",
+                ReportType.AttendanceRegister =>
+                    "usp_Report_ClientStudentTotals",
 
-                ReportType.ClientProgramme => "Client Programme Report",
+                //ReportType.ClientProgramme => "Client Programme Report",
 
-                ReportType.ClientStudentTotals => "Client Student Totals Report",
+                //ReportType.ClientStudentTotals => "Client Student Totals Report",
 
                 _ => "Attendance Report"
             };
@@ -98,10 +99,10 @@ namespace ClockItSystem.Helpers
 
     public class ReportColumn
     {
-            public string Header { get; set; } = string.Empty;
+        public string Header { get; set; } = string.Empty;
 
-            public string PropertyName { get; set; } = string.Empty;
+        public string PropertyName { get; set; } = string.Empty;
 
-            public PropertyInfo Property { get; set; } = null!;
-        }
+        public PropertyInfo Property { get; set; } = null!;
+    }
 }
