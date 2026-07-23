@@ -1,72 +1,254 @@
-﻿@model ClockItSystem.Models.Student
+﻿@model ClockItSystem.Models.ViewModels.StudentProfileViewModel
 
 @{
-    ViewData["Title"] = "Student Details";
+    ViewData["Title"] = "Student Profile";
 }
 
-<div class="container mt-4">
-    <h2>Student Details</h2>
+<div class="container-fluid mt-4">
 
-    <div class="clockit-card">
-        <div class="row">
-            <div class="col-md-3">
-                @if (!string.IsNullOrEmpty(Model.FaceImagePath))
-                {
-                    <img src="@Model.FaceImagePath" width="180" height="180" style="border-radius:16px; object-fit:cover;" />
-                }
-                else
-                {
-                    <p>No image uploaded.</p>
-                }
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-person-badge"></i>
+            Student Profile
+        </h2>
 
-            <div class="col-md-9">
-                <dl class="row">
-                    <dt class="col-sm-4">Student Number</dt>
-                    <dd class="col-sm-8">@Model.StudentNumber</dd>
+        <div>
+            <a asp-action="Edit"
+               asp-route-id="@Model.StudentId"
+               class="btn btn-clockit">
+                <i class="bi bi-pencil-square"></i>
+                Edit
+            </a>
 
-                    <dt class="col-sm-4">ID Number</dt>
-                    <dd class="col-sm-8">@Model.IdNumber</dd>
-
-                    <dt class="col-sm-4">Name</dt>
-                    <dd class="col-sm-8">@Model.FirstName @Model.LastName</dd>
-
-                    <dt class="col-sm-4">Programme/Course</dt>
-                    <dd class="col-sm-8">@Model.ProgrammeOrCourse</dd>
-
-                    <dt class="col-sm-4">Contact Number</dt>
-                    <dd class="col-sm-8">@Model.ContactNumber</dd>
-
-                    <dt class="col-sm-4">Client</dt>
-                    <dd class="col-sm-8">@(Model.Client?.Name ?? "-")</dd>
-
-                    <dt class="col-sm-4">Site</dt>
-                    <dd class="col-sm-8">@(Model.Site?.SiteName ?? "-")</dd>
-
-                    <dt class="col-sm-4">Status</dt>
-                    <dd class="col-sm-8">
-                        @if (Model.IsActive)
-                        {
-                            <span class="badge status-approved">Active</span>
-                        }
-                        else
-                        {
-                            <span class="badge status-rejected">Inactive</span>
-                        }
-                    </dd>
-                </dl>
-
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-clockit">Edit</a>
-                <a asp-action="Index" class="btn btn-secondary">Back</a>
-                <a asp-controller="Biometric"
-                       asp-action="Index"
-                       asp-route-studentId="@Model.Id"
-                       class="btn btn-primary">
-
-                    Biometrics
-                </a>
-@*                 <a asp-controller="Biometric" asp-action="Enroll" asp-route-studentId="@Model.Id" class="btn btn-clockit"> Enrol Face </a>
- *@            </div>
+            <a asp-action="Index"
+               class="btn btn-secondary">
+                Back
+            </a>
         </div>
     </div>
+
+    <div class="row">
+
+        <!-- Left Column -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-body text-center">
+
+                    @if (!string.IsNullOrWhiteSpace(Model.FaceImagePath))
+                    {
+                        <img src="@Model.FaceImagePath"
+                             class="rounded"
+                             style="width:220px;height:220px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="text-muted p-5">
+                            No Face Image
+                        </div>
+                    }
+
+                    <h4 class="mt-3">
+                        @Model.FullName
+                    </h4>
+
+                    <div class="text-muted">
+                        @Model.StudentNumber
+                    </div>
+
+                    <hr />
+
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            Inactive
+                        </span>
+                    }
+
+                </div>
+
+            </div>
+           <!-- Personal -->
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+                    Personal Information
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <strong>ID Number</strong><br />
+                            @Model.IdNumber
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Contact Number</strong><br />
+                            @Model.ContactNumber
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Programme</strong><br />
+                            @Model.ProgrammeOrCourse
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Created</strong><br />
+                            @Model.CreatedAt.ToString("dd MMM yyyy")
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Right Column -->
+
+        <div class="col-lg-7">
+
+            <!-- Organisation -->
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header">
+                    Organisation
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <strong>Client</strong><br />
+                            @Model.ClientName
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Site</strong><br />
+                            @Model.SiteName
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Banking -->
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header">
+                    Banking Details
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Bank</strong><br />
+                            @(Model.BankName ?? "-")
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Branch</strong><br />
+                            @(Model.BranchName ?? "-")
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Account Type</strong><br />
+                            @(Model.AccountTypeName ?? "-")
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Account Holder</strong><br />
+                            @(Model.AccountHolderName ?? "-")
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Account Number</strong><br />
+                            @Model.MaskedAccountNumber
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Biometrics -->
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+                    Biometrics
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Status</strong><br />
+                            @Model.BiometricStatus
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Last Verification</strong><br />
+                            @(Model.LastVerificationDate?.ToString("dd MMM yyyy HH:mm") ?? "-")
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Face Enrolled</strong><br />
+
+                            @if (Model.FaceEnrolled)
+                            {
+                                <span class="badge bg-success">Yes</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">No</span>
+                            }
+
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Fingerprint Enrolled</strong><br />
+
+                            @if (Model.FingerprintEnrolled)
+                            {
+                                <span class="badge bg-success">Yes</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">No</span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>

@@ -6,8 +6,11 @@
 
 <div class="container mt-4">
     <h2>Add Student</h2>
+
     <div class="clockit-card">
+
         <form asp-action="Create" method="post" enctype="multipart/form-data">
+
             @Html.AntiForgeryToken()
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -15,11 +18,21 @@
             <partial name="_StudentForm" model="Model" />
 
             <div class="mt-4">
-                <button type="submit" class="btn btn-clockit">Save Student</button>
-                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+                <button type="submit" class="btn btn-clockit">
+                    Save Student
+                </button>
+
+                <a asp-action="Index" class="btn btn-secondary">
+                    Cancel
+                </a>
+
             </div>
+
         </form>
+
     </div>
+
 </div>
 
 @section Scripts
@@ -33,6 +46,13 @@
             const clientDropdown = document.getElementById("ClientId");
             const siteDropdown = document.getElementById("SiteId");
 
+            const bankDropdown = document.getElementById("BankId");
+            const branchDropdown = document.getElementById("BankBranchId");
+
+            // ==========================
+            // CLIENT -> SITE
+            // ==========================
+
             async function loadSites(clientId, selectedSiteId = null) {
 
                 siteDropdown.innerHTML = "";
@@ -40,6 +60,7 @@
                 const defaultOption = document.createElement("option");
                 defaultOption.value = "";
                 defaultOption.text = "-- Select Site --";
+
                 siteDropdown.appendChild(defaultOption);
 
                 if (!clientId)
@@ -77,18 +98,97 @@
 
             }
 
-            // Edit page
-            if (clientDropdown.value) {
+            // ==========================
+            // BANK -> BRANCH
+            // ==========================
+
+            async function loadBranches(bankId, selectedBranchId = null) {
+
+                branchDropdown.innerHTML = "";
+
+                const defaultOption = document.createElement("option");
+
+                defaultOption.value = "";
+                defaultOption.text = "-- Select Branch --";
+
+                branchDropdown.appendChild(defaultOption);
+
+                if (!bankId)
+                    return;
+
+                try {
+
+                    const response = await fetch(`/Students/GetBankBranches?bankId=${bankId}`);
+
+                    if (!response.ok)
+                        throw new Error("Unable to load branches.");
+
+                    const branches = await response.json();
+
+                    branches.forEach(branch => {
+
+                        const option = document.createElement("option");
+
+                        option.value = branch.value;
+                        option.text = branch.text;
+
+                        if (selectedBranchId && selectedBranchId == branch.value)
+                            option.selected = true;
+
+                        branchDropdown.appendChild(option);
+
+                    });
+
+                }
+                catch (err) {
+
+                    console.error(err);
+
+                }
+
+            }
+
+            // ==========================
+            // INITIAL LOAD
+            // ==========================
+
+            if (clientDropdown && clientDropdown.value) {
 
                 loadSites(clientDropdown.value, siteDropdown.value);
 
             }
 
-            clientDropdown.addEventListener("change", function () {
+            if (bankDropdown && bankDropdown.value) {
 
-                loadSites(this.value);
+                loadBranches(bankDropdown.value, branchDropdown.value);
 
-            });
+            }
+
+            // ==========================
+            // EVENTS
+            // ==========================
+
+            if (clientDropdown) {
+
+                clientDropdown.addEventListener("change", function () {
+
+                    loadSites(this.value);
+
+                });
+
+            }
+
+            if (bankDropdown) {
+
+                bankDropdown.addEventListener("change", function () {
+
+                    console.log("Selected Bank:", this.value);
+
+                    loadBranches(this.value);
+
+                });
+
+            }
 
         });
 

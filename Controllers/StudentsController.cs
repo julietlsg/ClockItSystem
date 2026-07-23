@@ -2,7 +2,6 @@
 using ClockItSystem.Interfaces;
 using ClockItSystem.Models;
 using ClockItSystem.Models.ViewModels;
-using ClockItSystem.Services.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,65 +15,134 @@ namespace ClockItSystem.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly IPersonValidationService _personValidation;
+        private readonly IStudentService _studentService;
 
         public StudentsController(ApplicationDbContext context, 
             IWebHostEnvironment environment,
+            IStudentService studentService,
             IPersonValidationService validationService)
         {
             _context = context;
             _environment = environment;
             _personValidation = validationService;
+            _studentService = studentService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(StudentSearchViewModel model)
         {
-            var students = await _context.Students
-                .Include(s => s.Client)
-                .Include(s => s.Site)
-                .OrderBy(s => s.LastName)
+            var query = _context.Students
+             .AsNoTracking()
+             .Include(s => s.Client)
+             .Include(s => s.Site)
+             .AsQueryable();
+
+            // Global Search
+            if (!string.IsNullOrWhiteSpace(model.SearchTerm))
+            {
+                string search = model.SearchTerm.Trim();
+
+                query = query.Where(s =>
+
+                    s.StudentNumber.Contains(search) ||
+
+                    s.FirstName.Contains(search) ||
+
+                    s.LastName.Contains(search) ||
+
+                    s.IdNumber.Contains(search) ||
+
+                    s.ContactNumber.Contains(search));
+            }
+
+            // Client Filter
+            if (model.ClientId.HasValue)
+            {
+                query = query.Where(s =>
+                    s.ClientId == model.ClientId.Value);
+            }
+
+            // Site Filter
+            if (model.SiteId.HasValue)
+            {
+                query = query.Where(s =>
+                    s.SiteId == model.SiteId.Value);
+            }
+
+            // Programme Filter
+            if (!string.IsNullOrWhiteSpace(model.ProgrammeOrCourse))
+            {
+                query = query.Where(s =>
+                    s.ProgrammeOrCourse == model.ProgrammeOrCourse);
+            }
+
+
+            // Active Filter
+            if (model.IsActive.HasValue)
+            {
+                query = query.Where(s =>
+                    s.IsActive == model.IsActive.Value);
+            }
+
+            model.Clients = await GetClientsAsync();
+
+            model.Sites = model.ClientId.HasValue
+                ? await _context.Sites
+                    .Where(s => s.IsActive &&
+                                s.ClientId == model.ClientId.Value)
+                    .OrderBy(s => s.SiteName)
+                    .Select(s => new SelectListItem
+                    {
+                        Value = s.SiteId.ToString(),
+                        Text = s.SiteName
+                    })
+                    .ToListAsync()
+                : new List<SelectListItem>();
+
+            model.Programmes = await _context.Students
+                .Where(s => !string.IsNullOrWhiteSpace(s.ProgrammeOrCourse))
+                .Select(s => s.ProgrammeOrCourse!)
+                .Distinct()
+                .OrderBy(p => p)
+                .Select(p => new SelectListItem
+                {
+                    Text = p,
+                    Value = p
+                })
                 .ToListAsync();
 
-            return View(students);
+            var students = await query
+                .OrderBy(s => s.LastName)
+                .ThenBy(s => s.FirstName)
+                .ToListAsync();
+
+            model.Students = students
+                .Select(MapStudentToViewModel)
+                .ToList();
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var student = await _context.Students
-                .Include(s => s.Client)
-                .Include(s => s.Site)
-                .FirstOrDefaultAsync(s => s.Id == id);
+            var model = await _studentService.GetStudentProfileAsync(id);
 
-            if (student == null)
+            if (model == null)
                 return NotFound();
-
-            return View(student);
-        }
-        //[Authorize(Roles = "Admin")]
-        public IActionResult Create()
-        {
-            var model = new StudentViewModel
-            {
-                Clients = _context.Clients
-                    .Where(c => c.IsActive)
-                    .OrderBy(c => c.Name)
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.ClientId.ToString(),
-                        Text = c.Name
-                    })
-                    .ToList(),
-
-                // IMPORTANT:
-                // Do NOT load all sites.
-                // They will be loaded after the user selects a Client.
-                Sites = new List<SelectListItem>()
-            };
 
             return View(model);
         }
+
+        public async Task<IActionResult> Create()
+        {
+            var model = new StudentViewModel();
+
+            await PopulateDropdowns(model);
+
+            return View(model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(StudentViewModel model)
         {
             if (!_personValidation.IsValidSouthAfricanId(model.IdNumber))
@@ -91,24 +159,11 @@ namespace ClockItSystem.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.Clients = await GetClientsAsync();
-                //model.Sites = await GetSitesAsync(model.ClientId);
-
-                model.Sites = model.ClientId > 0
-                    ? await _context.Sites
-                        .Where(s => s.IsActive &&
-                                    s.ClientId == model.ClientId)
-                        .OrderBy(s => s.SiteName)
-                        .Select(s => new SelectListItem
-                        {
-                            Value = s.SiteId.ToString(),
-                            Text = s.SiteName
-                        })
-                        .ToListAsync()
-                    : new List<SelectListItem>();
+                await PopulateDropdowns(model);
 
                 return View(model);
             }
+
 
             var site = await _context.Sites
                 .FirstOrDefaultAsync(s => s.SiteId == model.SiteId);
@@ -150,8 +205,30 @@ namespace ClockItSystem.Controllers
                 CreatedAt = DateTime.Now,
                 SiteId = model.SiteId,
                 ClientId = model.ClientId
-            };
 
+            };
+            if (CanEditBankingDetails())
+            {
+                student.BankId = model.BankId > 0 ? model.BankId : null;
+
+                student.BankBranchId = model.BankBranchId > 0
+                    ? model.BankBranchId
+                    : null;
+
+                student.AccountTypeId = model.AccountTypeId > 0
+                    ? model.AccountTypeId
+                    : null;
+
+                student.AccountHolderName =
+                    string.IsNullOrWhiteSpace(model.AccountHolderName)
+                        ? null
+                        : model.AccountHolderName.Trim();
+
+                student.AccountNumber =
+                    string.IsNullOrWhiteSpace(model.AccountNumber)
+                        ? null
+                        : model.AccountNumber.Trim();
+            }
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
@@ -167,61 +244,19 @@ namespace ClockItSystem.Controllers
             if (student == null)
                 return NotFound();
 
-            var model = new StudentViewModel
-            {
-                Id = student.Id,
+            var model = MapStudentToViewModel(student);
 
-                StudentNumber = student.StudentNumber,
-                IdNumber = student.IdNumber,
-                FirstName = student.FirstName,
-                LastName = student.LastName,
-                ProgrammeOrCourse = student.ProgrammeOrCourse,
-                ContactNumber = student.ContactNumber,
-
-                ExistingFaceImagePath = student.FaceImagePath,
-
-                IsActive = student.IsActive,
-
-                ClientId = student.ClientId,
-
-                SiteId = student.SiteId,
-
-                Clients = await _context.Clients
-                    .Where(c => c.IsActive)
-                    .OrderBy(c => c.Name)
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.ClientId.ToString(),
-                        Text = c.Name
-                    })
-                    .ToListAsync(),
-
-                // IMPORTANT:
-                // Only load sites for THIS student's client.
-                Sites = await _context.Sites
-                    .Where(s => s.IsActive &&
-                                s.ClientId == student.ClientId)
-                    .OrderBy(s => s.SiteName)
-                    .Select(s => new SelectListItem
-                    {
-                        Value = s.SiteId.ToString(),
-                        Text = s.SiteName
-                    })
-                    .ToListAsync()
-            };
+            await PopulateDropdowns(model);
 
             return View(model);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, StudentViewModel model)
         {
             if (id != model.Id)
                 return BadRequest();
-
-            if (!ModelState.IsValid)
-                return View(model);
 
             var student = await _context.Students.FindAsync(id);
 
@@ -243,28 +278,6 @@ namespace ClockItSystem.Controllers
 
             var site = await _context.Sites.FirstOrDefaultAsync(s => s.SiteId == model.SiteId);
 
-            if (site == null || site.ClientId != model.ClientId)
-            {
-                ModelState.AddModelError(
-                    nameof(model.SiteId),
-                    "Selected site does not belong to the selected client.");
-
-                model.Clients = await GetClientsAsync();
-
-                model.Sites = await _context.Sites
-                    .Where(s => s.IsActive &&
-                                s.ClientId == model.ClientId)
-                    .OrderBy(s => s.SiteName)
-                    .Select(s => new SelectListItem
-                    {
-                        Value = s.SiteId.ToString(),
-                        Text = s.SiteName
-                    })
-                    .ToListAsync();
-
-                return View(model);
-            }
-
             student.StudentNumber = model.StudentNumber;
             student.IdNumber = model.IdNumber;
             student.FirstName = model.FirstName;
@@ -274,21 +287,52 @@ namespace ClockItSystem.Controllers
             student.IsActive = model.IsActive;
             student.ClientId = model.ClientId;
             student.SiteId = model.SiteId;
+            if (CanEditBankingDetails())
+            {
+                student.BankId = model.BankId > 0 ? model.BankId : null;
 
+                student.BankBranchId = model.BankBranchId > 0
+                    ? model.BankBranchId
+                    : null;
+
+                student.AccountTypeId = model.AccountTypeId > 0
+                    ? model.AccountTypeId
+                    : null;
+
+                student.AccountHolderName =
+                    string.IsNullOrWhiteSpace(model.AccountHolderName)
+                        ? null
+                        : model.AccountHolderName.Trim();
+
+                student.AccountNumber =
+                    string.IsNullOrWhiteSpace(model.AccountNumber)
+                        ? null
+                        : model.AccountNumber.Trim();
+            }
 
             if (model.FaceImage != null)
             {
                 student.FaceImagePath = await SaveFaceImageAsync(model.FaceImage);
             }
 
-            _context.Students.Update(student);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Student updated successfully.";
-            return RedirectToAction(nameof(Index));
+                TempData["Success"] = "Student updated successfully.";
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.InnerException?.Message ?? ex.Message);
+
+                await PopulateDropdowns(model);
+
+                return View(model);
+            }
         }
 
-        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var student = await _context.Students.FindAsync(id);
@@ -301,7 +345,6 @@ namespace ClockItSystem.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var student = await _context.Students.FindAsync(id);
@@ -359,6 +402,22 @@ namespace ClockItSystem.Controllers
             return Json(sites);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetBankBranches(int bankId)
+        {
+            var branches = await _context.BankBranches
+                .Where(b => b.BankId == bankId && b.IsActive)
+                .OrderBy(b => b.BranchName)
+                .Select(b => new
+                {
+                    value = b.BankBranchId,
+                    text = $"{b.BranchName} ({b.BranchCode})"
+                })
+                .ToListAsync();
+
+            return Json(branches);
+        }
+
         private async Task<List<SelectListItem>> GetClientsAsync()
         {
             return await _context.Clients
@@ -383,6 +442,121 @@ namespace ClockItSystem.Controllers
                     Text = s.SiteName
                 })
                 .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetBanksAsync()
+        {
+            return await _context.Banks
+                .Where(b => b.IsActive)
+                .OrderBy(b => b.BankName)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BankId.ToString(),
+                    Text = b.BankName
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetAccountTypesAsync()
+        {
+            return await _context.AccountTypes
+                .Where(a => a.IsActive)
+                .OrderBy(a => a.AccountTypeName)
+                .Select(a => new SelectListItem
+                {
+                    Value = a.AccountTypeId.ToString(),
+                    Text = a.AccountTypeName
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> GetBankBranchesAsync(int bankId)
+        {
+            return await _context.BankBranches
+                .Where(b => b.IsActive && b.BankId == bankId)
+                .OrderBy(b => b.BranchName)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BankBranchId.ToString(),
+                    Text = $"{b.BranchName} ({b.BranchCode})"
+                })
+                .ToListAsync();
+        }
+
+        private async Task PopulateDropdowns(StudentViewModel model)
+        {
+            model.Clients = await GetClientsAsync();
+
+            model.Sites = model.ClientId > 0
+                ? await _context.Sites
+                    .Where(s => s.IsActive &&
+                                s.ClientId == model.ClientId)
+                    .OrderBy(s => s.SiteName)
+                    .Select(s => new SelectListItem
+                    {
+                        Value = s.SiteId.ToString(),
+                        Text = s.SiteName
+                    })
+                    .ToListAsync()
+                : new List<SelectListItem>();
+
+            model.Banks = await GetBanksAsync();
+
+            model.AccountTypes = await GetAccountTypesAsync();
+
+            model.BankBranches = model.BankId.HasValue
+                ? await GetBankBranchesAsync(model.BankId.Value)
+                : new List<SelectListItem>();
+
+            model.CanEditBankingDetails = CanEditBankingDetails();
+        }
+
+        private bool CanEditBankingDetails()
+        {
+            return User.IsInRole("Admin") ||
+                   User.IsInRole("ProjectManager");
+        }
+
+        private StudentViewModel MapStudentToViewModel(Student student)
+        {
+            return new StudentViewModel
+            {
+                Id = student.Id,
+
+                StudentNumber = student.StudentNumber,
+
+                IdNumber = student.IdNumber,
+
+                FirstName = student.FirstName,
+
+                LastName = student.LastName,
+
+                ProgrammeOrCourse = student.ProgrammeOrCourse,
+
+                ContactNumber = student.ContactNumber,
+
+                ExistingFaceImagePath = student.FaceImagePath,
+
+                ClientId = student.ClientId,
+
+                ClientName = student.Client?.Name,
+
+                SiteId = student.SiteId,
+
+                SiteName = student.Site?.SiteName,
+
+                BankId = student.BankId,
+
+                BankBranchId = student.BankBranchId,
+
+                AccountTypeId = student.AccountTypeId,
+
+                AccountHolderName = student.AccountHolderName,
+
+                AccountNumber = student.AccountNumber,
+
+                IsActive = student.IsActive
+            };
         }
     }
 }

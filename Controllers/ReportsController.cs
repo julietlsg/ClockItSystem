@@ -109,6 +109,8 @@ namespace ClockItSystem.Controllers
 
             return model;
         }
+
+
         [HttpGet]
         public async Task<IActionResult> GetFilterOptions(
             int? clientId,

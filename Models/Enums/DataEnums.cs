@@ -37,7 +37,11 @@ namespace ClockItSystem.Models.Enums
             SiteAttendanceSummary = 5,
 
             [Display(Name = "Programme Attendance Summary")]
-            ProgrammeAttendanceSummary = 6
+            ProgrammeAttendanceSummary = 6,
+
+            [Display(Name = "Student Profile Report")]
+            StudentProfileReport = 7,
+
         }
 
         public enum Gender
