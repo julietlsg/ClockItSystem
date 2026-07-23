@@ -15,14 +15,17 @@ namespace ClockItSystem.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly IPersonValidationService _personValidation;
+        private readonly IStudentService _studentService;
 
         public StudentsController(ApplicationDbContext context, 
             IWebHostEnvironment environment,
+            IStudentService studentService,
             IPersonValidationService validationService)
         {
             _context = context;
             _environment = environment;
             _personValidation = validationService;
+            _studentService = studentService;
         }
 
         public async Task<IActionResult> Index(StudentSearchViewModel model)
@@ -118,17 +121,15 @@ namespace ClockItSystem.Controllers
 
             return View(model);
         }
+
         public async Task<IActionResult> Details(int id)
         {
-            var student = await _context.Students
-                .Include(s => s.Client)
-                .Include(s => s.Site)
-                .FirstOrDefaultAsync(s => s.Id == id);
+            var model = await _studentService.GetStudentProfileAsync(id);
 
-            if (student == null)
+            if (model == null)
                 return NotFound();
 
-            return View(student);
+            return View(model);
         }
 
         public async Task<IActionResult> Create()
