@@ -1,4 +1,5 @@
 ﻿using ClockItSystem.Models;
+using ClockItSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
@@ -123,6 +124,13 @@ namespace ClockItSystem.Data
                 .WithOne(r => r.AttendanceApproval)
                 .HasForeignKey<AttendanceApproval>(a => a.AttendanceRecordId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+
+            // ============================================
+            // Reports
+            // ============================================
+
+            builder.Entity<ReportResultViewModel>().HasNoKey();
         }
     }
 }

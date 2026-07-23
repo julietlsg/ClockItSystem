@@ -40,6 +40,7 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<ISiteService, SiteService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IPersonValidationService, PersonValidationService>();
+builder.Services.AddScoped<ReportService>();
 
 
 builder.Services.Configure<ConfigSettings>(
