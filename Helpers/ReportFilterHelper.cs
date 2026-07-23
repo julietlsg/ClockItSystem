@@ -29,6 +29,15 @@ namespace ClockItSystem.Helpers
                     ShowProgramme = true
                 },
 
+                ReportType.ClientAttendanceSummary => new ReportFilterVisibility
+                {
+                    ShowClient = true,
+                    ShowSite = true,
+                    ShowProgramme = false,
+                    ShowStudent = false
+                },
+
+
                 _ => new ReportFilterVisibility()
             };
         }

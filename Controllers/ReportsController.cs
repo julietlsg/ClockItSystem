@@ -111,8 +111,8 @@ namespace ClockItSystem.Controllers
         }
         [HttpGet]
         public async Task<IActionResult> GetFilterOptions(
-    int? clientId,
-    int? siteId)
+            int? clientId,
+            int? siteId)
         {
             var sites = await GetSites(clientId);
 

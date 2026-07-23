@@ -21,12 +21,23 @@ namespace ClockItSystem.Models.Enums
 
         public enum ReportType
         {
+            [Display(Name = "Attendance Register")]
             AttendanceRegister = 1,
+
+            [Display(Name = "Non Attendance")]
             NonAttendance = 2,
-            StudentAttendance = 3
-            //ClientAttendance = 3,
-            //ClientProgramme = 4,
-            //ClientStudentTotals = 5
+
+            [Display(Name = "Student Attendance")]
+            StudentAttendance = 3,
+
+            [Display(Name = "Client Attendance Summary")]
+            ClientAttendanceSummary = 4,
+
+            [Display(Name = "Site Attendance Summary")]
+            SiteAttendanceSummary = 5,
+
+            [Display(Name = "Programme Attendance Summary")]
+            ProgrammeAttendanceSummary = 6
         }
 
         public enum Gender

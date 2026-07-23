@@ -261,11 +261,15 @@ EXEC {procedure}
                 ReportType.AttendanceRegister =>
                     "usp_Report_ClientStudentTotals",
 
-                //ReportType.ClientProgramme =>
-                //    "usp_Report_ClientProgramme",
+                ReportType.ClientAttendanceSummary =>
+                    "usp_Report_ClientAttendanceSummary",
 
-                //ReportType.ClientStudentTotals =>
-                //    "usp_Report_ClientStudentTotals",
+                ReportType.SiteAttendanceSummary =>
+                    "usp_Report_SiteAttendanceSummary",
+
+                ReportType.ProgrammeAttendanceSummary =>
+                    "usp_Report_ProgrammeAttendanceSummary",
+
 
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(reportType),
