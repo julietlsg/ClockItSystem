@@ -16,6 +16,10 @@ namespace ClockItSystem.Models.ViewModels
         [Display(Name = "Site")]
         public int SiteId { get; set; }
 
+        public string? ClientName { get; set; }
+
+        public string? SiteName { get; set; }
+
         [Required]
         [Display(Name = "Student Number")]
         [StringLength(20)]
