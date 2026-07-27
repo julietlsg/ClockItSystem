@@ -1,6 +1,6 @@
-﻿using ClockItSystem.Models.ViewModels;
+﻿using ClockItSystem.Models.ViewModels.Reports;
 
 public interface IStudentService
 {
-    Task<StudentProfileViewModel?> GetStudentProfileAsync(int studentId);
+    Task<StudentProfileReportViewModel?> GetStudentProfileAsync(int studentId);
 }

@@ -32,7 +32,8 @@
 
                         <select asp-for="Filter.ReportType"
                                 asp-items="Html.GetEnumSelectList<ReportType>()"
-                                class="form-select">
+                                class="form-select"
+                                id="Filter_ReportType">
                         </select>
                     </div>
 
@@ -96,20 +97,28 @@
 
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3">
 
-                        <label asp-for="Filter.StudentId" class="form-label">Students</label>
+                        <label asp-for="Filter.StudentId" class="form-label">
+                            Student
+                        </label>
 
                         <select asp-for="Filter.StudentId"
                                 asp-items="Model.Students"
-                                class="form-select">
+                                class="form-select"
+                                id="studentSelect">
 
-                            <option value="">All Students</option>
+                            <option value="">
+                                All Students
+                            </option>
 
                         </select>
 
-                    </div>
+                        <span asp-validation-for="Filter.StudentId"
+                              class="text-danger">
+                        </span>
 
+                    </div>
                     <div class="col-md-3 d-flex align-items-end">
 
                         <button type="submit"
@@ -251,6 +260,7 @@
     </div>
 
 </div>
+
 @section Scripts
 {
     <script>
@@ -261,9 +271,30 @@
             const site = document.getElementById("Filter_SiteId");
             const student = document.getElementById("Filter_StudentId");
             const programme = document.getElementById("Filter_Programme");
+            const reportType = document.getElementById("Filter_ReportType");
+            const studentSelect = document.getElementById("studentSelect");
 
-            if (!client || !site || !student || !programme)
+            if (!client || !site || !student || !programme || !reportType)
                 return;
+
+            function updateStudentOption() {
+
+                if (!studentSelect)
+                    return;
+
+                const firstOption = studentSelect.options[0];
+
+                if (!firstOption)
+                    return;
+
+                if (parseInt(reportType.value) === 7) {
+                    firstOption.text = "Select Student...";
+                }
+                else {
+                    firstOption.text = "All Students";
+                }
+
+            }
 
             async function loadFilters() {
 
@@ -281,6 +312,8 @@
                 populate(site, data.sites, "All Sites");
                 populate(student, data.students, "All Students");
                 populate(programme, data.programmes, "All Programmes");
+
+                updateStudentOption();
             }
 
             function populate(select, items, defaultText) {
@@ -303,24 +336,38 @@
                     opt.value = item.value;
                     opt.text = item.text;
 
-                    if (item.value === currentValue)
+                    if (opt.value === currentValue)
                         opt.selected = true;
 
                     select.appendChild(opt);
 
                 });
+
             }
 
-        client.addEventListener("change", function () {
+            client.addEventListener("change", function () {
 
-            site.value = "";
+                site.value = "";
 
-            loadFilters();
+                loadFilters();
+
+            });
+
+            site.addEventListener("change", function () {
+
+                loadFilters();
+
+            });
+
+            reportType.addEventListener("change", function () {
+
+                updateStudentOption();
+
+            });
+
+            updateStudentOption();
 
         });
-        //     site.addEventListener("change", loadFilters);
-
-        // });
 
     </script>
 }
