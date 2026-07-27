@@ -1,5 +1,6 @@
 ﻿using ClockItSystem.Models;
 using ClockItSystem.Models.ViewModels;
+using ClockItSystem.Models.ViewModels.Reports;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
@@ -29,7 +30,8 @@ namespace ClockItSystem.Data
         public DbSet<BankBranch> BankBranches { get; set; }
 
         public DbSet<AccountType> AccountTypes { get; set; }
-        public DbSet<StudentProfileViewModel> StudentProfiles { get; set; }
+        //public DbSet<StudentProfileReportViewModel> StudentProfileReports { get; set; }
+        public DbSet<StudentProfileReportViewModel> StudentProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -167,8 +169,8 @@ namespace ClockItSystem.Data
                 .HasForeignKey(b => b.BankId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<StudentProfileViewModel>()
-    .HasNoKey();
+            builder.Entity<StudentProfileReportViewModel>()
+                .HasNoKey();
         }
     }
 }

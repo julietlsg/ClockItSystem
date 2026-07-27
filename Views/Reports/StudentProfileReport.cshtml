@@ -1,0 +1,489 @@
+﻿@model ClockItSystem.Models.ViewModels.Reports.StudentProfileReportViewModel
+
+@{
+    ViewData["Title"] = "Student Profile Report";
+    Layout = "_Layout";
+}
+<div class="container-fluid">
+
+    <div class="clockit-card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+
+            <div class="row align-items-center">
+
+                <div class="col-md-8">
+
+                    <h3 class="mb-1">
+                        Student Profile Report
+                    </h3>
+
+                </div>
+
+                <div class="col-md-4 text-end">
+
+                    <strong>Generated</strong><br />
+
+                    @Model.GeneratedOn.ToString("dd MMM yyyy HH:mm")
+
+                </div>
+
+                <div class="col-md-12 text-end">
+                    <a asp-controller="Reports"
+                           asp-action="StudentProfile"
+                           class="btn btn-clockit-outline">
+
+                        <i class="bi bi-arrow-left"></i>
+
+                        Back
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+        <div class="card-body">
+
+            <h5 class="mt-4 mb-3">
+                Student Information
+            </h5>
+
+            <div class="row">
+
+                <div class="col-md-3 text-center">
+
+                    @if (!string.IsNullOrWhiteSpace(Model.FaceImagePath))
+                    {
+                        <img src="@Url.Content(Model.FaceImagePath)"
+                             class="img-thumbnail shadow-sm"
+                             style="width:180px;height:220px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="border rounded bg-light d-flex align-items-center justify-content-center"
+                             style="height:220px;">
+                            <span class="text-muted">
+                                No Photo Available
+                            </span>
+                        </div>
+                    }
+
+                </div>
+
+                <div class="col-md-9">
+
+                    <div class="row mb-2">
+
+                        <div class="col-md-4 fw-bold">
+                            Student Number
+                        </div>
+
+                        <div class="col-md-8">
+                            @Model.StudentNumber
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-2">
+
+                        <div class="col-md-4 fw-bold">
+                            Full Name
+                        </div>
+
+                        <div class="col-md-8">
+                            @Model.FullName
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-2">
+
+                        <div class="col-md-4 fw-bold">
+                            ID Number
+                        </div>
+
+                        <div class="col-md-8">
+                            @Model.IdNumber
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-2">
+
+                        <div class="col-md-4 fw-bold">
+                            Contact Number
+                        </div>
+
+                        <div class="col-md-8">
+                            @Model.ContactNumber
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-2">
+
+                        <div class="col-md-4 fw-bold">
+                            Programme
+                        </div>
+
+                        <div class="col-md-8">
+                            @Model.ProgrammeOrCourse
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-4 fw-bold">
+                            Status
+                        </div>
+
+                        <div class="col-md-8">
+
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Inactive
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row mt-4">
+
+                <!-- Organisation Card -->
+                <div class="col-lg-6 mb-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-building"></i>
+                                Organisation
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+                                <div class="col-5 fw-bold">
+                                    Client
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.ClientName
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-5 fw-bold">
+                                    Site
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.SiteName
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-5 fw-bold">
+                                    Programme
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.ProgrammeOrCourse
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Banking Card -->
+                <div class="col-lg-6 mb-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-bank"></i>
+                                Banking Information
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+                                <div class="col-5 fw-bold">
+                                    Bank
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.BankName
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-5 fw-bold">
+                                    Branch
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.BranchName
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-5 fw-bold">
+                                    Account Type
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.AccountTypeName
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-5 fw-bold">
+                                    Account Holder
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.AccountHolderName
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-5 fw-bold">
+                                    Account Number
+                                </div>
+
+                                <div class="col-7">
+                                    @Model.AccountNumber
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <!-- Biometric Information -->
+                <div class="col-lg-6 mb-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-fingerprint"></i>
+                                Biometric Information
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+
+                                <div class="col-5 fw-bold">
+                                    Face Enrolled
+                                </div>
+
+                                <div class="col-7">
+
+                                    @if (Model.FaceEnrolled)
+                                    {
+                                        <span class="badge bg-success">
+                                            Yes
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            No
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                            <div class="row mb-3">
+
+                                <div class="col-5 fw-bold">
+                                    Fingerprint Enrolled
+                                </div>
+
+                                <div class="col-7">
+
+                                    @if (Model.FingerprintEnrolled)
+                                    {
+                                        <span class="badge bg-success">
+                                            Yes
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            No
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                            <div class="row mb-3">
+
+                                <div class="col-5 fw-bold">
+                                    Biometric Status
+                                </div>
+
+                                <div class="col-7">
+
+                                    @if (!string.IsNullOrWhiteSpace(Model.BiometricStatus))
+                                    {
+                                        <span class="badge bg-primary">
+                                            @Model.BiometricStatus
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            N/A
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-5 fw-bold">
+                                    Last Verification
+                                </div>
+
+                                <div class="col-7">
+
+                                    @(Model.LastVerificationDate?.ToString("dd MMM yyyy HH:mm") ?? "-")
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Attendance Summary -->
+@*                 <div class="col-lg-6 mb-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-check"></i>
+                                Attendance Summary
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+
+                                <div class="col-6 fw-bold">
+                                    Total Attendances
+                                </div>
+
+                                <div class="col-6">
+                                    @Model.TotalAttendances
+                                </div>
+
+                            </div>
+
+                            <div class="row mb-3">
+
+                                <div class="col-6 fw-bold">
+                                    Approved Attendances
+                                </div>
+
+                                <div class="col-6">
+                                    @Model.ApprovedAttendances
+                                </div>
+
+                            </div>
+
+                            <div class="row mb-3">
+
+                                <div class="col-6 fw-bold">
+                                    Last Attendance
+                                </div>
+
+                                <div class="col-6">
+
+                                    @(Model.LastAttendanceDate?.ToString("dd MMM yyyy") ?? "-")
+
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-6 fw-bold">
+                                    Student Status
+                                </div>
+
+                                <div class="col-6">
+
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            Inactive
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+ *@
+            </div>
+        </div>
+
+    </div>
+
+</div>

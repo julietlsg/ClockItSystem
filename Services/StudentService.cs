@@ -1,5 +1,5 @@
 ﻿using ClockItSystem.Data;
-using ClockItSystem.Models.ViewModels;
+using ClockItSystem.Models.ViewModels.Reports;
 using Microsoft.EntityFrameworkCore;
 
 public class StudentService : IStudentService
@@ -11,7 +11,7 @@ public class StudentService : IStudentService
         _context = context;
     }
 
-    public async Task<StudentProfileViewModel?> GetStudentProfileAsync(int studentId)
+    public async Task<StudentProfileReportViewModel?> GetStudentProfileAsync(int studentId)
     {
         var results = await _context.StudentProfiles
             .FromSqlInterpolated($"EXEC dbo.usp_GetStudentProfile @StudentId={studentId}")

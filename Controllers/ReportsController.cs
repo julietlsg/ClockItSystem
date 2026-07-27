@@ -2,7 +2,9 @@
 using ClockItSystem.Helpers;
 using ClockItSystem.Models.Enums;
 using ClockItSystem.Models.ViewModels;
+using ClockItSystem.Models.ViewModels.Reports;
 using ClockItSystem.Services;
+using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,12 +18,15 @@ namespace ClockItSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ReportService _reportService;
+        private readonly StudentReportService _studentReportService;
 
         public ReportsController(
             ApplicationDbContext context,
+            StudentReportService studentReportService,
             ReportService reportService)
         {
             _context = context;
+            _studentReportService = studentReportService;
             _reportService = reportService;
         }
 
@@ -35,14 +40,126 @@ namespace ClockItSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Generate(ReportFilterViewModel filter)
+        public async Task<IActionResult> ChangeReportType(ReportFilterViewModel filter)
         {
             var model = await BuildReportViewModel(filter);
 
-            model.Results =
-                await _reportService.ExecuteReportAsync(filter);
-
             return View("Report", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Generate(ReportFilterViewModel filter)
+        {
+            switch (filter.ReportType)
+            {
+                case ReportType.StudentProfileReport:
+
+                    if (!filter.StudentId.HasValue)
+                    {
+                        ModelState.AddModelError("", "Please select a student.");
+
+                        var studentModel = await BuildReportViewModel(filter);
+
+                        return View("Report", studentModel);
+                    }
+
+                    var report = await _studentReportService
+                        .GetStudentProfileAsync(filter.StudentId.Value);
+
+                    if (report == null)
+                    {
+                        ModelState.AddModelError("", "Student profile could not be found.");
+
+                        var studentModel = await BuildReportViewModel(filter);
+
+                        return View("Report", studentModel);
+                    }
+
+                    return View("StudentProfileReport", report);
+
+                default:
+
+                    var model = await BuildReportViewModel(filter);
+
+                    model.Results =
+                        await _reportService.ExecuteReportAsync(filter);
+
+                    return View("Report", model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> StudentProfileReport(int studentId)
+        {
+            var report = await _studentReportService
+                .GetStudentProfileAsync(studentId);
+
+            if (report == null)
+                return NotFound();
+
+            return View(report);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> StudentProfile()
+        {
+            var model = new StudentProfileFilterViewModel
+            {
+                Clients = await GetClients(),
+                Sites = await GetSites(null),
+                Students = await GetStudents(null, null)
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StudentProfile(StudentProfileFilterViewModel model)
+        {
+            if (!model.StudentId.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.StudentId), "Please select a student.");
+
+                model.Clients = await GetClients();
+                model.Sites = await GetSites(model.ClientId);
+                model.Students = await GetStudents(model.ClientId, model.SiteId);
+
+                return View(model);
+            }
+
+            var report = await _studentReportService
+                .GetStudentProfileAsync(model.StudentId.Value);
+
+            if (report == null)
+            {
+                ModelState.AddModelError("", "Student profile could not be found.");
+
+                model.Clients = await GetClients();
+                model.Sites = await GetSites(model.ClientId);
+                model.Students = await GetStudents(model.ClientId, model.SiteId);
+
+                return View(model);
+            }
+
+            return View("StudentProfileReport", report);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetStudentProfileFilters(
+            int? clientId,
+            int? siteId)
+        {
+            var sites = await GetSites(clientId);
+
+            var students = await GetStudents(clientId, siteId);
+
+            return Json(new
+            {
+                sites,
+                students
+            });
         }
 
         [HttpPost]
@@ -132,6 +249,30 @@ namespace ClockItSystem.Controllers
                 students,
                 programmes
             });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StudentProfileReport(ReportFilterViewModel filter)
+        {
+            if (!filter.StudentId.HasValue)
+            {
+                TempData["Error"] = "Please select a student.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            var report = await _studentReportService
+                .GetStudentProfileAsync(filter.StudentId.Value);
+
+            if (report == null)
+            {
+                TempData["Error"] = "Student profile could not be found.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(report);
         }
 
         private async Task<List<SelectListItem>> GetClients()

@@ -1,0 +1,229 @@
+﻿@model ClockItSystem.Models.ViewModels.Reports.StudentProfileFilterViewModel
+
+@{
+    ViewData["Title"] = "Student Profile Report";
+}
+
+<div class="container-fluid">
+
+    <div class="clockit-card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Student Profile Report</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="StudentProfile" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-4 mb-3">
+
+                        <label class="form-label fw-semibold">
+
+                            Student
+
+                        </label>
+
+                        <input type="text"
+                               id="studentSearch"
+                               class="form-control mb-2"
+                               placeholder="🔍 Search student by number or name..." />
+
+                        <select asp-for="StudentId"
+                                asp-items="Model.Students"
+                                class="form-select"
+                                id="StudentId"
+                                size="4">
+                        </select>
+
+                        <span asp-validation-for="StudentId"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+
+                        <label asp-for="ClientId" class="form-label">
+                            Client
+                        </label>
+
+                        <select asp-for="ClientId"
+                                asp-items="Model.Clients"
+                                class="form-select"
+                                id="ClientId">
+
+                            <option value="">All Clients</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+
+                        <label asp-for="SiteId" class="form-label">
+                            Site
+                        </label>
+
+                        <select asp-for="SiteId"
+                                asp-items="Model.Sites"
+                                class="form-select"
+                                id="SiteId">
+
+                            <option value="">All Sites</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-12 text-end">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-file-earmark-text"></i>
+                            Generate Report
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const client = document.getElementById("ClientId");
+            const site = document.getElementById("SiteId");
+            const student = document.getElementById("StudentId");
+            const studentSearch = document.getElementById("studentSearch");
+
+            //---------------------------------------------------------
+            // Live Search
+            //---------------------------------------------------------
+
+            studentSearch.addEventListener("keyup", function () {
+
+                const search = this.value.toLowerCase();
+
+                for (let option of student.options) {
+
+                    if (option.value === "")
+                        continue;
+
+                    option.hidden = !option.text.toLowerCase().includes(search);
+
+                }
+
+            });
+
+            //---------------------------------------------------------
+            // Load Sites & Students
+            //---------------------------------------------------------
+
+            async function loadFilters() {
+
+                const clientId = client.value;
+                const siteId = site.value;
+
+                student.innerHTML = "<option>Loading students...</option>";
+
+                try {
+
+                    const response = await fetch(`/Reports/GetStudentProfileFilters?clientId=${clientId}&siteId=${siteId}`);
+
+                    if (!response.ok)
+                        return;
+
+                    const data = await response.json();
+
+                    populate(site, data.sites, "All Sites");
+                    populate(student, data.students, "Select Student");
+
+                }
+                catch {
+
+                    alert("Unable to load students.");
+
+                }
+
+            }
+
+            //---------------------------------------------------------
+            // Populate Dropdown
+            //---------------------------------------------------------
+
+            function populate(select, items, defaultText) {
+
+                select.innerHTML = "";
+
+                const first = document.createElement("option");
+
+                first.value = "";
+                first.text = defaultText;
+
+                select.appendChild(first);
+
+                items.forEach(item => {
+
+                    const option = document.createElement("option");
+
+                    option.value = item.value;
+                    option.text = item.text;
+
+                    select.appendChild(option);
+
+                });
+
+            }
+
+            //---------------------------------------------------------
+            // Events
+            //---------------------------------------------------------
+
+            client.addEventListener("change", function () {
+
+                site.value = "";
+                studentSearch.value = "";
+
+                loadFilters();
+
+            });
+
+            site.addEventListener("change", function () {
+
+                studentSearch.value = "";
+
+                loadFilters();
+
+            });
+
+        });
+
+    </script>
+}

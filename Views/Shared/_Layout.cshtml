@@ -83,7 +83,7 @@
         Administration
     </a>
 
-    <ul class="dropdown-menu">
+    <ul class="dropdown-menu dropdown-menu-dark">
 
         @if (User.IsInRole("Admin"))
         {
@@ -140,42 +140,40 @@
 
         @if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
         {
+
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle"
-                   href="#"
-                   id="reportsDropdown"
-                   role="button"
-                   data-bs-toggle="dropdown"
-                   aria-expanded="false">
-                    Reports
-                </a>
+    <a class="nav-link dropdown-toggle"
+       href="#"
+       id="reportsDropdown"
+       role="button"
+       data-bs-toggle="dropdown"
+       aria-expanded="false">
+        Reports
+    </a>
 
-                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="reportsDropdown">
-                    <li>
-                        <a class="dropdown-item"
-                           asp-controller="Reports"
-                           asp-action="Index">
-                            Attendance Reports
-                        </a>
-                    </li>
+    <ul class="dropdown-menu dropdown-menu-dark">
 
-@*                     <li>
-                        <a class="dropdown-item"
-                           asp-controller="Reports"
-                           asp-action="PendingApprovals">
-                            Pending Approvals
-                        </a>
-                    </li>
- *@
-@*                     <li>
-                        <a class="dropdown-item"
-                           asp-controller="Reports"
-                           asp-action="RejectedAttendance">
-                            Rejected Attendance
-                        </a>
-                    </li>
- *@                </ul>
-            </li>
+        <li>
+            <a class="dropdown-item"
+               asp-controller="Reports"
+               asp-action="Index">
+                <i class="bi bi-calendar-check me-2"></i>
+                Attendance Reports
+            </a>
+        </li>
+
+        <li>
+            <a class="dropdown-item"
+               asp-controller="Reports"
+               asp-action="StudentProfile">
+                <i class="bi bi-person-vcard me-2"></i>
+                Student Profile Report
+            </a>
+        </li>
+
+    </ul>
+</li>
+
         }
 
 
@@ -206,10 +204,16 @@
 
     </main>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/live-search.js" asp-append-version="true"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
+
+<script src="~/js/live-search.js" asp-append-version="true"></script>
+
+@await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

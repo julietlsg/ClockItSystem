@@ -42,6 +42,7 @@ builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IPersonValidationService, PersonValidationService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ReportService>();
+builder.Services.AddScoped<StudentReportService>();
 
 
 builder.Services.Configure<ConfigSettings>(
