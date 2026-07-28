@@ -124,10 +124,54 @@ namespace ClockItSystem.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var model = await _studentService.GetStudentProfileAsync(id);
+            var student = await _context.Students
+                .AsNoTracking()
+                .Include(s => s.Client)
+                .Include(s => s.Site)
+                .Include(s => s.Bank)
+                .Include(s => s.BankBranch)
+                .Include(s => s.AccountType)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
-            if (model == null)
+            if (student == null)
                 return NotFound();
+
+            var model = new StudentProfileViewModel
+            {
+                StudentId = student.Id,
+
+                StudentNumber = student.StudentNumber,
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                FullName = $"{student.FirstName} {student.LastName}",
+
+                IdNumber = student.IdNumber,
+                ContactNumber = student.ContactNumber,
+                ProgrammeOrCourse = student.ProgrammeOrCourse,
+
+                IsActive = student.IsActive,
+                CreatedAt = student.CreatedAt,
+
+                ClientId = student.ClientId,
+                ClientName = student.Client?.Name ?? string.Empty,
+
+                SiteId = student.SiteId,
+                SiteName = student.Site?.SiteName ?? string.Empty,
+
+                BankId = student.BankId,
+                BankName = student.Bank?.BankName,
+
+                BankBranchId = student.BankBranchId,
+                BranchName = student.BankBranch?.BranchName,
+
+                AccountTypeId = student.AccountTypeId,
+                AccountTypeName = student.AccountType?.AccountTypeName,
+
+                AccountHolderName = student.AccountHolderName,
+                AccountNumber = student.AccountNumber,
+
+                FaceImagePath = student.FaceImagePath
+            };
 
             return View(model);
         }
