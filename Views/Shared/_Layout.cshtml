@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="~/css/clockit-theme.css" asp-append-version="true" />
     <link rel="stylesheet"
       href="~/css/administration.css" />
+      <link rel="icon" type="image/png" href="~/favicon.png" />
+      <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 <body>
@@ -141,7 +144,7 @@
         @if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
         {
 
-            <li class="nav-item dropdown">
+<li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle"
        href="#"
        id="reportsDropdown"
@@ -151,7 +154,7 @@
         Reports
     </a>
 
-    <ul class="dropdown-menu dropdown-menu-dark">
+    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
 
         <li>
             <a class="dropdown-item"
@@ -173,7 +176,6 @@
 
     </ul>
 </li>
-
         }
 
 

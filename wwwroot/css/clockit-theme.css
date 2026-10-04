@@ -40,6 +40,38 @@ body {
             color: var(--clockit-accent) !important;
         }
 
+/* ================================
+   NAVIGATION / DROPDOWN LAYERING
+   ================================ */
+
+.navbar {
+    position: relative;
+    z-index: 1050;
+    overflow: visible !important;
+}
+
+    .navbar .container,
+    .navbar .container-fluid {
+        position: relative;
+        z-index: 1050;
+        overflow: visible !important;
+    }
+
+    .navbar .dropdown {
+        position: relative;
+    }
+
+    .navbar .dropdown-menu {
+        position: absolute;
+        z-index: 2000 !important;
+    }
+
+main {
+    position: relative;
+    z-index: 1;
+}
+
+
 /* MAIN LANDING PAGE */
 .clockit-landing {
     min-height: calc(100vh - 70px);
