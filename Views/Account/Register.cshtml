@@ -42,24 +42,59 @@
             <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>
                 <select asp-for="Role"
-                        asp-items="ViewBag.Roles"
                         class="form-select">
+                    <option value="">Select a Role</option>
+
+                    @foreach (var role in ViewBag.Roles)
+                    {
+                        <option value="@role.Value">@role.Text</option>
+                    }
                 </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
 
+                <div class="input-group">
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control"
+                           id="Password"
+                           autocomplete="new-password" />
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="togglePassword('Password', this)"
+                            title="Show password">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password"
+                      class="text-danger">
+                </span>
+            </div>
             <div class="mb-4">
                 <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
 
+                <div class="input-group">
+                    <input asp-for="ConfirmPassword"
+                           type="password"
+                           class="form-control"
+                           id="ConfirmPassword"
+                           autocomplete="new-password" />
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="togglePassword('ConfirmPassword', this)"
+                            title="Show password">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="ConfirmPassword"
+                      class="text-danger">
+                </span>
+            </div>
             <div class="d-flex gap-3 mt-4">
 
                 <a asp-controller="Home"
@@ -82,3 +117,21 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<script>
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector("i");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+            button.title = "Hide password";
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+            button.title = "Show password";
+        }
+    }</script>

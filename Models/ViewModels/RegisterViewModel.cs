@@ -14,7 +14,7 @@ namespace ClockItSystem.Models.ViewModels
 
         [Required]
         [Display(Name = "Role")]
-        public string Role { get; set; } = "Admin";
+        public string Role { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Password)]
