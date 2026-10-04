@@ -94,6 +94,7 @@ namespace ClockItSystem.Services
                 ContactPerson = model.ContactPerson,
                 Email = model.Email,
                 Phone = model.Phone,
+                Address = model.Address,
                 IsActive = model.IsActive,
                 CreatedDate = DateTime.Now
             };
@@ -142,6 +143,7 @@ namespace ClockItSystem.Services
             client.ContactPerson = model.ContactPerson;
             client.Email = model.Email;
             client.Phone = model.Phone;
+            client.Address = model.Address;
             client.IsActive = model.IsActive;
             client.UpdatedDate = DateTime.Now;
 
