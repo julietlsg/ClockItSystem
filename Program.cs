@@ -38,11 +38,15 @@ builder.Services.AddScoped<IFaceRecognitionService, FaceRecognitionService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<ISiteService, SiteService>();
+builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IPersonValidationService, PersonValidationService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ReportService>();
 builder.Services.AddScoped<StudentReportService>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IClientAccessService, ClientAccessService>();
 
 
 builder.Services.Configure<ConfigSettings>(

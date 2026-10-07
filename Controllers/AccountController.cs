@@ -1,27 +1,32 @@
-﻿using ClockItSystem.Models;
+﻿using ClockItSystem.Data;
+using ClockItSystem.Models;
 using ClockItSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClockItSystem.Controllers
 {
-    [AllowAnonymous]
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDbContext _context;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            ApplicationDbContext context)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
         }
 
         // ============================================================
@@ -29,6 +34,7 @@ namespace ClockItSystem.Controllers
         // ============================================================
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -37,6 +43,7 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(
             LoginViewModel model,
@@ -76,12 +83,14 @@ namespace ClockItSystem.Controllers
         // ============================================================
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ForgotPassword()
         {
             return View(new ForgotPasswordViewModel());
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(
             ForgotPasswordViewModel model)
@@ -130,6 +139,7 @@ namespace ClockItSystem.Controllers
         // ============================================================
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ResetPassword(
             string? userId,
             string? token)
@@ -150,6 +160,7 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(
             ResetPasswordViewModel model)
@@ -196,22 +207,45 @@ namespace ClockItSystem.Controllers
         // ============================================================
 
         [HttpGet]
-        public IActionResult Register()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Register()
         {
+            var model = new RegisterViewModel
+            {
+                Clients = await GetActiveClientsAsync()
+            };
+
             ViewBag.Roles = GetRoles();
 
-            return View(new RegisterViewModel());
+            return View(model);
         }
 
+
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(
-            RegisterViewModel model)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             ViewBag.Roles = GetRoles();
 
+            // Remove Client validation for Admin users.
+            if (model.Role == "Admin")
+            {
+                model.ClientId = null;
+                ModelState.Remove(nameof(model.ClientId));
+            }
+            else if (!model.ClientId.HasValue)
+            {
+                ModelState.AddModelError(
+                    nameof(model.ClientId),
+                    "Please select a client.");
+            }
+
             if (!ModelState.IsValid)
+            {
+                model.Clients = await GetActiveClientsAsync();
                 return View(model);
+            }
 
             if (!await _roleManager.RoleExistsAsync(model.Role))
             {
@@ -219,14 +253,38 @@ namespace ClockItSystem.Controllers
                     nameof(model.Role),
                     "Selected role does not exist.");
 
+                model.Clients = await GetActiveClientsAsync();
+
                 return View(model);
+            }
+
+            // Validate selected client for non-admin users.
+            Client? client = null;
+
+            if (model.Role != "Admin")
+            {
+                client = await _context.Clients
+                    .FirstOrDefaultAsync(x =>
+                        x.ClientId == model.ClientId!.Value &&
+                        x.IsActive);
+
+                if (client == null)
+                {
+                    ModelState.AddModelError(
+                        nameof(model.ClientId),
+                        "Selected client does not exist or is inactive.");
+
+                    model.Clients = await GetActiveClientsAsync();
+
+                    return View(model);
+                }
             }
 
             var user = new ApplicationUser
             {
-                FullName = model.FullName,
-                //UserName = model.Email,
-                Email = model.Email,
+                FullName = model.FullName.Trim(),
+                UserName = model.Email.Trim(),
+                Email = model.Email.Trim(),
                 EmailConfirmed = true
             };
 
@@ -234,33 +292,101 @@ namespace ClockItSystem.Controllers
                 user,
                 model.Password);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(
-                    user,
-                    model.Role);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        error.Description);
+                }
 
-                TempData["Success"] =
-                    "User registered successfully.";
+                model.Clients = await GetActiveClientsAsync();
 
-                return RedirectToAction(nameof(Login));
+                return View(model);
             }
 
-            foreach (var error in result.Errors)
+            // Assign the selected role.
+            var roleResult = await _userManager.AddToRoleAsync(
+                user,
+                model.Role);
+
+            if (!roleResult.Succeeded)
             {
-                ModelState.AddModelError(
-                    string.Empty,
-                    error.Description);
+                // Clean up the newly created user if role assignment fails.
+                await _userManager.DeleteAsync(user);
+
+                foreach (var error in roleResult.Errors)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        error.Description);
+                }
+
+                model.Clients = await GetActiveClientsAsync();
+
+                return View(model);
             }
 
-            return View(model);
+            // Admin users have access to all clients,
+            // so they do not need a UserClient record.
+            if (model.Role != "Admin" && model.ClientId.HasValue)
+            {
+                var userClient = new UserClient
+                {
+                    UserId = user.Id,
+                    ClientId = model.ClientId.Value,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.UserClients.Add(userClient);
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch
+                {
+                    // Clean up the Identity user if the client assignment fails.
+                    await _userManager.DeleteAsync(user);
+
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "The user could not be assigned to the selected client.");
+
+                    model.Clients = await GetActiveClientsAsync();
+
+                    return View(model);
+                }
+            }
+
+            TempData["Success"] =
+                "User registered and client access assigned successfully.";
+
+            return RedirectToAction(nameof(Login));
         }
+
+        private async Task<List<SelectListItem>> GetActiveClientsAsync()
+        {
+            return await _context.Clients
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.ClientId.ToString(),
+                    Text = x.Name
+                })
+                .ToListAsync();
+        }
+
 
         // ============================================================
         // LOGOUT
         // ============================================================
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {

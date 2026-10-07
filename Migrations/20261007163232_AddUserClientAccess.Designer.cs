@@ -4,6 +4,7 @@ using ClockItSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClockItSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261007163232_AddUserClientAccess")]
+    partial class AddUserClientAccess
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -368,44 +371,6 @@ namespace ClockItSystem.Migrations
                     b.ToTable("Clients");
                 });
 
-            modelBuilder.Entity("ClockItSystem.Models.ClientStipendRate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("DailyRate")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("EffectiveFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EffectiveTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId", "EffectiveFrom");
-
-                    b.ToTable("ClientStipendRates");
-                });
-
             modelBuilder.Entity("ClockItSystem.Models.Site", b =>
                 {
                     b.Property<int>("SiteId")
@@ -442,148 +407,6 @@ namespace ClockItSystem.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("Sites");
-                });
-
-            modelBuilder.Entity("ClockItSystem.Models.StipendPayment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AccountHolderName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("AccountNumber")
-                        .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
-
-                    b.Property<string>("AccountType")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("BankName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("BranchCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("DailyRate")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("EligibleAttendanceDays")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FailureReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("FamilyResponsibilityLeaveDays")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LeaveDays")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NetcashAccountReference")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("PaymentRunId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SickLeaveDays")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("StipendAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalEligibleDays")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("PaymentRunId", "StudentId")
-                        .IsUnique();
-
-                    b.ToTable("StipendPayments");
-                });
-
-            modelBuilder.Entity("ClockItSystem.Models.StipendPaymentRun", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ApprovedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FailureReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NetcashFileToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("PeriodFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("PeriodTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("SubmittedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("TotalEligibleDays")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalStudents")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId", "PeriodFrom", "PeriodTo");
-
-                    b.ToTable("StipendPaymentRuns");
                 });
 
             modelBuilder.Entity("ClockItSystem.Models.Student", b =>
@@ -1067,51 +890,10 @@ namespace ClockItSystem.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("ClockItSystem.Models.ClientStipendRate", b =>
-                {
-                    b.HasOne("ClockItSystem.Models.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-                });
-
             modelBuilder.Entity("ClockItSystem.Models.Site", b =>
                 {
                     b.HasOne("ClockItSystem.Models.Client", "Client")
                         .WithMany("Sites")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-                });
-
-            modelBuilder.Entity("ClockItSystem.Models.StipendPayment", b =>
-                {
-                    b.HasOne("ClockItSystem.Models.StipendPaymentRun", "PaymentRun")
-                        .WithMany("Payments")
-                        .HasForeignKey("PaymentRunId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ClockItSystem.Models.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("PaymentRun");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("ClockItSystem.Models.StipendPaymentRun", b =>
-                {
-                    b.HasOne("ClockItSystem.Models.Client", "Client")
-                        .WithMany()
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1261,11 +1043,6 @@ namespace ClockItSystem.Migrations
             modelBuilder.Entity("ClockItSystem.Models.Site", b =>
                 {
                     b.Navigation("Students");
-                });
-
-            modelBuilder.Entity("ClockItSystem.Models.StipendPaymentRun", b =>
-                {
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("ClockItSystem.Models.Student", b =>

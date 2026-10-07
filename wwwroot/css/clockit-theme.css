@@ -7,7 +7,11 @@
     --clockit-text: #FFFFFF;
 }
 
-/* GLOBAL */
+
+/* =========================================
+   GLOBAL
+   ========================================= */
+
 html,
 body {
     margin: 0;
@@ -19,7 +23,11 @@ body {
     color: white;
 }
 
-/* NAVBAR */
+
+/* =========================================
+   NAVBAR
+   ========================================= */
+
 .navbar-clockit {
     background: rgba(2, 6, 23, 0.95);
     border-bottom: 1px solid rgba(24, 211, 232, 0.15);
@@ -40,9 +48,10 @@ body {
             color: var(--clockit-accent) !important;
         }
 
-/* ================================
+
+/* =========================================
    NAVIGATION / DROPDOWN LAYERING
-   ================================ */
+   ========================================= */
 
 .navbar {
     position: relative;
@@ -68,11 +77,58 @@ body {
 
 main {
     position: relative;
-    z-index: 1;
+   
 }
 
 
-/* MAIN LANDING PAGE */
+/* =========================================
+   BOOTSTRAP MODAL LAYERING
+   ========================================= */
+
+/*
+   Keep the modal above the page, navbar,
+   dropdowns and backdrop.
+*/
+
+.modal-backdrop {
+    z-index: 2050 !important;
+}
+
+.modal {
+    z-index: 2060 !important;
+}
+
+.modal-dialog {
+    position: relative;
+    z-index: 2061 !important;
+    pointer-events: auto !important;
+}
+
+.modal-content {
+    position: relative;
+    z-index: 2062 !important;
+    pointer-events: auto !important;
+}
+
+
+    /*
+   Ensure controls inside ClockIT modals
+   remain clickable.
+*/
+
+    .modal-content input,
+    .modal-content select,
+    .modal-content textarea,
+    .modal-content button,
+    .modal-content label {
+        pointer-events: auto !important;
+    }
+
+
+/* =========================================
+   MAIN LANDING PAGE
+   ========================================= */
+
 .clockit-landing {
     min-height: calc(100vh - 70px);
     background: linear-gradient( 90deg, rgba(2, 6, 23, 0.98) 0%, rgba(3, 7, 18, 0.95) 18%, rgba(5, 20, 55, 0.92) 42%, rgba(8, 55, 125, 0.95) 75%, rgba(14, 95, 190, 0.96) 100% );
@@ -82,7 +138,11 @@ main {
     padding: 40px;
 }
 
-/* HERO CARD */
+
+/* =========================================
+   HERO CARD
+   ========================================= */
+
 .clockit-landing-card {
     width: 75%;
     max-width: 1050px;
@@ -98,7 +158,11 @@ main {
     text-align: center;
 }
 
-/* LOGO */
+
+/* =========================================
+   LOGO
+   ========================================= */
+
 .clockit-landing-logo {
     width: 460px;
     max-width: 100%;
@@ -107,7 +171,12 @@ main {
     filter: drop-shadow(0 0 18px rgba(24, 211, 232, 0.30)) drop-shadow(0 0 40px rgba(11, 94, 215, 0.25));
     transition: all 0.3s ease;
 }
-/* TITLE */
+
+
+/* =========================================
+   TITLE
+   ========================================= */
+
 .clockit-landing h1 {
     font-size: 56px;
     font-weight: 800;
@@ -115,7 +184,11 @@ main {
     margin-bottom: 28px;
 }
 
-/* DESCRIPTION */
+
+/* =========================================
+   DESCRIPTION
+   ========================================= */
+
 .clockit-landing p {
     font-size: 19px;
     color: rgba(255,255,255,0.92);
@@ -124,13 +197,21 @@ main {
     margin-bottom: 40px;
 }
 
-/* BUTTON GROUP */
+
+/* =========================================
+   BUTTON GROUP
+   ========================================= */
+
 .clockit-button-group {
     display: flex;
     gap: 24px;
 }
 
-/* BUTTONS */
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+
 .btn-clockit-white {
     background: white;
     color: #071B3A;
@@ -147,7 +228,11 @@ main {
         color: white;
     }
 
-/* GENERAL SYSTEM CARD */
+
+/* =========================================
+   GENERAL SYSTEM CARD
+   ========================================= */
+
 .clockit-card {
     background: rgba(7, 27, 58, 0.95);
     border: 1px solid rgba(24, 211, 232, 0.15);
@@ -156,7 +241,11 @@ main {
     padding: 24px;
 }
 
-/* SYSTEM BUTTONS */
+
+/* =========================================
+   SYSTEM BUTTONS
+   ========================================= */
+
 .btn-clockit {
     background: linear-gradient( 135deg, var(--clockit-primary), var(--clockit-accent) );
     border: none;
@@ -171,7 +260,11 @@ main {
         color: white;
     }
 
-/* RESPONSIVE */
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
 @media(max-width: 768px) {
 
     .clockit-landing-card {
@@ -196,7 +289,11 @@ main {
     }
 }
 
-/* BIOMETRIC SCAN PAGE */
+
+/* =========================================
+   BIOMETRIC SCAN PAGE
+   ========================================= */
+
 .biometric-page {
     min-height: calc(100vh - 70px);
     background: linear-gradient( 90deg, rgba(2, 6, 23, 0.98) 0%, rgba(3, 7, 18, 0.95) 18%, rgba(5, 20, 55, 0.92) 42%, rgba(8, 55, 125, 0.95) 75%, rgba(14, 95, 190, 0.96) 100% );
@@ -230,6 +327,11 @@ main {
     margin-bottom: 35px;
 }
 
+
+/* =========================================
+   FACE SCAN
+   ========================================= */
+
 .face-scan-wrapper {
     display: flex;
     justify-content: center;
@@ -262,6 +364,11 @@ main {
     pointer-events: none;
 }
 
+
+/* =========================================
+   BIOMETRIC STATUS
+   ========================================= */
+
 .biometric-status {
     display: inline-block;
     min-width: 320px;
@@ -288,6 +395,11 @@ main {
         color: #18D3E8;
     }
 
+
+/* =========================================
+   CLOSE BUTTON
+   ========================================= */
+
 .close-button {
     color: white;
     text-decoration: none;
@@ -300,6 +412,11 @@ main {
         color: #1ed5ff;
         transform: scale(1.1);
     }
+
+
+/* =========================================
+   OUTLINE BUTTON
+   ========================================= */
 
 .btn-clockit-outline {
     background: transparent;
@@ -314,6 +431,12 @@ main {
         background: rgba(30, 213, 255, 0.15);
         color: white;
     }
+
+
+/* =========================================
+   ATTENDANCE SUCCESS
+   ========================================= */
+
 .attendance-success {
     text-align: center;
     animation: fadeIn 0.3s ease;
@@ -353,6 +476,11 @@ main {
     font-size: 17px;
 }
 
+
+/* =========================================
+   VERIFICATION CONTAINER
+   ========================================= */
+
 .verification-container {
     min-height: calc(100vh - 70px);
     display: flex;
@@ -380,6 +508,11 @@ main {
     margin-top: 15px;
     margin-bottom: 35px;
 }
+
+
+/* =========================================
+   FINGERPRINT
+   ========================================= */
 
 .fingerprint-icon {
     font-size: 140px;
@@ -411,7 +544,17 @@ main {
     font-weight: 600;
 }
 
-/* Bootstrap modals */
+
+/* =========================================
+   BOOTSTRAP MODALS
+   ========================================= */
+
+/*
+   ClockIT uses a dark page theme but the
+   approval modal itself remains a normal
+   Bootstrap light modal.
+*/
+
 .modal-content {
     color: #212529;
 }
@@ -425,3 +568,82 @@ main {
     .modal-content .text-muted {
         color: #6c757d !important;
     }
+
+
+/*
+   Modal stacking order.
+   
+   The backdrop must be behind the modal.
+   The modal content must remain clickable.
+*/
+
+.modal-backdrop {
+    z-index: 2050 !important;
+}
+
+.modal {
+    z-index: 2060 !important;
+}
+
+.modal-dialog {
+    position: relative;
+    z-index: 2061 !important;
+    pointer-events: auto !important;
+}
+
+.modal-content {
+    position: relative;
+    z-index: 2062 !important;
+    pointer-events: auto !important;
+}
+
+
+    /*
+   Make all interactive controls inside
+   ClockIT modals clickable.
+*/
+
+    .modal-content input,
+    .modal-content select,
+    .modal-content textarea,
+    .modal-content button,
+    .modal-content label {
+        pointer-events: auto !important;
+    }
+
+
+    /* =========================================
+   MODAL FORM CONTROLS
+   ========================================= */
+
+    .modal-content .form-check-input {
+        cursor: pointer;
+    }
+
+    .modal-content .form-check-label {
+        cursor: pointer;
+    }
+
+    .modal-content textarea {
+        resize: vertical;
+    }
+
+    .modal-content input[type="file"] {
+        cursor: pointer;
+    }
+
+
+/* =========================================
+   ANIMATION
+   ========================================= */
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
