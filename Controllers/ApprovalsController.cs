@@ -3,6 +3,7 @@ using ClockItSystem.Interfaces;
 using ClockItSystem.Models;
 using ClockItSystem.Models.Enums;
 using ClockItSystem.Models.ViewModels;
+using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,16 +12,18 @@ using static ClockItSystem.Models.Enums.DataEnums;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize(Roles = "Admin,Facilitator")]
+    [Authorize(Roles = "Admin,Facilitator, Project Manager")]
     public class ApprovalsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IClientAccessService _clientAccessService;
 
-        public ApprovalsController(ApplicationDbContext context, IFileStorageService fileStorageService)
+        public ApprovalsController(ApplicationDbContext context, IFileStorageService fileStorageService, IClientAccessService clientAccessService)
         {
             _context = context;
             _fileStorageService = fileStorageService;
+            _clientAccessService = clientAccessService;
         }
 
         [HttpGet]
@@ -36,10 +39,13 @@ namespace ClockItSystem.Controllers
 
             var selectedDate = date?.Date ?? DateTime.Today;
 
-            // Build attendance register
-            var query = BuildDailyRegisterQuery(selectedDate);
+            var accessibleClientIds =
+                await _clientAccessService.GetAccessibleClientIdsAsync();
 
-            // Apply filters
+            var query = BuildDailyRegisterQuery(
+                selectedDate,
+                accessibleClientIds);
+
             query = ApplyFilters(
                 query,
                 clientId,
@@ -47,10 +53,8 @@ namespace ClockItSystem.Controllers
                 programme,
                 searchTerm);
 
-            // Count records
             var totalRecords = await query.CountAsync();
 
-            // Get current page
             var records = await query
                 .OrderBy(x => x.LastName)
                 .ThenBy(x => x.FirstName)
@@ -58,7 +62,6 @@ namespace ClockItSystem.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            // Build the page model
             var model = new DailyAttendanceViewModel
             {
                 Filter = new AttendanceFilterViewModel
@@ -101,6 +104,7 @@ namespace ClockItSystem.Controllers
             return View(model);
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(
@@ -116,6 +120,9 @@ namespace ClockItSystem.Controllers
 
             if (student == null)
                 return NotFound();
+
+            if (!await _clientAccessService.CanAccessClientAsync(student.ClientId))
+                return Forbid();
 
             var record = await _context.AttendanceRecords
                 .FirstOrDefaultAsync(x =>
@@ -215,6 +222,9 @@ namespace ClockItSystem.Controllers
 
             if (student == null)
                 return NotFound();
+
+            if (!await _clientAccessService.CanAccessClientAsync(student.ClientId))
+                return Forbid();
 
             var attendanceRecord = await _context.AttendanceRecords
                 .FirstOrDefaultAsync(x =>
@@ -323,25 +333,33 @@ namespace ClockItSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> History()
         {
+            var accessibleClientIds =
+                await _clientAccessService.GetAccessibleClientIdsAsync();
+
             var records = await _context.AttendanceApprovals
                 .Include(x => x.AttendanceRecord)
-                .ThenInclude(a => a.Student)
+                    .ThenInclude(a => a.Student)
                 .Include(x => x.AttendanceRecord)
-                .ThenInclude(a => a.Client)
+                    .ThenInclude(a => a.Client)
                 .Include(x => x.AttendanceRecord)
-                .ThenInclude(a => a.Site)
+                    .ThenInclude(a => a.Site)
+                .Where(x =>
+                    accessibleClientIds.Contains(
+                        x.AttendanceRecord.ClientId))
                 .OrderByDescending(x => x.ApprovedAt)
                 .ToListAsync();
 
             return View(records);
         }
-
-        private IQueryable<DailyApprovalViewModel> BuildDailyRegisterQuery(DateTime selectedDate)
+        private IQueryable<DailyApprovalViewModel> BuildDailyRegisterQuery(
+            DateTime selectedDate,
+            List<int> accessibleClientIds)
         {
             return
                 from student in _context.Students
 
                 where student.IsActive
+                      && accessibleClientIds.Contains(student.ClientId)
 
                 join attendance in _context.AttendanceRecords
                     .Where(a => a.AttendanceDate.Date == selectedDate)
@@ -351,7 +369,10 @@ namespace ClockItSystem.Controllers
                 from attendance in attendanceGroup.DefaultIfEmpty()
 
                 join approval in _context.AttendanceApprovals
-                    on attendance != null ? attendance.Id : 0 equals approval.AttendanceRecordId
+                    on attendance != null
+                        ? attendance.Id
+                        : 0
+                    equals approval.AttendanceRecordId
                     into approvalGroup
 
                 from approval in approvalGroup.DefaultIfEmpty()
@@ -371,9 +392,11 @@ namespace ClockItSystem.Controllers
 
                     LastName = student.LastName,
 
-                    StudentName = student.FirstName + " " + student.LastName,
+                    StudentName =
+                        student.FirstName + " " + student.LastName,
 
-                    ProgrammeOrCourse = student.ProgrammeOrCourse,
+                    ProgrammeOrCourse =
+                        student.ProgrammeOrCourse,
 
                     AttendanceDate =
                         attendance != null
@@ -421,7 +444,8 @@ namespace ClockItSystem.Controllers
 
                     RejectionReason =
                         approval != null
-                            ? (DataEnums.AttendanceRejectionReason?)approval.Reason
+                            ? (DataEnums.AttendanceRejectionReason?)
+                                approval.Reason
                             : null
                 };
         }
@@ -432,50 +456,55 @@ namespace ClockItSystem.Controllers
             int? siteId,
             string? programme,
             string? searchTerm)
-                {
-                    if (clientId.HasValue)
-                    {
-                        query = query.Where(x =>
-                            x.ClientId == clientId.Value);
-                    }
+        {
+            if (clientId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.ClientId == clientId.Value);
+            }
 
-                    if (siteId.HasValue)
-                    {
-                        query = query.Where(x =>
-                            x.SiteId == siteId.Value);
-                    }
+            if (siteId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.SiteId == siteId.Value);
+            }
 
-                    if (!string.IsNullOrWhiteSpace(programme))
-                    {
-                        query = query.Where(x =>
-                            x.ProgrammeOrCourse == programme);
-                    }
+            if (!string.IsNullOrWhiteSpace(programme))
+            {
+                query = query.Where(x =>
+                    x.ProgrammeOrCourse == programme);
+            }
 
-                    if (!string.IsNullOrWhiteSpace(searchTerm))
-                    {
-                        searchTerm = searchTerm.Trim();
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim();
 
-                        query = query.Where(x =>
+                query = query.Where(x =>
 
-                            x.StudentNumber.Contains(searchTerm)
+                    x.StudentNumber.Contains(searchTerm)
 
-                            ||
+                    ||
 
-                            x.StudentName.Contains(searchTerm)
+                    x.StudentName.Contains(searchTerm)
 
-                            ||
+                    ||
 
-                            (x.ProgrammeOrCourse != null &&
-                             x.ProgrammeOrCourse.Contains(searchTerm)));
-                    }
+                    (x.ProgrammeOrCourse != null &&
+                     x.ProgrammeOrCourse.Contains(searchTerm)));
+            }
 
-                    return query;
-                }
+            return query;
+        }
 
         private async Task<List<SelectListItem>> GetClientsAsync()
         {
+            var accessibleClientIds =
+                await _clientAccessService.GetAccessibleClientIdsAsync();
+
             return await _context.Clients
-                .Where(x => x.IsActive)
+                .Where(x =>
+                    x.IsActive &&
+                    accessibleClientIds.Contains(x.ClientId))
                 .OrderBy(x => x.Name)
                 .Select(x => new SelectListItem
                 {
@@ -524,12 +553,18 @@ namespace ClockItSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSitesByClient(int? clientId)
         {
+            var accessibleClientIds =
+                await _clientAccessService.GetAccessibleClientIdsAsync();
+
             var query = _context.Sites
-                .Where(x => x.IsActive);
+                .Where(x =>
+                    x.IsActive &&
+                    accessibleClientIds.Contains(x.ClientId));
 
             if (clientId.HasValue)
             {
-                query = query.Where(x => x.ClientId == clientId.Value);
+                query = query.Where(x =>
+                    x.ClientId == clientId.Value);
             }
 
             var sites = await query

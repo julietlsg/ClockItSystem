@@ -34,6 +34,12 @@ namespace ClockItSystem.Data
 
         public DbSet<UserClient> UserClients { get; set; }
 
+        public DbSet<ClientStipendRate> ClientStipendRates { get; set; }
+
+        public DbSet<StipendPaymentRun> StipendPaymentRuns { get; set; }
+
+        public DbSet<StipendPayment> StipendPayments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -66,6 +72,27 @@ namespace ClockItSystem.Data
             builder.Entity<UserClient>()
                 .HasIndex(x => new { x.UserId, x.ClientId })
                 .IsUnique();
+
+            // ============================================
+            // ClientStipendRate
+            // ============================================
+
+            builder.Entity<ClientStipendRate>()
+            .HasOne(x => x.Client)
+            .WithMany()
+            .HasForeignKey(x => x.ClientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ClientStipendRate>()
+                .Property(x => x.DailyRate)
+                .HasPrecision(18, 2);
+
+            builder.Entity<ClientStipendRate>()
+                .HasIndex(x => new
+                {
+                    x.ClientId,
+                    x.EffectiveFrom
+                });
 
             // ============================================
             // Student Relationships
@@ -193,6 +220,73 @@ namespace ClockItSystem.Data
 
             builder.Entity<StudentProfileReportViewModel>()
                 .HasNoKey();
+
+
+            // ============================================
+            // Stipend / Payment Run Relationships
+            // ============================================
+
+            builder.Entity<ClientStipendRate>()
+                .HasOne(x => x.Client)
+                .WithMany()
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<ClientStipendRate>()
+                .HasIndex(x => new
+                {
+                    x.ClientId,
+                    x.EffectiveFrom
+                });
+
+            // ============================================
+            // Stipend Payment Run
+            // ============================================
+
+            builder.Entity<StipendPaymentRun>()
+                .HasOne(x => x.Client)
+                .WithMany()
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<StipendPaymentRun>()
+                .HasIndex(x => new
+                {
+                    x.ClientId,
+                    x.PeriodFrom,
+                    x.PeriodTo
+                });
+
+            // ============================================
+            // Stipend Payment
+            // ============================================
+
+            builder.Entity<StipendPayment>()
+                .HasOne(x => x.PaymentRun)
+                .WithMany(x => x.Payments)
+                .HasForeignKey(x => x.PaymentRunId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<StipendPayment>()
+                .HasOne(x => x.Student)
+                .WithMany()
+                .HasForeignKey(x => x.StudentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<StipendPayment>()
+                .Property(x => x.DailyRate)
+                .HasPrecision(18, 2);
+
+            builder.Entity<StipendPayment>()
+                .Property(x => x.StipendAmount)
+                .HasPrecision(18, 2);
+
+            builder.Entity<StipendPayment>()
+                .HasIndex(x => new
+                {
+                    x.PaymentRunId,
+                    x.StudentId
+                }).IsUnique();
         }
     }
 }
