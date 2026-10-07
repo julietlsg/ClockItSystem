@@ -8,19 +8,10 @@ namespace ClockItSystem.ViewModels
         [Required(ErrorMessage = "Please select a client.")]
         public int? ClientId { get; set; }
 
-        [Required(ErrorMessage = "Please select a month.")]
-        public int? Year { get; set; }
-
-        [Required(ErrorMessage = "Please select a month.")]
-        public int? Month { get; set; }
+        [Required(ErrorMessage = "Please select a payment period.")]
+        public DateTime? PaymentPeriod { get; set; }
 
         public List<SelectListItem> Clients { get; set; }
-            = new List<SelectListItem>();
-
-        public List<SelectListItem> Years { get; set; }
-            = new List<SelectListItem>();
-
-        public List<SelectListItem> Months { get; set; }
             = new List<SelectListItem>();
     }
 }

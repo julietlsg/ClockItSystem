@@ -25,13 +25,42 @@ namespace ClockItSystem.Controllers
         }
 
         // ============================================================
+        // PAYMENT RUN LIST
+        // ============================================================
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var accessibleClientIds =
+                await _clientAccessService
+                    .GetAccessibleClientIdsAsync();
+
+            var paymentRuns = await _context.StipendPaymentRuns
+                .AsNoTracking()
+                .Include(x => x.Client)
+                .Where(x =>
+                    accessibleClientIds.Contains(x.ClientId))
+                .OrderByDescending(x => x.PeriodFrom)
+                .ThenBy(x => x.Client.Name)
+                .ToListAsync();
+
+            return View(paymentRuns);
+        }
+
+        // ============================================================
         // CREATE PAYMENT RUN - FILTER PAGE
         // ============================================================
 
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var model = new PaymentRunViewModel();
+            var model = new PaymentRunViewModel
+            {
+                PaymentPeriod = new DateTime(
+                    DateTime.Today.Year,
+                    DateTime.Today.Month,
+                    1)
+            };
 
             await PopulateFilters(model);
 
@@ -44,7 +73,8 @@ namespace ClockItSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(PaymentRunViewModel model)
+        public async Task<IActionResult> Create(
+            PaymentRunViewModel model)
         {
             await PopulateFilters(model);
 
@@ -52,12 +82,11 @@ namespace ClockItSystem.Controllers
                 return View(model);
 
             if (!model.ClientId.HasValue ||
-                !model.Year.HasValue ||
-                !model.Month.HasValue)
+                !model.PaymentPeriod.HasValue)
             {
                 ModelState.AddModelError(
                     string.Empty,
-                    "Please select a client, year and month.");
+                    "Please select a client and payment period.");
 
                 return View(model);
             }
@@ -73,17 +102,21 @@ namespace ClockItSystem.Controllers
             }
 
             // --------------------------------------------------------
-            // DETERMINE PERIOD
+            // DETERMINE PAYMENT PERIOD
             // --------------------------------------------------------
 
             var periodFrom = new DateTime(
-                model.Year.Value,
-                model.Month.Value,
+                model.PaymentPeriod.Value.Year,
+                model.PaymentPeriod.Value.Month,
                 1);
 
             var periodTo = periodFrom
                 .AddMonths(1)
                 .AddDays(-1);
+
+            // Used when querying DateTime values so the entire
+            // final day of the month is included.
+            var periodEndExclusive = periodTo.AddDays(1);
 
             // --------------------------------------------------------
             // PREVENT DUPLICATE PAYMENT RUN
@@ -99,7 +132,7 @@ namespace ClockItSystem.Controllers
             {
                 ModelState.AddModelError(
                     string.Empty,
-                    "A payment run already exists for the selected client and month.");
+                    "A payment run already exists for the selected client and payment period.");
 
                 return View(model);
             }
@@ -142,7 +175,7 @@ namespace ClockItSystem.Controllers
             }
 
             // --------------------------------------------------------
-            // GET STUDENTS
+            // GET ACTIVE STUDENTS
             // --------------------------------------------------------
 
             var students = await _context.Students
@@ -173,10 +206,16 @@ namespace ClockItSystem.Controllers
             var paymentRun = new StipendPaymentRun
             {
                 ClientId = client.ClientId,
+
                 PeriodFrom = periodFrom,
+
                 PeriodTo = periodTo,
+
                 Status = "Draft",
-                CreatedBy = User.Identity?.Name ?? "System",
+
+                CreatedBy =
+                    User.Identity?.Name ?? "System",
+
                 CreatedAt = DateTime.Now
             };
 
@@ -192,12 +231,13 @@ namespace ClockItSystem.Controllers
 
             foreach (var student in students)
             {
-                var payment = await BuildStudentPaymentAsync(
-                    student,
-                    paymentRun.Id,
-                    dailyRate.Value,
-                    periodFrom,
-                    periodTo);
+                var payment =
+                    await BuildStudentPaymentAsync(
+                        student,
+                        paymentRun.Id,
+                        dailyRate.Value,
+                        periodFrom,
+                        periodEndExclusive);
 
                 if (payment != null)
                 {
@@ -206,29 +246,40 @@ namespace ClockItSystem.Controllers
             }
 
             // --------------------------------------------------------
-            // SAVE PAYMENTS
+            // SAVE PAYMENT ROWS
             // --------------------------------------------------------
 
             if (paymentRows.Any())
             {
-                await _context.StipendPayments.AddRangeAsync(
-                    paymentRows);
+                await _context.StipendPayments
+                    .AddRangeAsync(paymentRows);
 
                 paymentRun.TotalStudents =
                     paymentRows.Count;
 
                 paymentRun.TotalEligibleDays =
-                    paymentRows.Sum(x => x.TotalEligibleDays);
+                    paymentRows.Sum(
+                        x => x.TotalEligibleDays);
 
                 paymentRun.TotalAmount =
-                    paymentRows.Sum(x => x.StipendAmount);
+                    paymentRows.Sum(
+                        x => x.StipendAmount);
+            }
+            else
+            {
+                paymentRun.TotalStudents = 0;
+                paymentRun.TotalEligibleDays = 0;
+                paymentRun.TotalAmount = 0;
             }
 
             await _context.SaveChangesAsync();
 
             return RedirectToAction(
                 nameof(Details),
-                new { id = paymentRun.Id });
+                new
+                {
+                    id = paymentRun.Id
+                });
         }
 
         // ============================================================
@@ -238,85 +289,123 @@ namespace ClockItSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var paymentRun = await _context.StipendPaymentRuns
-                .AsNoTracking()
-                .Include(x => x.Client)
-                .Include(x => x.Payments)
-                    .ThenInclude(x => x.Student)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var paymentRun =
+                await _context.StipendPaymentRuns
+                    .AsNoTracking()
+                    .Include(x => x.Client)
+                    .Include(x => x.Payments)
+                        .ThenInclude(x => x.Student)
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == id);
 
             if (paymentRun == null)
                 return NotFound();
 
+            // --------------------------------------------------------
+            // SECURITY CHECK
+            // --------------------------------------------------------
+
             if (!await _clientAccessService
-                .CanAccessClientAsync(paymentRun.ClientId))
+                .CanAccessClientAsync(
+                    paymentRun.ClientId))
             {
                 return Forbid();
             }
 
-            var model = new PaymentRunResultViewModel
-            {
-                PaymentRunId = paymentRun.Id,
-                ClientId = paymentRun.ClientId,
-                ClientName = paymentRun.Client?.Name ?? string.Empty,
-                PeriodFrom = paymentRun.PeriodFrom,
-                PeriodTo = paymentRun.PeriodTo,
-                TotalStudents = paymentRun.TotalStudents,
-                TotalEligibleDays = paymentRun.TotalEligibleDays,
-                TotalAmount = paymentRun.TotalAmount,
-                Status = paymentRun.Status,
+            // --------------------------------------------------------
+            // BUILD VIEW MODEL
+            // --------------------------------------------------------
 
-                Students = paymentRun.Payments
-                    .OrderBy(x => x.Student.LastName)
-                    .ThenBy(x => x.Student.FirstName)
-                    .Select(x => new PaymentRunStudentViewModel
-                    {
-                        StudentId = x.StudentId,
-                        StudentNumber = x.Student.StudentNumber,
-                        StudentName =
-                            $"{x.Student.FirstName} {x.Student.LastName}",
+            var model =
+                new PaymentRunResultViewModel
+                {
+                    PaymentRunId =
+                        paymentRun.Id,
 
-                        EligibleAttendanceDays =
-                            x.EligibleAttendanceDays,
+                    ClientId =
+                        paymentRun.ClientId,
 
-                        LeaveDays =
-                            x.LeaveDays,
+                    ClientName =
+                        paymentRun.Client?.Name
+                        ?? string.Empty,
 
-                        SickLeaveDays =
-                            x.SickLeaveDays,
+                    PeriodFrom =
+                        paymentRun.PeriodFrom,
 
-                        FamilyResponsibilityLeaveDays =
-                            x.FamilyResponsibilityLeaveDays,
+                    PeriodTo =
+                        paymentRun.PeriodTo,
 
-                        TotalEligibleDays =
-                            x.TotalEligibleDays,
+                    TotalStudents =
+                        paymentRun.TotalStudents,
 
-                        DailyRate =
-                            x.DailyRate,
+                    TotalEligibleDays =
+                        paymentRun.TotalEligibleDays,
 
-                        StipendAmount =
-                            x.StipendAmount,
+                    TotalAmount =
+                        paymentRun.TotalAmount,
 
-                        BankName =
-                            x.BankName,
+                    Status =
+                        paymentRun.Status,
 
-                        BranchCode =
-                            x.BranchCode,
+                    Students =
+                        paymentRun.Payments
+                            .OrderBy(x =>
+                                x.Student.LastName)
+                            .ThenBy(x =>
+                                x.Student.FirstName)
+                            .Select(x =>
+                                new PaymentRunStudentViewModel
+                                {
+                                    StudentId =
+                                        x.StudentId,
 
-                        AccountNumber =
-                            x.AccountNumber,
+                                    StudentNumber =
+                                        x.Student.StudentNumber,
 
-                        AccountType =
-                            x.AccountType,
+                                    StudentName =
+                                        $"{x.Student.FirstName} {x.Student.LastName}",
 
-                        AccountHolderName =
-                            x.AccountHolderName,
+                                    EligibleAttendanceDays =
+                                        x.EligibleAttendanceDays,
 
-                        Status =
-                            x.Status
-                    })
-                    .ToList()
-            };
+                                    LeaveDays =
+                                        x.LeaveDays,
+
+                                    SickLeaveDays =
+                                        x.SickLeaveDays,
+
+                                    FamilyResponsibilityLeaveDays =
+                                        x.FamilyResponsibilityLeaveDays,
+
+                                    TotalEligibleDays =
+                                        x.TotalEligibleDays,
+
+                                    DailyRate =
+                                        x.DailyRate,
+
+                                    StipendAmount =
+                                        x.StipendAmount,
+
+                                    BankName =
+                                        x.BankName,
+
+                                    BranchCode =
+                                        x.BranchCode,
+
+                                    AccountNumber =
+                                        x.AccountNumber,
+
+                                    AccountType =
+                                        x.AccountType,
+
+                                    AccountHolderName =
+                                        x.AccountHolderName,
+
+                                    Status =
+                                        x.Status
+                                })
+                            .ToList()
+                };
 
             return View(model);
         }
@@ -332,44 +421,27 @@ namespace ClockItSystem.Controllers
                 await _clientAccessService
                     .GetAccessibleClientIdsAsync();
 
-            model.Clients = await _context.Clients
-                .Where(x =>
-                    x.IsActive &&
-                    accessibleClientIds.Contains(x.ClientId))
-                .OrderBy(x => x.Name)
-                .Select(x => new SelectListItem
-                {
-                    Value = x.ClientId.ToString(),
-                    Text = x.Name
-                })
-                .ToListAsync();
+            model.Clients =
+                await _context.Clients
+                    .Where(x =>
+                        x.IsActive &&
+                        accessibleClientIds.Contains(
+                            x.ClientId))
+                    .OrderBy(x => x.Name)
+                    .Select(x =>
+                        new SelectListItem
+                        {
+                            Value =
+                                x.ClientId.ToString(),
 
-            var currentYear = DateTime.Now.Year;
-
-            model.Years = Enumerable
-                .Range(currentYear - 1, 3)
-                .Select(x => new SelectListItem
-                {
-                    Value = x.ToString(),
-                    Text = x.ToString()
-                })
-                .ToList();
-
-            model.Months = Enumerable
-                .Range(1, 12)
-                .Select(x => new SelectListItem
-                {
-                    Value = x.ToString(),
-                    Text = new DateTime(
-                        2000,
-                        x,
-                        1).ToString("MMMM")
-                })
-                .ToList();
+                            Text =
+                                x.Name
+                        })
+                    .ToListAsync();
         }
 
         // ============================================================
-        // GET DAILY RATE
+        // GET DAILY STIPEND RATE
         // ============================================================
 
         private async Task<decimal?> GetDailyRateAsync(
@@ -377,83 +449,85 @@ namespace ClockItSystem.Controllers
             DateTime periodFrom,
             DateTime periodTo)
         {
-            var rate = await _context.ClientStipendRates
-                .AsNoTracking()
-                .Where(x =>
-                    x.ClientId == clientId &&
-                    x.IsActive &&
-                    x.EffectiveFrom <= periodTo &&
-                    (!x.EffectiveTo.HasValue ||
-                     x.EffectiveTo.Value >= periodFrom))
-                .OrderByDescending(x => x.EffectiveFrom)
-                .FirstOrDefaultAsync();
+            var rate =
+                await _context.ClientStipendRates
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.ClientId == clientId &&
+                        x.IsActive &&
+                        x.EffectiveFrom <= periodTo &&
+                        (!x.EffectiveTo.HasValue ||
+                         x.EffectiveTo.Value >= periodFrom))
+                    .OrderByDescending(
+                        x => x.EffectiveFrom)
+                    .FirstOrDefaultAsync();
 
             return rate?.DailyRate;
         }
 
-        // ============================================================
         // BUILD STUDENT PAYMENT
-        // ============================================================
-
         private async Task<StipendPayment?> BuildStudentPaymentAsync(
             Student student,
             int paymentRunId,
             decimal dailyRate,
             DateTime periodFrom,
-            DateTime periodTo)
+            DateTime periodEndExclusive)
         {
-            var attendanceRecords = await _context.AttendanceRecords
-                .AsNoTracking()
-                .Include(x => x.AttendanceApproval)
-                .Where(x =>
-                    x.StudentId == student.Id &&
-                    x.ClientId == student.ClientId &&
-                    x.AttendanceDate >= periodFrom &&
-                    x.AttendanceDate <= periodTo)
-                .ToListAsync();
+            var attendanceRecords =
+                await _context.AttendanceRecords
+                    .AsNoTracking()
+                    .Include(x =>
+                        x.AttendanceApproval)
+                    .Where(x =>
+                        x.StudentId == student.Id &&
+                        x.ClientId == student.ClientId &&
+                        x.AttendanceDate >= periodFrom &&
+                        x.AttendanceDate < periodEndExclusive)
+                    .ToListAsync();
 
             // APPROVED ATTENDANCE
 
-            var approvedAttendanceDays = attendanceRecords.Count(x =>
-                x.Status == "Approved" &&
-                x.AttendanceApproval != null &&
-                x.AttendanceApproval.IsApproved);
+            var approvedAttendanceDays =
+                attendanceRecords.Count(x =>
+                    x.Status == "Approved" &&
+                    x.AttendanceApproval != null &&
+                    x.AttendanceApproval.IsApproved);
 
-            // LEAVE
+            // APPROVED LEAVE
 
-            var leaveDays = attendanceRecords.Count(x =>
-                x.Status == "Rejected" &&
-                x.AttendanceApproval != null &&
-                !x.AttendanceApproval.IsApproved &&
-                x.AttendanceApproval.Reason ==
-                    DataEnums.AttendanceRejectionReason.Leave);
+            var leaveDays =
+                attendanceRecords.Count(x =>
+                    x.Status == "Rejected" &&
+                    x.AttendanceApproval != null &&
+                    !x.AttendanceApproval.IsApproved &&
+                    x.AttendanceApproval.Reason ==
+                        DataEnums.AttendanceRejectionReason.Leave);
 
-            // SICK LEAVE
+            // APPROVED SICK LEAVE
 
-            var sickLeaveDays = attendanceRecords.Count(x =>
-                x.Status == "Rejected" &&
-                x.AttendanceApproval != null &&
-                !x.AttendanceApproval.IsApproved &&
-                x.AttendanceApproval.Reason ==
-                    DataEnums.AttendanceRejectionReason.SickLeave);
+            var sickLeaveDays =
+                attendanceRecords.Count(x =>
+                    x.Status == "Rejected" &&
+                    x.AttendanceApproval != null &&
+                    !x.AttendanceApproval.IsApproved &&
+                    x.AttendanceApproval.Reason ==
+                        DataEnums.AttendanceRejectionReason.SickLeave);
 
-            // FAMILY RESPONSIBILITY LEAVE
+            // APPROVED FAMILY RESPONSIBILITY LEAVE
 
-            var familyResponsibilityLeaveDays = attendanceRecords.Count(x =>
-                x.Status == "Rejected" &&
-                x.AttendanceApproval != null &&
-                !x.AttendanceApproval.IsApproved &&
-                x.AttendanceApproval.Reason ==
-                    DataEnums.AttendanceRejectionReason.FamilyResponsibilityLeave);
+            var familyResponsibilityLeaveDays =
+                attendanceRecords.Count(x =>
+                    x.Status == "Rejected" &&
+                    x.AttendanceApproval != null &&
+                    !x.AttendanceApproval.IsApproved &&
+                    x.AttendanceApproval.Reason ==
+                        DataEnums.AttendanceRejectionReason
+                            .FamilyResponsibilityLeave);
 
             // STUDENT ABSENT
 
-            var studentAbsentDays = attendanceRecords.Count(x =>
-                x.Status == "Rejected" &&
-                x.AttendanceApproval != null &&
-                !x.AttendanceApproval.IsApproved &&
-                x.AttendanceApproval.Reason ==
-                    DataEnums.AttendanceRejectionReason.StudentAbsent);
+            // StudentAbsent is intentionally NOT included
+            // in the eligible payment days.
 
             // TOTAL ELIGIBLE DAYS
 
@@ -468,7 +542,7 @@ namespace ClockItSystem.Controllers
             var stipendAmount =
                 totalEligibleDays * dailyRate;
 
-            // DON'T CREATE A PAYMENT RECORD IF NOTHING IS PAYABLE
+            // NO PAYABLE DAYS
 
             if (totalEligibleDays == 0)
             {
@@ -479,9 +553,11 @@ namespace ClockItSystem.Controllers
 
             return new StipendPayment
             {
-                PaymentRunId = paymentRunId,
+                PaymentRunId =
+                    paymentRunId,
 
-                StudentId = student.Id,
+                StudentId =
+                    student.Id,
 
                 EligibleAttendanceDays =
                     approvedAttendanceDays,
@@ -521,6 +597,7 @@ namespace ClockItSystem.Controllers
                 AccountHolderName =
                     student.AccountHolderName,
 
+                // PAYMENT STATUS
                 Status = "Pending"
             };
         }
