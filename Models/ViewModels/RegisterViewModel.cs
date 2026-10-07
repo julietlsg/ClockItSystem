@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace ClockItSystem.Models.ViewModels
 {
@@ -16,6 +17,9 @@ namespace ClockItSystem.Models.ViewModels
         [Display(Name = "Role")]
         public string Role { get; set; } = string.Empty;
 
+        [Display(Name = "Client")]
+        public int? ClientId { get; set; }
+
         [Required]
         [DataType(DataType.Password)]
         [MinLength(6)]
@@ -25,5 +29,7 @@ namespace ClockItSystem.Models.ViewModels
         [DataType(DataType.Password)]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        public List<SelectListItem> Clients { get; set; } = new();
     }
 }

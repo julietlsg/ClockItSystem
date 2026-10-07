@@ -30,8 +30,9 @@ namespace ClockItSystem.Data
         public DbSet<BankBranch> BankBranches { get; set; }
 
         public DbSet<AccountType> AccountTypes { get; set; }
-        //public DbSet<StudentProfileReportViewModel> StudentProfileReports { get; set; }
         public DbSet<StudentProfileReportViewModel> StudentProfiles { get; set; }
+
+        public DbSet<UserClient> UserClients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -44,6 +45,27 @@ namespace ClockItSystem.Data
             builder.Entity<AttendanceRecord>()
                 .Property(x => x.VerificationScore)
                 .HasPrecision(5, 2);
+
+            // ============================================
+            // User Client
+            // ============================================
+
+
+            builder.Entity<UserClient>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserClient>()
+                .HasOne(x => x.Client)
+                .WithMany()
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserClient>()
+                .HasIndex(x => new { x.UserId, x.ClientId })
+                .IsUnique();
 
             // ============================================
             // Student Relationships

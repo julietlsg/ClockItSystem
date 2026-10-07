@@ -22,41 +22,95 @@
             </a>
 
         </div>
+
         <form asp-action="Register" method="post">
             @Html.AntiForgeryToken()
 
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
 
+            <!-- Full Name -->
             <div class="mb-3">
                 <label asp-for="FullName" class="form-label"></label>
-                <input asp-for="FullName" class="form-control" />
-                <span asp-validation-for="FullName" class="text-danger"></span>
+
+                <input asp-for="FullName"
+                       class="form-control" />
+
+                <span asp-validation-for="FullName"
+                      class="text-danger">
+                </span>
             </div>
 
+            <!-- Email -->
             <div class="mb-3">
                 <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+
+                <input asp-for="Email"
+                       class="form-control" />
+
+                <span asp-validation-for="Email"
+                      class="text-danger">
+                </span>
             </div>
 
+            <!-- Role -->
             <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>
+
                 <select asp-for="Role"
-                        class="form-select">
+                        class="form-select"
+                        id="Role">
+
                     <option value="">Select a Role</option>
 
                     @foreach (var role in ViewBag.Roles)
                     {
-                        <option value="@role.Value">@role.Text</option>
+                        <option value="@role.Value">
+                            @role.Text
+                        </option>
                     }
+
                 </select>
-                <span asp-validation-for="Role" class="text-danger"></span>
+
+                <span asp-validation-for="Role"
+                      class="text-danger">
+                </span>
             </div>
 
+            <!-- Client -->
+            <div class="mb-3" id="clientSection">
+
+                <label asp-for="ClientId"
+                       class="form-label">
+                    Client
+                </label>
+
+                <select asp-for="ClientId"
+                        asp-items="Model.Clients"
+                        class="form-select"
+                        id="ClientId">
+
+                    <option value="">
+                        Select a Client
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="ClientId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <!-- Password -->
             <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
+                <label asp-for="Password"
+                       class="form-label">
+                </label>
 
                 <div class="input-group">
+
                     <input asp-for="Password"
                            type="password"
                            class="form-control"
@@ -67,17 +121,27 @@
                             class="btn btn-outline-secondary"
                             onclick="togglePassword('Password', this)"
                             title="Show password">
+
                         <i class="bi bi-eye"></i>
+
                     </button>
+
                 </div>
+
                 <span asp-validation-for="Password"
                       class="text-danger">
                 </span>
             </div>
+
+            <!-- Confirm Password -->
             <div class="mb-4">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
+
+                <label asp-for="ConfirmPassword"
+                       class="form-label">
+                </label>
 
                 <div class="input-group">
+
                     <input asp-for="ConfirmPassword"
                            type="password"
                            class="form-control"
@@ -88,13 +152,20 @@
                             class="btn btn-outline-secondary"
                             onclick="togglePassword('ConfirmPassword', this)"
                             title="Show password">
+
                         <i class="bi bi-eye"></i>
+
                     </button>
+
                 </div>
+
                 <span asp-validation-for="ConfirmPassword"
                       class="text-danger">
                 </span>
+
             </div>
+
+            <!-- Buttons -->
             <div class="d-flex gap-3 mt-4">
 
                 <a asp-controller="Home"
@@ -107,6 +178,7 @@
                         class="btn btn-clockit flex-fill">
                     Submit
                 </button>
+
             </div>
 
         </form>
@@ -115,23 +187,69 @@
 </div>
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
-}
 
-<script>
-    function togglePassword(inputId, button) {
-        const input = document.getElementById(inputId);
-        const icon = button.querySelector("i");
+    <script>
 
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.remove("bi-eye");
-            icon.classList.add("bi-eye-slash");
-            button.title = "Hide password";
-        } else {
-            input.type = "password";
-            icon.classList.remove("bi-eye-slash");
-            icon.classList.add("bi-eye");
-            button.title = "Show password";
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const roleSelect = document.getElementById("Role");
+            const clientSection = document.getElementById("clientSection");
+            const clientSelect = document.getElementById("ClientId");
+
+            function updateClientVisibility() {
+
+                const role = roleSelect.value;
+
+                if (role === "Admin") {
+
+                    // Admin has access to all clients.
+                    clientSection.style.display = "none";
+
+                    clientSelect.value = "";
+
+                } else {
+
+                    // Non-admin users must be assigned to a client.
+                    clientSection.style.display = "block";
+
+                }
+            }
+
+            roleSelect.addEventListener("change", updateClientVisibility);
+
+            // Set correct state when page loads
+            // or when validation returns the form.
+            updateClientVisibility();
+
+        });
+
+
+        function togglePassword(inputId, button) {
+
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector("i");
+
+            if (input.type === "password") {
+
+                input.type = "text";
+
+                icon.classList.remove("bi-eye");
+                icon.classList.add("bi-eye-slash");
+
+                button.title = "Hide password";
+
+            } else {
+
+                input.type = "password";
+
+                icon.classList.remove("bi-eye-slash");
+                icon.classList.add("bi-eye");
+
+                button.title = "Show password";
+            }
         }
-    }</script>
+
+    </script>
+}

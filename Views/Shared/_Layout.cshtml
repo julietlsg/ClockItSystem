@@ -88,7 +88,7 @@
 
     <ul class="dropdown-menu dropdown-menu-dark">
 
-        @if (User.IsInRole("Admin"))
+        @if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
         {
             <li>
                 <a class="dropdown-item"
