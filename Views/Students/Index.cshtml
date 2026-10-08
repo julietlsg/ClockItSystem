@@ -35,6 +35,13 @@
                 Add Student
 
             </a>
+            @if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
+            {
+                <a asp-action="BulkUpload"
+                   class="btn btn-secondary">
+                    <i class="bi bi-upload"></i> Bulk Upload Students
+                </a>
+            }
 
         </div>
 

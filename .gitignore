@@ -362,3 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /wwwroot/uploads/attendance
+/wwwroot/uploads/bulkUpload
+/App_Data/BulkUploads
+

@@ -1,0 +1,166 @@
+@{
+    ViewData["Title"] = "Student Bulk Upload";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-upload me-2"></i>
+                Student Bulk Upload
+            </h2>
+            <p class="text-white mb-0">
+                Upload multiple students using the official ClockIT Excel template.
+            </p>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Students
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="row g-4">
+
+        <!-- Download template -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge rounded-pill bg-primary me-2">1</span>
+                        <h5 class="mb-0">Download the template</h5>
+                    </div>
+
+                    <p class="text-muted">
+                        Always use the official ClockIT template. Do not rename,
+                        remove or reorder the columns.
+                    </p>
+
+                    <a asp-action="DownloadBulkUploadTemplate"
+                       class="btn btn-primary">
+                        <i class="bi bi-file-earmark-excel me-1"></i>
+                        Download Student Template
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge rounded-pill bg-primary me-2">2</span>
+                        <h5 class="mb-0">Upload completed template</h5>
+                    </div>
+
+                    <form asp-action="BulkUpload"
+                          method="post"
+                          enctype="multipart/form-data">
+
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="file" class="form-label fw-semibold">
+                                Student Excel File
+                            </label>
+
+                            <input type="file"
+                                   id="file"
+                                   name="file"
+                                   class="form-control"
+                                   accept=".xlsx"
+                                   required />
+
+                            <div class="form-text">
+                                Excel .xlsx files only. Maximum file size: 10 MB.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-cloud-arrow-up me-1"></i>
+                            Upload File
+                        </button>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- What happens next -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Bulk Upload Process
+                    </h5>
+
+                    <div class="row text-center">
+
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="p-3 border rounded h-100">
+                                <div class="fs-3 text-primary">
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                </div>
+                                <strong>1. Prepare</strong>
+                                <p class="small text-muted mb-0">
+                                    Download and complete the ClockIT template.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="p-3 border rounded h-100">
+                                <div class="fs-3 text-primary">
+                                    <i class="bi bi-cloud-arrow-up"></i>
+                                </div>
+                                <strong>2. Upload</strong>
+                                <p class="small text-muted mb-0">
+                                    Upload the completed Excel file.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded h-100">
+                                <div class="fs-3 text-secondary">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <strong>3. Validate &amp; Import</strong>
+                                <p class="small text-muted mb-0">
+                                    The next stage will validate records before
+                                    they are added to ClockIT.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
