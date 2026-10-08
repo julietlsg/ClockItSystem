@@ -2,11 +2,13 @@
 using ClockItSystem.Interfaces;
 using ClockItSystem.Models;
 using ClockItSystem.Models.Enums;
+using ClockItSystem.Services;
 using ClockItSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace ClockItSystem.Controllers
 {
@@ -14,13 +16,18 @@ namespace ClockItSystem.Controllers
     public class PaymentRunsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly NetcashBatchGenerator _netcashBatchGenerator;
         private readonly IClientAccessService _clientAccessService;
+
 
         public PaymentRunsController(
             ApplicationDbContext context,
-            IClientAccessService clientAccessService)
+            NetcashBatchGenerator netcashBatchGenerator,
+            IClientAccessService clientAccessService
+            )
         {
             _context = context;
+            _netcashBatchGenerator = netcashBatchGenerator;
             _clientAccessService = clientAccessService;
         }
 
@@ -56,6 +63,7 @@ namespace ClockItSystem.Controllers
         {
             var model = new PaymentRunViewModel
             {
+                PaymentDate = DateTime.Today,
                 PaymentPeriod = new DateTime(
                     DateTime.Today.Year,
                     DateTime.Today.Month,
@@ -82,11 +90,24 @@ namespace ClockItSystem.Controllers
                 return View(model);
 
             if (!model.ClientId.HasValue ||
-                !model.PaymentPeriod.HasValue)
+                !model.PaymentPeriod.HasValue ||
+                !model.PaymentDate.HasValue)
             {
                 ModelState.AddModelError(
                     string.Empty,
-                    "Please select a client and payment period.");
+                    "Please select a client, payment period and payment date.");
+
+                return View(model);
+            }
+
+            var paymentDate = model.PaymentDate.Value.Date;
+
+            if (paymentDate.DayOfWeek == DayOfWeek.Saturday ||
+                paymentDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                ModelState.AddModelError(
+                    nameof(model.PaymentDate),
+                    "The payment date must be a weekday.");
 
                 return View(model);
             }
@@ -207,6 +228,8 @@ namespace ClockItSystem.Controllers
             {
                 ClientId = client.ClientId,
 
+                PaymentDate = model.PaymentDate.Value,
+
                 PeriodFrom = periodFrom,
 
                 PeriodTo = periodTo,
@@ -319,21 +342,18 @@ namespace ClockItSystem.Controllers
             var model =
                 new PaymentRunResultViewModel
                 {
-                    PaymentRunId =
-                        paymentRun.Id,
+                    PaymentRunId = paymentRun.Id,
 
-                    ClientId =
-                        paymentRun.ClientId,
+                    ClientId = paymentRun.ClientId,
 
-                    ClientName =
-                        paymentRun.Client?.Name
+                    ClientName = paymentRun.Client?.Name
                         ?? string.Empty,
 
-                    PeriodFrom =
-                        paymentRun.PeriodFrom,
+                    PaymentDate = paymentRun.PaymentDate,
 
-                    PeriodTo =
-                        paymentRun.PeriodTo,
+                    PeriodFrom = paymentRun.PeriodFrom,
+
+                    PeriodTo = paymentRun.PeriodTo,
 
                     TotalStudents =
                         paymentRun.TotalStudents,
@@ -410,6 +430,454 @@ namespace ClockItSystem.Controllers
             return View(model);
         }
 
+
+        // ============================================================
+        // SUBMIT PAYMENT RUN FOR REVIEW
+        // ============================================================
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitForReview(int id)
+        {
+            var paymentRun = await _context.StipendPaymentRuns
+                .Include(x => x.Payments)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (paymentRun == null)
+                return NotFound();
+
+            // Make sure the current user can access this client's payment run
+            if (!await _clientAccessService.CanAccessClientAsync(paymentRun.ClientId))
+                return Forbid();
+
+            // Only Draft payment runs can be submitted
+            if (paymentRun.Status != "Draft")
+            {
+                TempData["Error"] =
+                    "Only a Draft payment run can be submitted for review.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            // There must be at least one payable student
+            if (paymentRun.Payments == null || !paymentRun.Payments.Any())
+            {
+                TempData["Error"] =
+                    "The payment run contains no payable students.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            // Move the payment run to the review stage
+            paymentRun.Status = "PendingReview";
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] =
+                "Payment run submitted for review successfully.";
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Review()
+        {
+            var paymentRuns = await _context.StipendPaymentRuns
+                .AsNoTracking()
+                .Include(x => x.Client)
+                .Where(x => x.Status == "PendingReview")
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(x => new PaymentReviewItemViewModel
+                {
+                    PaymentRunId = x.Id,
+                    ClientName = x.Client.Name,
+                    PeriodFrom = x.PeriodFrom,
+                    PeriodTo = x.PeriodTo,
+                    TotalStudents = x.TotalStudents,
+                    TotalEligibleDays = x.TotalEligibleDays,
+                    TotalAmount = x.TotalAmount,
+                    Status = x.Status,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy
+                })
+                .ToListAsync();
+
+            var model = new PaymentReviewViewModel
+            {
+                PaymentRuns = paymentRuns
+            };
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApprovePaymentRun(int id)
+        {
+            var paymentRun = await _context.StipendPaymentRuns
+                .Include(x => x.Payments)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (paymentRun == null)
+                return NotFound();
+
+            if (paymentRun.Status != "PendingReview")
+            {
+                TempData["Error"] =
+                    "Only a payment run that is Pending Review can be approved.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            if (paymentRun.Payments == null || !paymentRun.Payments.Any())
+            {
+                TempData["Error"] =
+                    "The payment run contains no payable students.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            // Validate banking details before approval
+            var invalidPayments = paymentRun.Payments
+                .Where(x =>
+                    string.IsNullOrWhiteSpace(x.BankName) ||
+                    string.IsNullOrWhiteSpace(x.BranchCode) ||
+                    string.IsNullOrWhiteSpace(x.AccountNumber) ||
+                    string.IsNullOrWhiteSpace(x.AccountType) ||
+                    string.IsNullOrWhiteSpace(x.AccountHolderName))
+                .ToList();
+
+            if (invalidPayments.Any())
+            {
+                TempData["Error"] =
+                    $"{invalidPayments.Count} payment(s) have incomplete banking details. " +
+                    "Please correct the banking information before approving the payment run.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var currentUser = User.Identity?.Name ?? "Unknown";
+
+            // Approve the payment run
+            paymentRun.Status = "Approved";
+            paymentRun.ApprovedBy = currentUser;
+            paymentRun.ApprovedAt = DateTime.Now;
+
+            // Approve each payment within the run
+            foreach (var payment in paymentRun.Payments)
+            {
+                payment.Status = "Approved";
+                payment.FailureReason = null;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] =
+                "Payment run approved successfully.";
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectPaymentRun(
+            int id,
+            string rejectionReason)
+        {
+            var paymentRun = await _context.StipendPaymentRuns
+                .Include(x => x.Payments)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (paymentRun == null)
+                return NotFound();
+
+            if (paymentRun.Status != "PendingReview")
+            {
+                TempData["Error"] =
+                    "Only a payment run that is Pending Review can be rejected.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            if (string.IsNullOrWhiteSpace(rejectionReason))
+            {
+                TempData["Error"] =
+                    "Please provide a reason for rejecting the payment run.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var currentUser = User.Identity?.Name ?? "Unknown";
+
+            paymentRun.Status = "Rejected";
+            paymentRun.ApprovedBy = currentUser;
+            paymentRun.ApprovedAt = DateTime.Now;
+            paymentRun.FailureReason = rejectionReason.Trim();
+
+            foreach (var payment in paymentRun.Payments)
+            {
+                payment.Status = "Rejected";
+                payment.FailureReason = rejectionReason.Trim();
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] =
+                "Payment run rejected successfully.";
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        #region NetCashIntegration
+
+        // ============================================================
+        // NetCash
+        // ============================================================
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> NetcashPreview(int id)
+        {
+            var paymentRun = await _context.StipendPaymentRuns
+                .AsNoTracking()
+                .Include(x => x.Client)
+                .Include(x => x.Payments)
+                    .ThenInclude(x => x.Student)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (paymentRun == null)
+                return NotFound();
+
+            if (paymentRun.Status != "Approved")
+            {
+                TempData["Error"] =
+                    "Only an approved payment run can be prepared for Netcash.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            if (paymentRun.Payments == null || !paymentRun.Payments.Any())
+            {
+                TempData["Error"] =
+                    "The payment run contains no payments.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var preview = new NetcashBatchPreviewViewModel
+            {
+                PaymentRunId = paymentRun.Id,
+                ClientName = paymentRun.Client.Name,
+                PaymentDate = paymentRun.PaymentDate,
+                PeriodFrom = paymentRun.PeriodFrom,
+                PeriodTo = paymentRun.PeriodTo,
+                TotalPayments = paymentRun.Payments.Count,
+                TotalAmount = paymentRun.Payments.Sum(x => x.StipendAmount),
+                Status = paymentRun.Status
+            };
+
+            foreach (var payment in paymentRun.Payments)
+            {
+                var validationErrors = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(payment.AccountHolderName))
+                    validationErrors.Add("Account holder name is missing.");
+                else if (payment.AccountHolderName.Trim().Length > 30)
+                    validationErrors.Add("Account holder name exceeds 30 characters.");
+
+                if (string.IsNullOrWhiteSpace(payment.BankName))
+                    validationErrors.Add("Bank name is missing.");
+
+                if (string.IsNullOrWhiteSpace(payment.BranchCode))
+                    validationErrors.Add("Branch code is missing.");
+                else if (!payment.BranchCode.Trim().All(char.IsDigit))
+                    validationErrors.Add("Branch code must contain digits only.");
+                else if (payment.BranchCode.Trim().Length > 6)
+                    validationErrors.Add("Branch code may not exceed 6 digits.");
+
+                if (string.IsNullOrWhiteSpace(payment.AccountNumber))
+                    validationErrors.Add("Account number is missing.");
+                else if (!payment.AccountNumber.Trim().All(char.IsDigit))
+                    validationErrors.Add("Account number must contain digits only.");
+                else if (payment.AccountNumber.Trim().Length > 11)
+                    validationErrors.Add("Account number may not exceed 11 digits.");
+
+                if (string.IsNullOrWhiteSpace(payment.AccountType))
+                {
+                    validationErrors.Add("Account type is missing.");
+                }
+                else
+                {
+                    var accountType = payment.AccountType.Trim().ToLowerInvariant();
+
+                    var supportedAccountType =
+                        accountType is "1"
+                            or "2"
+                            or "3"
+                            or "9"
+                            or "current"
+                            or "checking"
+                            or "current/checking"
+                            or "cheque"
+                            or "cheque account"
+                            or "savings"
+                            or "saving"
+                            or "transmission"
+                            or "public recipient"
+                            or "public beneficiary";
+
+                    if (!supportedAccountType)
+                    {
+                        validationErrors.Add(
+                            $"Unsupported account type '{payment.AccountType}'.");
+                    }
+                }
+
+                if (payment.StipendAmount <= 0)
+                    validationErrors.Add("Payment amount must be greater than zero.");
+
+                if (string.IsNullOrWhiteSpace(payment.Student.StudentNumber))
+                {
+                    validationErrors.Add("Student number is required.");
+                }
+                else
+                {
+                    var paymentReference =
+                        $"CLOCKIT/{payment.Student.StudentNumber}/{paymentRun.PeriodFrom:yyyyMM}";
+
+                    if (paymentReference.Length > 20)
+                    {
+                        validationErrors.Add(
+                            "Payment reference exceeds the Netcash maximum of 20 characters.");
+                    }
+                }
+
+                var valid = !validationErrors.Any();
+
+                preview.Payments.Add(new NetcashBatchPreviewItemViewModel
+                {
+                    PaymentId = payment.Id,
+                    StudentId = payment.StudentId,
+                    StudentNumber = payment.Student.StudentNumber,
+                    StudentName =
+                        payment.Student.FirstName + " " +
+                        payment.Student.LastName,
+                    AccountHolderName =
+                        payment.AccountHolderName ?? string.Empty,
+                    BankName =
+                        payment.BankName ?? string.Empty,
+                    BranchCode =
+                        payment.BranchCode ?? string.Empty,
+                    AccountNumber =
+                        payment.AccountNumber ?? string.Empty,
+                    AccountType =
+                        payment.AccountType ?? string.Empty,
+                    Amount =
+                        payment.StipendAmount,
+                    PaymentReference =
+                        $"CLOCKIT/{payment.Student.StudentNumber}/{paymentRun.PeriodFrom:yyyyMM}",
+                    BankingDetailsValid =
+                        valid,
+                    ValidationMessage =
+                        valid
+                            ? null
+                            : string.Join(" ", validationErrors)
+                });
+            }
+
+            return View(preview);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DownloadNetcashBatch(int id)
+        {
+            var paymentRun =
+                await _context.StipendPaymentRuns
+                    .AsNoTracking()
+                    .Include(x => x.Client)
+                    .Include(x => x.Payments)
+                        .ThenInclude(x => x.Student)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (paymentRun == null)
+                return NotFound();
+
+            if (paymentRun.Status != "Approved")
+            {
+                TempData["Error"] =
+                    "Only an approved payment run can generate a Netcash batch.";
+
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id });
+            }
+
+            if (paymentRun.Payments == null ||
+                !paymentRun.Payments.Any())
+            {
+                TempData["Error"] =
+                    "The payment run contains no payments.";
+
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id });
+            }
+
+            try
+            {
+                // ====================================================
+                // STAGE 1 - REVIEW ONLY
+                // ====================================================
+                // This download does NOT submit anything to Netcash.
+                //
+                // The real Netcash Salary/Creditor Service Key will
+                // be configured securely before Stage 2.
+                // ====================================================
+
+                const string reviewServiceKey =
+                    "{{NETCASH_SALARY_SERVICE_KEY}}";
+
+                var fileContent =
+                    _netcashBatchGenerator.Generate(
+                        paymentRun,
+                        reviewServiceKey);
+
+                var safeClientName =
+                    new string(
+                        paymentRun.Client.Name
+                            .Where(char.IsLetterOrDigit)
+                            .ToArray());
+
+                if (string.IsNullOrWhiteSpace(safeClientName))
+                    safeClientName = "Client";
+
+                var fileName =
+                    $"ClockIT_Netcash_{safeClientName}_{paymentRun.PaymentDate:yyyyMMdd}.txt";
+
+                return File(
+                    Encoding.UTF8.GetBytes(fileContent),
+                    "text/plain",
+                    fileName);
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] =
+                    $"Netcash batch validation failed: {ex.Message}";
+
+                return RedirectToAction(
+                    nameof(NetcashPreview),
+                    new { id });
+            }
+        }
+
+
+        #endregion
         // ============================================================
         // POPULATE FILTERS
         // ============================================================

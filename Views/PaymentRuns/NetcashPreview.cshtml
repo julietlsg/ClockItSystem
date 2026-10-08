@@ -1,0 +1,451 @@
+﻿@model ClockItSystem.ViewModels.NetcashBatchPreviewViewModel
+
+@{
+    ViewData["Title"] = "Netcash Batch Preview";
+    var zar = new System.Globalization.CultureInfo("en-ZA");
+    var invalidPayments = Model.Payments.Count(x => !x.BankingDetailsValid);
+    var batchReady = invalidPayments == 0;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- HEADER -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+        <div>
+
+            <div class="d-flex align-items-center gap-2">
+
+                <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
+                      style="width:42px;height:42px;">
+
+                    <i class="bi bi-bank fs-5"></i>
+
+                </span>
+
+                <div>
+
+                    <h2 class="mb-0 text-white fw-bold">
+                        Netcash Batch Preview
+                    </h2>
+
+                    <div class="text-white fw-semibold">
+                        @Model.ClientName
+                        <span class="mx-2 opacity-75">•</span>
+                        @Model.PeriodFrom.ToString("MMMM yyyy")
+                    </div>
+
+                    <div class="mt-2">
+                        <span class="badge bg-primary">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            Payment Date:
+                            @Model.PaymentDate.ToString("dd MMMM yyyy")
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="d-flex gap-2">
+
+            <a asp-action="Details"
+               asp-route-id="@Model.PaymentRunId"
+               class="btn btn-primary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Payment Run
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- IMPORTANT NOTICE -->
+    <div class="alert alert-warning shadow-sm">
+
+        <div class="d-flex gap-2">
+
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+
+            <div>
+
+                <strong>Netcash Batch Preview</strong>
+
+                <div class="mt-1">
+                    This page shows the payment information that will be
+                    used to prepare the Netcash payment batch.
+                    No payment has been submitted to Netcash at this stage.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small fw-semibold text-uppercase">
+                        Payment Run
+                    </div>
+
+                    <div class="fs-5 fw-bold mt-1">
+                        #@Model.PaymentRunId
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small fw-semibold text-uppercase">
+                        Payments
+                    </div>
+
+                    <div class="fs-4 fw-bold mt-1">
+                        @Model.TotalPayments
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small fw-semibold text-uppercase">
+                        Batch Total
+                    </div>
+
+                    <div class="fs-4 fw-bold text-success mt-1">
+                        @Model.TotalAmount.ToString("C2", zar)
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- VALIDATION STATUS -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            @if (batchReady)
+            {
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-success fs-3">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+
+                    <div>
+
+                        <div class="fw-bold">
+                            Batch Ready
+                        </div>
+
+                        <div class="text-muted">
+                            All payment records contain the required banking information.
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-danger fs-3">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    </div>
+
+                    <div>
+
+                        <div class="fw-bold text-danger">
+                            Batch Cannot Be Generated
+                        </div>
+
+                        <div class="text-muted">
+                            @invalidPayments payment(s) have incomplete banking information.
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- PAYMENT TABLE -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white py-3">
+
+            <div>
+
+                <h5 class="mb-0 fw-bold">
+
+                    <i class="bi bi-list-check me-2 text-primary"></i>
+
+                    Netcash Payment Instructions
+
+                </h5>
+
+                <small class="text-muted">
+                    Review each payment before generating the batch.
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="ps-3">
+                                Student
+                            </th>
+
+                            <th>
+                                Account Holder
+                            </th>
+
+                            <th>
+                                Bank
+                            </th>
+
+                            <th>
+                                Branch Code
+                            </th>
+
+                            <th>
+                                Account Number
+                            </th>
+
+                            <th>
+                                Account Type
+                            </th>
+
+                            <th>
+                                Payment Reference
+                            </th>
+
+                            <th class="text-end pe-3">
+                                Amount
+                            </th>
+
+                            <th class="text-center">
+                                Validation
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var payment in Model.Payments)
+                        {
+                            <tr>
+
+                                <td class="ps-3">
+
+                                    <div class="fw-bold">
+                                        @payment.StudentName
+                                    </div>
+
+                                    <small class="text-muted">
+                                        @payment.StudentNumber
+                                    </small>
+
+                                </td>
+
+
+                                <td>
+                                    @payment.AccountHolderName
+                                </td>
+
+
+                                <td>
+                                    @payment.BankName
+                                </td>
+
+
+                                <td>
+                                    @payment.BranchCode
+                                </td>
+
+
+                                <td>
+                                    @payment.AccountNumber
+                                </td>
+
+
+                                <td>
+                                    @payment.AccountType
+                                </td>
+
+
+                                <td>
+
+                                    <small class="font-monospace">
+                                        @payment.PaymentReference
+                                    </small>
+
+                                </td>
+
+
+                                <td class="text-end pe-3">
+
+                                    <strong class="text-success">
+                                        @payment.Amount.ToString("C2", zar)
+                                    </strong>
+
+                                </td>
+
+
+                                <td class="text-center">
+
+                                    @if (payment.BankingDetailsValid)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Valid
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger"
+                                              title="@payment.ValidationMessage">
+
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            Invalid
+
+                                        </span>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACTIONS -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                <div>
+
+                    <h6 class="mb-1 fw-bold">
+                        <i class="bi bi-shield-check me-2"></i>
+                        Batch Actions
+                    </h6>
+
+                    <small class="text-muted">
+                        The next step will generate the Netcash batch file.
+                    </small>
+
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <a asp-action="Details"
+                       asp-route-id="@Model.PaymentRunId"
+                       class="btn btn-outline-secondary">
+
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Back to Payment Run
+
+                    </a>
+
+                    @if (batchReady)
+                    {
+                        <a asp-action="DownloadNetcashBatch"
+                           asp-route-id="@Model.PaymentRunId"
+                           class="btn btn-success">
+
+                            <i class="bi bi-download me-1"></i>
+                            Download Netcash .txt
+
+                        </a>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="btn btn-secondary"
+                                disabled>
+
+                            <i class="bi bi-lock me-1"></i>
+                            Batch Not Ready
+
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

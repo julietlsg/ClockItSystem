@@ -44,6 +44,24 @@
 
         </div>
 
+        <div class="mb-3">
+            <label asp-for="PaymentDate" class="form-label fw-semibold">
+                Payment Date
+            </label>
+
+            <input asp-for="PaymentDate"
+                   type="date"
+                   class="form-control" />
+
+            <div class="form-text">
+                Date on which the stipend payment is intended to be paid.
+            </div>
+
+            <span asp-validation-for="PaymentDate"
+                  class="text-danger">
+            </span>
+        </div>
+
 
         <div class="card-body">
 
