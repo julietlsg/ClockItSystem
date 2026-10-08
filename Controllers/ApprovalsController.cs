@@ -12,7 +12,7 @@ using static ClockItSystem.Models.Enums.DataEnums;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize(Roles = "Admin,Facilitator, Project Manager")]
+    [Authorize(Roles = "Admin,Facilitator")]
     public class ApprovalsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -209,11 +209,15 @@ namespace ClockItSystem.Controllers
         public async Task<IActionResult> Reject(
             int studentId,
             DateTime attendanceDate,
-            string reason,
+            string? reason,
             string? comment,
             IFormFile? supportingDocument)
         {
             attendanceDate = attendanceDate.Date;
+
+            // --------------------------------------------------------
+            // GET STUDENT
+            // --------------------------------------------------------
 
             var student = await _context.Students
                 .Include(s => s.Client)
@@ -223,44 +227,38 @@ namespace ClockItSystem.Controllers
             if (student == null)
                 return NotFound();
 
-            if (!await _clientAccessService.CanAccessClientAsync(student.ClientId))
+            // --------------------------------------------------------
+            // SECURITY CHECK
+            // --------------------------------------------------------
+
+            if (!await _clientAccessService
+                .CanAccessClientAsync(student.ClientId))
+            {
                 return Forbid();
-
-            var attendanceRecord = await _context.AttendanceRecords
-                .FirstOrDefaultAsync(x =>
-                    x.StudentId == studentId &&
-                    x.AttendanceDate.Date == attendanceDate);
-
-            if (attendanceRecord == null)
-            {
-                attendanceRecord = new AttendanceRecord
-                {
-                    StudentId = student.Id,
-
-                    AttendanceDate = attendanceDate,
-
-                    ClockTime = DateTime.Now,
-
-                    VerificationMethod = "Manual",
-
-                    VerificationScore = null,
-
-                    Status = "Rejected",
-
-                    ClientId = student.ClientId,
-
-                    SiteId = student.SiteId,
-
-                    CreatedByUserId = User.Identity?.Name
-                };
-
-                _context.AttendanceRecords.Add(attendanceRecord);
-
-                await _context.SaveChangesAsync();
             }
-            else
+
+            // --------------------------------------------------------
+            // VALIDATE REJECTION REASON FIRST
+            // --------------------------------------------------------
+            //
+            // IMPORTANT:
+            // Do this BEFORE changing or creating the attendance record.
+            //
+            // If the modal is closed or no reason was selected,
+            // NOTHING must be marked as Rejected.
+            // --------------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(reason))
             {
-                attendanceRecord.Status = "Rejected";
+                TempData["Error"] =
+                    "Please select a rejection reason before rejecting the attendance.";
+
+                return RedirectToAction(
+                    nameof(Daily),
+                    new
+                    {
+                        date = attendanceDate.ToString("yyyy-MM-dd")
+                    });
             }
 
             if (!Enum.TryParse<AttendanceRejectionReason>(
@@ -268,65 +266,157 @@ namespace ClockItSystem.Controllers
                     true,
                     out var rejectionReason))
             {
-                TempData["Error"] = "Please select a valid reason.";
+                TempData["Error"] =
+                    "Please select a valid rejection reason.";
 
-                return RedirectToAction(nameof(Daily),
+                return RedirectToAction(
+                    nameof(Daily),
                     new
                     {
                         date = attendanceDate.ToString("yyyy-MM-dd")
                     });
             }
 
+            // --------------------------------------------------------
+            // GET EXISTING ATTENDANCE RECORD
+            // --------------------------------------------------------
+
+            var attendanceRecord =
+                await _context.AttendanceRecords
+                    .FirstOrDefaultAsync(x =>
+                        x.StudentId == studentId &&
+                        x.AttendanceDate.Date == attendanceDate);
+
+            // --------------------------------------------------------
+            // CREATE ATTENDANCE RECORD ONLY AFTER VALIDATION
+            // --------------------------------------------------------
+
+            if (attendanceRecord == null)
+            {
+                attendanceRecord = new AttendanceRecord
+                {
+                    StudentId =
+                        student.Id,
+
+                    AttendanceDate =
+                        attendanceDate,
+
+                    ClockTime =
+                        DateTime.Now,
+
+                    VerificationMethod =
+                        "Manual",
+
+                    VerificationScore =
+                        null,
+
+                    Status =
+                        "Rejected",
+
+                    ClientId =
+                        student.ClientId,
+
+                    SiteId =
+                        student.SiteId,
+
+                    CreatedByUserId =
+                        User.Identity?.Name
+                };
+
+                _context.AttendanceRecords.Add(
+                    attendanceRecord);
+
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // Only change the status after the reason
+                // has been successfully validated.
+                attendanceRecord.Status = "Rejected";
+            }
+
+            // --------------------------------------------------------
+            // SAVE SUPPORTING DOCUMENT
+            // --------------------------------------------------------
+
             var documentPath =
                 await _fileStorageService
-                    .SaveAttendanceDocumentAsync(supportingDocument);
+                    .SaveAttendanceDocumentAsync(
+                        supportingDocument);
 
-            var approval = await _context.AttendanceApprovals
-                .FirstOrDefaultAsync(x =>
-                    x.AttendanceRecordId == attendanceRecord.Id);
+            // --------------------------------------------------------
+            // GET EXISTING APPROVAL
+            // --------------------------------------------------------
+
+            var approval =
+                await _context.AttendanceApprovals
+                    .FirstOrDefaultAsync(x =>
+                        x.AttendanceRecordId ==
+                        attendanceRecord.Id);
+
+            // --------------------------------------------------------
+            // CREATE APPROVAL IF REQUIRED
+            // --------------------------------------------------------
 
             if (approval == null)
             {
                 approval = new AttendanceApproval
                 {
-                    AttendanceRecordId = attendanceRecord.Id,
+                    AttendanceRecordId =
+                        attendanceRecord.Id,
 
                     ApprovedByUserId =
-                        User.Identity?.Name ?? "System",
+                        User.Identity?.Name ??
+                        "System",
 
-                    IsApproved = false,
+                    IsApproved =
+                        false,
 
-                    ApprovedAt = DateTime.Now,
+                    ApprovedAt =
+                        DateTime.Now,
 
-                    ClientId = attendanceRecord.ClientId,
+                    ClientId =
+                        attendanceRecord.ClientId,
 
-                    SiteId = attendanceRecord.SiteId
+                    SiteId =
+                        attendanceRecord.SiteId
                 };
 
-                _context.AttendanceApprovals.Add(approval);
+                _context.AttendanceApprovals.Add(
+                    approval);
             }
+
+            // --------------------------------------------------------
+            // SAVE REJECTION DETAILS
+            // --------------------------------------------------------
 
             approval.IsApproved = false;
 
             approval.Comment =
                 string.IsNullOrWhiteSpace(comment)
                     ? "Rejected"
-                    : comment;
+                    : comment.Trim();
 
-            approval.Reason = rejectionReason;
+            approval.Reason =
+                rejectionReason;
 
-            approval.SupportingDocumentPath = documentPath;
+            approval.SupportingDocumentPath =
+                documentPath;
 
-            approval.ApprovedAt = DateTime.Now;
+            approval.ApprovedAt =
+                DateTime.Now;
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Attendance updated successfully.";
+            TempData["Success"] =
+                "Attendance rejected successfully.";
 
-            return RedirectToAction(nameof(Daily),
+            return RedirectToAction(
+                nameof(Daily),
                 new
                 {
-                    date = attendanceDate.ToString("yyyy-MM-dd")
+                    date =
+                        attendanceDate.ToString("yyyy-MM-dd")
                 });
         }
 

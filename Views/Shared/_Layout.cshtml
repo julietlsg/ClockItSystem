@@ -58,6 +58,9 @@
 
                 <ul class="navbar-nav ms-auto">
 
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+
                     <!-- HOME -->
                     <li class="nav-item">
 
@@ -90,6 +93,19 @@
 
                         <ul class="dropdown-menu dropdown-menu-dark"
                             aria-labelledby="attendanceDropdown">
+
+                             @if (User.IsInRole("Assessor") || User.IsInRole("Admin"))
+                            {
+                               <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Approvals"
+                                       asp-action="Daily">
+                                        <i class="bi bi-check2-square me-2"></i>
+                                        Attendance Approvals
+                                    </a>
+                              </li>
+							}
+
 
                             <li>
 
@@ -238,7 +254,7 @@
 
 
                             <!-- Stipend Rates -->
-                            @if (User.IsInRole("Admin"))
+                            @if (User.IsInRole("Admin") || User.IsInRole("CEO"))
                             {
                                 <li>
 
@@ -289,8 +305,8 @@
                             <li>
 
                                 <a class="dropdown-item"
-                                   asp-controller="PaymentHistory"
-                                   asp-action="Index">
+                                   asp-controller="PaymentRuns"
+                                   asp-action="PaymentHistory">
 
                                     <i class="bi bi-clock-history me-2"></i>
                                     Payment History
@@ -301,7 +317,7 @@
 
 
                             <!-- Netcash -->
-                            @if (User.IsInRole("Admin"))
+                            @if (User.IsInRole("Admin") || User.IsInRole("CEO"))
                             {
                                 <li>
 
@@ -333,7 +349,8 @@
                          User.Identity.IsAuthenticated)
                     {
                         @if (User.IsInRole("Admin") ||
-                             User.IsInRole("Project Manager"))
+                             User.IsInRole("Project Manager") || 
+                             User.IsInRole("CEO"))
                         {
                             <li class="nav-item dropdown">
 
@@ -411,6 +428,24 @@
                                 </button>
 
                             </form>
+
+                        </li>
+                    }
+
+                    }
+                    else
+                    {
+                        <!-- LOGIN -->
+                        <li class="nav-item">
+
+                            <a class="nav-link"
+                               asp-controller="Account"
+                               asp-action="Login">
+
+                                <i class="bi bi-box-arrow-in-right me-1"></i>
+                                Login
+
+                            </a>
 
                         </li>
                     }

@@ -7,11 +7,23 @@
     var invalidPayments = Model.Payments.Count(x => !x.BankingDetailsValid);
     var batchReady = invalidPayments == 0;
 
-    // A Netcash file token means the batch has already been submitted.
-    // This prevents the user from attempting to submit the same batch again.
-    var alreadySubmitted = !string.IsNullOrWhiteSpace(
-        ViewBag.NetcashFileToken as string);
+    var netcashFileToken = ViewBag.NetcashFileToken as string;
+    var netcashUploadStatus = ViewBag.NetcashUploadStatus as string;
+    var netcashUploadReport = ViewBag.NetcashUploadReport as string;
+
+    DateTime? submittedAt = null;
+    if (ViewBag.SubmittedAt is DateTime dateTime)
+    {
+        submittedAt = dateTime;
+    }
+
+    var hasNetcashResponse = !string.IsNullOrWhiteSpace(netcashUploadStatus);
+    var netcashSubmissionSuccessful = string.Equals(netcashUploadStatus, "Successful", StringComparison.OrdinalIgnoreCase);
+    var netcashSubmissionFailed = string.Equals(netcashUploadStatus, "Unsuccessful", StringComparison.OrdinalIgnoreCase);
+    var netcashSuccessfulWithErrors = string.Equals(netcashUploadStatus, "SuccessfulWithErrors", StringComparison.OrdinalIgnoreCase);
+    var alreadySubmitted = netcashSubmissionSuccessful;
 }
+
 
 <div class="container-fluid py-4">
 
@@ -149,20 +161,21 @@
 
                 <div class="mt-1">
 
-                    @if (alreadySubmitted)
+                    @if (netcashSubmissionSuccessful)
                     {
-                        <span>
-                            This payment batch has already been submitted to Netcash.
-                            A duplicate submission is not permitted.
-                        </span>
+                        <span>This payment batch was successfully submitted to Netcash. A duplicate submission is not permitted.</span>
+                    }
+                    else if (netcashSubmissionFailed)
+                    {
+                        <span>The previous Netcash submission was unsuccessful. Review the Netcash report, correct the issue, and retry.</span>
+                    }
+                    else if (netcashSuccessfulWithErrors)
+                    {
+                        <span>Netcash loaded the batch but reported errors. Review the Netcash upload report before proceeding.</span>
                     }
                     else
                     {
-                        <span>
-                            This page shows the payment information that will be
-                            used to prepare the Netcash payment batch.
-                            No payment has been submitted to Netcash at this stage.
-                        </span>
+                        <span>This page shows the payment information that will be used to prepare the Netcash payment batch. No payment has been successfully submitted to Netcash at this stage.</span>
                     }
 
                 </div>
@@ -175,72 +188,76 @@
 
 
     <!-- NETCASH SUBMISSION STATUS -->
-    @if (alreadySubmitted)
+    @if (hasNetcashResponse)
     {
         <div class="card shadow-sm border-0 mb-4">
-
             <div class="card-body">
-
-                <div class="d-flex align-items-start gap-3">
-
-                    <div class="text-success fs-2">
-
-                        <i class="bi bi-cloud-check-fill"></i>
-
-                    </div>
-
-                    <div>
-
-                        <div class="fw-bold text-success">
-                            Submitted to Netcash
+                @if (netcashSubmissionSuccessful)
+                {
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-success fs-2"><i class="bi bi-cloud-check-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-success">Netcash Upload Successful</div>
+                            <div class="text-muted mt-1">Netcash confirmed that the payment batch was successfully loaded. A duplicate submission is not permitted.</div>
                         </div>
-
-                        <div class="text-muted mt-1">
-                            This payment batch has already been submitted successfully.
-                        </div>
-
-                        @if (!string.IsNullOrWhiteSpace(ViewBag.NetcashFileToken as string))
-                        {
-                            <div class="mt-3">
-
-                                <div class="small text-muted fw-semibold">
-                                    Netcash File Token
-                                </div>
-
-                                <div class="mt-1">
-
-                                    <code class="bg-light border rounded px-2 py-1">
-                                        @ViewBag.NetcashFileToken
-                                    </code>
-
-                                </div>
-
-                            </div>
-                        }
-
-                        @if (ViewBag.SubmittedAt != null)
-                        {
-                            <div class="mt-2">
-
-                                <small class="text-muted">
-
-                                    <i class="bi bi-clock me-1"></i>
-
-                                    Submitted:
-                                    @Convert.ToDateTime(ViewBag.SubmittedAt)
-                                        .ToString("dd MMMM yyyy HH:mm")
-
-                                </small>
-
-                            </div>
-                        }
-
                     </div>
+                }
+                else if (netcashSubmissionFailed)
+                {
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-danger fs-2"><i class="bi bi-x-circle-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-danger">Netcash Upload Unsuccessful</div>
+                            <div class="text-muted mt-1">Netcash received the batch but the upload report indicates that it was unsuccessful. Correct the reported issue and retry the submission.</div>
+                        </div>
+                    </div>
+                }
+                else if (netcashSuccessfulWithErrors)
+                {
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-warning fs-2"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-warning">Netcash Upload Successful With Errors</div>
+                            <div class="text-muted mt-1">Netcash loaded the batch but reported errors in the upload report. Review the report before taking further action.</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-secondary fs-2"><i class="bi bi-question-circle-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-secondary">Netcash Upload Status Unknown</div>
+                            <div class="text-muted mt-1">ClockIT received a response from Netcash, but could not determine the final upload status. Review the report before retrying.</div>
+                        </div>
+                    </div>
+                }
 
-                </div>
+                @if (!string.IsNullOrWhiteSpace(netcashFileToken))
+                {
+                    <div class="mt-4">
+                        <div class="small text-muted fw-semibold">Netcash File Token</div>
+                        <div class="mt-1"><code class="bg-light border rounded px-2 py-1">@netcashFileToken</code></div>
+                    </div>
+                }
 
+                @if (submittedAt.HasValue)
+                {
+                    <div class="mt-2">
+                        <small class="text-muted"><i class="bi bi-clock me-1"></i>Submitted: @submittedAt.Value.ToString("dd MMMM yyyy HH:mm")</small>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(netcashUploadReport))
+                {
+                    <div class="mt-4">
+                        <div class="small text-muted fw-semibold mb-2">Netcash Upload Report</div>
+                        <div class="bg-light border rounded p-3">
+                            <pre class="mb-0 small" style="white-space: pre-wrap; word-break: break-word;">@netcashUploadReport</pre>
+                        </div>
+                    </div>
+                }
             </div>
-
         </div>
     }
 
@@ -318,7 +335,7 @@
 
         <div class="card-body">
 
-            @if (alreadySubmitted)
+            @if (netcashSubmissionSuccessful)
             {
                 <div class="d-flex align-items-center gap-3">
 
@@ -331,15 +348,35 @@
                     <div>
 
                         <div class="fw-bold text-success">
-                            Batch Submitted
+                            Batch Submitted Successfully
                         </div>
 
                         <div class="text-muted">
-                            The Netcash batch has already been submitted and cannot be submitted again.
+                            Netcash confirmed that the batch was successfully loaded and it cannot be submitted again.
                         </div>
 
                     </div>
 
+                </div>
+            }
+            else if (netcashSubmissionFailed)
+            {
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-danger fs-3"><i class="bi bi-x-circle-fill"></i></div>
+                    <div>
+                        <div class="fw-bold text-danger">Previous Netcash Submission Failed</div>
+                        <div class="text-muted">Review the Netcash upload report, correct the issue, and retry the submission.</div>
+                    </div>
+                </div>
+            }
+            else if (netcashSuccessfulWithErrors)
+            {
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-warning fs-3"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div>
+                        <div class="fw-bold text-warning">Batch Loaded With Errors</div>
+                        <div class="text-muted">Netcash loaded the batch but reported errors. Review the upload report before proceeding.</div>
+                    </div>
                 </div>
             }
             else if (batchReady)
@@ -592,7 +629,7 @@
 
                     <small class="text-muted">
 
-                        @if (alreadySubmitted)
+                        @if (netcashSubmissionSuccessful)
                         {
                             <span>
                                 This batch has already been submitted to Netcash.
@@ -649,7 +686,7 @@
                     }
 
 
-                    @if (batchReady && !alreadySubmitted)
+                    @if (batchReady && !netcashSubmissionSuccessful)
                     {
                         <form asp-action="SubmitNetcashBatch"
                               asp-route-id="@Model.PaymentRunId"
@@ -659,39 +696,25 @@
 
                             @Html.AntiForgeryToken()
 
-                            <button type="submit"
-                                    class="btn btn-primary">
-
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-cloud-arrow-up me-1"></i>
-
-                                Submit to Netcash
-
+                                @(netcashSubmissionFailed ? "Retry Netcash Submission" : "Submit to Netcash")
                             </button>
 
                         </form>
                     }
-                    else if (alreadySubmitted)
+                    else if (netcashSubmissionSuccessful)
                     {
-                        <button type="button"
-                                class="btn btn-success"
-                                disabled>
-
+                        <button type="button" class="btn btn-success" disabled>
                             <i class="bi bi-check-circle-fill me-1"></i>
-
-                            Submitted to Netcash
-
+                            Submitted Successfully
                         </button>
                     }
                     else
                     {
-                        <button type="button"
-                                class="btn btn-secondary"
-                                disabled>
-
+                        <button type="button" class="btn btn-secondary" disabled>
                             <i class="bi bi-lock me-1"></i>
-
                             Submit Unavailable
-
                         </button>
                     }
 
@@ -719,7 +742,7 @@
                 "• The payment date is correct.\n" +
                 "• The payment amounts are correct.\n" +
                 "• The batch is approved.\n\n" +
-                "Once submitted, the batch must not be submitted again.\n\n" +
+                "If Netcash reports the batch as unsuccessful, you may correct the issue and retry.\n\n" +
                 "Do you want to continue?"
             );
 

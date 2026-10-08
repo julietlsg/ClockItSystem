@@ -1,0 +1,543 @@
+﻿@model ClockItSystem.ViewModels.PaymentHistoryViewModel
+
+@{
+    ViewData["Title"] = "Payment History";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-clock-history me-2"></i>
+                Payment History
+            </h2>
+
+            <p class="mb-1 text-white">
+                View historical stipend payment runs and Netcash processing status.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a asp-controller="PaymentRuns"
+               asp-action="Create"
+               class="btn btn-primary">
+
+                <i class="bi bi-plus-circle me-1"></i>
+                Create Payment Run
+
+            </a>
+
+            <a asp-controller="PaymentRuns"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Payment Runs
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- FILTERS -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header">
+
+            <h5 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>
+                Filter Payment History
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="get"
+                  action="/PaymentHistory">
+
+                <div class="row g-3">
+
+                    <!-- CLIENT -->
+                    <div class="col-md-3">
+
+                        <label for="clientId"
+                               class="form-label fw-semibold">
+
+                            Client
+
+                        </label>
+
+                        <select id="clientId"
+                                name="clientId"
+                                class="form-select">
+
+                            <option value="">
+                                -- All Clients --
+                            </option>
+
+                            @foreach (var client in Model.Clients)
+                            {
+                                <option value="@client.Value"
+                                        selected="@(Model.ClientId?.ToString() == client.Value)">
+
+                                    @client.Text
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <!-- STATUS -->
+                    <div class="col-md-3">
+
+                        <label for="status"
+                               class="form-label fw-semibold">
+
+                            Payment Status
+
+                        </label>
+
+                        <select id="status"
+                                name="status"
+                                class="form-select">
+
+                            <option value="">
+                                -- All Statuses --
+                            </option>
+
+                            <option value="Draft"
+                                    selected="@(Model.Status == "Draft")">
+                                Draft
+                            </option>
+
+                            <option value="PendingReview"
+                                    selected="@(Model.Status == "PendingReview")">
+                                Pending Review
+                            </option>
+
+                            <option value="Approved"
+                                    selected="@(Model.Status == "Approved")">
+                                Approved
+                            </option>
+
+                            <option value="Rejected"
+                                    selected="@(Model.Status == "Rejected")">
+                                Rejected
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- FROM DATE -->
+                    <div class="col-md-2">
+
+                        <label for="fromDate"
+                               class="form-label fw-semibold">
+
+                            From Date
+
+                        </label>
+
+                        <input id="fromDate"
+                               name="fromDate"
+                               type="date"
+                               class="form-control"
+                               value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+
+                    </div>
+
+                    <!-- TO DATE -->
+                    <div class="col-md-2">
+
+                        <label for="toDate"
+                               class="form-label fw-semibold">
+
+                            To Date
+
+                        </label>
+
+                        <input id="toDate"
+                               name="toDate"
+                               type="date"
+                               class="form-control"
+                               value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-search me-1"></i>
+                            Search
+
+                        </button>
+
+                        <a href="/PaymentHistory"
+                           class="btn btn-outline-secondary">
+
+                            <i class="bi bi-x-circle"></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted">
+                        Payment Runs
+                    </div>
+
+                    <h3 class="mb-0">
+                        @Model.PaymentRuns.Count
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted">
+                        Total Students
+                    </div>
+
+                    <h3 class="mb-0">
+                        @Model.PaymentRuns.Sum(x => x.TotalStudents)
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted">
+                        Total Eligible Days
+                    </div>
+
+                    <h3 class="mb-0">
+                        @Model.PaymentRuns.Sum(x => x.TotalEligibleDays)
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted">
+                        Total Amount
+                    </div>
+
+                    <h3 class="mb-0">
+
+                        @Model.PaymentRuns.Sum(x => x.TotalAmount).ToString("C", new System.Globalization.CultureInfo("en-ZA"))
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PAYMENT HISTORY TABLE -->
+    <div class="card shadow-sm">
+
+        <div class="card-header d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-table me-2"></i>
+                Payment Runs
+
+            </h5>
+
+            <span class="badge bg-secondary">
+
+                @Model.PaymentRuns.Count record(s)
+
+            </span>
+
+        </div>
+
+        <div class="card-body p-0">
+
+            @if (!Model.PaymentRuns.Any())
+            {
+                <div class="text-center py-5">
+
+                    <i class="bi bi-inbox fs-1 text-muted"></i>
+
+                    <h5 class="mt-3">
+                        No payment history found
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        No payment runs match the selected filters.
+                    </p>
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>
+                                    Client
+                                </th>
+
+                                <th>
+                                    Payment Period
+                                </th>
+
+                                <th>
+                                    Payment Date
+                                </th>
+
+                                <th>
+                                    Students
+                                </th>
+
+                                <th>
+                                    Amount
+                                </th>
+
+                                <th>
+                                    ClockIT Status
+                                </th>
+
+                                <th>
+                                    Netcash Status
+                                </th>
+
+                                <th>
+                                    Submitted
+                                </th>
+
+                                <th class="text-end">
+                                    Actions
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var paymentRun in Model.PaymentRuns)
+                            {
+                                var clockItStatusClass =
+                                    paymentRun.Status switch
+                                    {
+                                        "Draft" =>
+                                            "bg-secondary",
+
+                                        "PendingReview" =>
+                                            "bg-warning text-dark",
+
+                                        "Approved" =>
+                                            "bg-success",
+
+                                        "Rejected" =>
+                                            "bg-danger",
+
+                                        _ =>
+                                            "bg-secondary"
+                                    };
+
+                                var netcashStatusClass =
+                                    paymentRun.NetcashUploadStatus switch
+                                    {
+                                        "Successful" =>
+                                            "bg-success",
+
+                                        "SuccessfulWithErrors" =>
+                                            "bg-warning text-dark",
+
+                                        "Unsuccessful" =>
+                                            "bg-danger",
+
+                                        "Pending" =>
+                                            "bg-info text-dark",
+
+                                        _ =>
+                                            "bg-secondary"
+                                    };
+
+                                <tr>
+
+                                    <!-- CLIENT -->
+                                    <td>
+
+                                        <strong>
+                                            @paymentRun.ClientName
+                                        </strong>
+
+                                    </td>
+
+                                    <!-- PERIOD -->
+                                    <td>
+
+                                        @paymentRun.PeriodFrom.ToString("MMM yyyy")
+
+                                    </td>
+
+                                    <!-- PAYMENT DATE -->
+                                    <td>
+
+                                        <strong>
+                                            @paymentRun.PaymentDate.ToString("dd MMM yyyy")
+                                        </strong>
+
+                                    </td>
+
+                                    <!-- STUDENTS -->
+                                    <td>
+
+                                        @paymentRun.TotalStudents
+
+                                    </td>
+
+                                    <!-- AMOUNT -->
+                                    <td>
+
+                                        <strong>
+                                            @paymentRun.TotalAmount.ToString("C", new System.Globalization.CultureInfo("en-ZA"))
+                                        </strong>
+
+                                    </td>
+
+                                    <!-- CLOCKIT STATUS -->
+                                    <td>
+
+                                        <span class="badge @clockItStatusClass">
+
+                                            @paymentRun.Status
+
+                                        </span>
+
+                                    </td>
+
+                                    <!-- NETCASH STATUS -->
+                                    <td>
+
+                                        @if (string.IsNullOrWhiteSpace(
+                                            paymentRun.NetcashUploadStatus))
+                                        {
+                                            <span class="badge bg-secondary">
+
+                                                Not Submitted
+
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge @netcashStatusClass">
+
+                                                @paymentRun.NetcashUploadStatus
+
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                    <!-- SUBMITTED -->
+                                    <td>
+
+                                    @if (paymentRun.SubmittedAt.HasValue)
+                                    {
+                                        @(paymentRun.SubmittedAt.Value.ToString("dd MMM yyyy HH:mm"))
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                    </td>
+
+                                    <!-- ACTIONS -->
+                                    <td class="text-end">
+
+                                        <a asp-controller="PaymentRuns"
+                                           asp-action="Details"
+                                           asp-route-id="@paymentRun.PaymentRunId"
+                                           class="btn btn-sm btn-outline-primary">
+
+                                            <i class="bi bi-eye me-1"></i>
+                                            Details
+
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
