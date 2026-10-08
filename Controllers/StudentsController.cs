@@ -584,7 +584,7 @@ namespace ClockItSystem.Controllers
 
         #region StudentBulkUpload
 
-        private const string BulkUploadFolderName = "BulkUploads";
+        private const string BulkUploadFolderName = "bulkUpload";
         private const string BulkUploadContentType =
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -694,6 +694,13 @@ namespace ClockItSystem.Controllers
 
                 // Clear the generated reference data.
                 referenceSheet.Clear();
+
+                // The official template may already contain named ranges from a
+                // previous generated version. ClosedXML does not overwrite an
+                // existing defined name when Add() is called; it throws a
+                // duplicate-key exception instead. These names are generated
+                // implementation details for the Client/Site dropdowns, so
+                // remove them before rebuilding them from the current database.
                 workbook.NamedRanges.DeleteAll();
 
                 referenceSheet.Cell(1, 1).Value = "Client Name";
@@ -770,7 +777,7 @@ namespace ClockItSystem.Controllers
                         referenceSheet.Cell(clientStartRow, 1),
                         referenceSheet.Cell(clientEndRow, 1));
 
-                    _ = workbook.NamedRanges.Add(
+                    workbook.NamedRanges.Add(
                         "ClockITClients",
                         clientRange);
                 }
@@ -909,8 +916,8 @@ namespace ClockItSystem.Controllers
 
             var token = Guid.NewGuid().ToString("N");
             var uploadFolder = Path.Combine(
-                _environment.ContentRootPath,
-                "App_Data/BulkUploads",
+                _environment.WebRootPath,
+                "uploads",
                 BulkUploadFolderName);
 
             var storedFilePath = Path.Combine(
@@ -952,7 +959,7 @@ namespace ClockItSystem.Controllers
 
                 return View("BulkUploadPreview", preview);
             }
-            catch (XsltException)
+            catch (XmlException)
             {
                 DeleteBulkUploadFile(token);
 
@@ -1160,14 +1167,6 @@ namespace ClockItSystem.Controllers
                     .Where(b => b.IsActive)
                     .ToListAsync();
 
-                var branchesByBankAndName = branches
-                    .GroupBy(
-                        b => $"{b.BankId}|{b.BranchName.Trim()}",
-                        StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.First(),
-                        StringComparer.OrdinalIgnoreCase);
 
                 var accountTypesList = await _context.AccountTypes
                     .Where(a => a.IsActive)
@@ -1230,14 +1229,20 @@ namespace ClockItSystem.Controllers
 
                             bankId = bank.BankId;
 
-                            var branchKey =
-                                $"{bank.BankId}|{row.BranchName!.Trim()}";
+                            var branch = branches.FirstOrDefault(b =>
+                                b.BankId == bank.BankId &&
+                                $"{b.BranchName} ({b.BranchCode})"
+                                    .Equals(
+                                        row.BranchName!.Trim(),
+                                        StringComparison.OrdinalIgnoreCase));
 
-                            var branch =
-                                branchesByBankAndName[branchKey];
+                            if (branch == null)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Branch '{row.BranchName}' does not belong to bank '{bank.BankName}'.");
+                            }
 
-                            branchId =
-                                branch.BankBranchId;
+                            branchId = branch.BankBranchId;
 
                             var accountType =
                                 accountTypes[row.AccountTypeName!.Trim()];
@@ -1401,7 +1406,7 @@ namespace ClockItSystem.Controllers
 
                 return View(preview);
             }
-            catch (XmlException)
+            catch (XsltException)
             {
                 DeleteBulkUploadFile(token);
 
@@ -1531,16 +1536,6 @@ namespace ClockItSystem.Controllers
                 await _context.BankBranches
                     .Where(b => b.IsActive)
                     .ToListAsync();
-
-            var branchesByName =
-                activeBranches
-                    .GroupBy(
-                        b => b.BranchName.Trim(),
-                        StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.ToList(),
-                        StringComparer.OrdinalIgnoreCase);
 
             var activeAccountTypesList =
                 await _context.AccountTypes
@@ -1884,23 +1879,23 @@ namespace ClockItSystem.Controllers
                         item.Errors.Add(
                             "Branch is required when banking details are supplied.");
                     }
-                    else if (!branchesByName.TryGetValue(
-                                 item.BranchName.Trim(),
-                                 out var matchingBranches))
-                    {
-                        item.Errors.Add(
-                            "Branch does not match an active Branch in ClockIT.");
-                    }
-                    else if (!string.IsNullOrWhiteSpace(
-                                 item.BankName) &&
+                    else if (!string.IsNullOrWhiteSpace(item.BankName) &&
                              activeBanks.TryGetValue(
                                  item.BankName.Trim(),
-                                 out var bank) &&
-                             !matchingBranches.Any(
-                                 b => b.BankId == bank.BankId))
+                                 out var bank))
                     {
-                        item.Errors.Add(
-                            "Branch does not belong to the selected Bank.");
+                        var branch = activeBranches.FirstOrDefault(b =>
+                            b.BankId == bank.BankId &&
+                            $"{b.BranchName} ({b.BranchCode})"
+                                .Equals(
+                                    item.BranchName.Trim(),
+                                    StringComparison.OrdinalIgnoreCase));
+
+                        if (branch == null)
+                        {
+                            item.Errors.Add(
+                                "Branch does not match the selected Bank.");
+                        }
                     }
 
                     if (string.IsNullOrWhiteSpace(
@@ -1962,8 +1957,8 @@ namespace ClockItSystem.Controllers
         private string GetBulkUploadFilePath(string token)
         {
             return Path.Combine(
-                _environment.ContentRootPath,
-                "App_Data",
+                _environment.WebRootPath,
+                "uploads",
                 BulkUploadFolderName,
                 $"{token}.xlsx");
         }
