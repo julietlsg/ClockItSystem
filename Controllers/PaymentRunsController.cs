@@ -17,17 +17,19 @@ namespace ClockItSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly NetcashBatchGenerator _netcashBatchGenerator;
+        private readonly NetcashPaymentService _netcashPaymentService;
         private readonly IClientAccessService _clientAccessService;
-
 
         public PaymentRunsController(
             ApplicationDbContext context,
             NetcashBatchGenerator netcashBatchGenerator,
+            NetcashPaymentService netcashPaymentService,
             IClientAccessService clientAccessService
             )
         {
             _context = context;
             _netcashBatchGenerator = netcashBatchGenerator;
+            _netcashPaymentService = netcashPaymentService;
             _clientAccessService = clientAccessService;
         }
 
@@ -876,6 +878,126 @@ namespace ClockItSystem.Controllers
             }
         }
 
+        // SUBMIT NETCASH BATCH
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitNetcashBatch(int id)
+        {
+            var paymentRun =
+                await _context.StipendPaymentRuns
+                    .Include(x => x.Client)
+                    .Include(x => x.Payments)
+                        .ThenInclude(x => x.Student)
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == id);
+
+            if (paymentRun == null)
+                return NotFound();
+
+            // --------------------------------------------------------
+            // ONLY APPROVED RUNS MAY BE SUBMITTED
+            // --------------------------------------------------------
+
+            if (paymentRun.Status != "Approved")
+            {
+                TempData["Error"] =
+                    "Only an approved payment run can be submitted to Netcash.";
+
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id });
+            }
+
+            // --------------------------------------------------------
+            // PREVENT DUPLICATE SUBMISSION
+            // --------------------------------------------------------
+
+            if (!string.IsNullOrWhiteSpace(
+                paymentRun.NetcashFileToken))
+            {
+                TempData["Error"] =
+                    "This payment run has already been submitted to Netcash.";
+
+                return RedirectToAction(
+                    nameof(NetcashPreview),
+                    new { id });
+            }
+
+            // --------------------------------------------------------
+            // PAYMENTS MUST EXIST
+            // --------------------------------------------------------
+
+            if (paymentRun.Payments == null ||
+                !paymentRun.Payments.Any())
+            {
+                TempData["Error"] =
+                    "The payment run contains no payments.";
+
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id });
+            }
+
+            try
+            {
+                // ----------------------------------------------------
+                // SUBMIT TO NETCASH
+                // ----------------------------------------------------
+
+                var fileToken =
+                    await _netcashPaymentService
+                        .SubmitSalaryBatchAsync(paymentRun);
+
+                if (string.IsNullOrWhiteSpace(fileToken))
+                {
+                    TempData["Error"] =
+                        "Netcash did not return a file token.";
+
+                    return RedirectToAction(
+                        nameof(NetcashPreview),
+                        new { id });
+                }
+
+                // ----------------------------------------------------
+                // SAVE NETCASH FILE TOKEN
+                // ----------------------------------------------------
+
+                paymentRun.NetcashFileToken =
+                    fileToken.Trim();
+
+                paymentRun.SubmittedAt =
+                    DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] =
+                    "The Netcash batch was submitted successfully. " +
+                    "The Netcash file token has been saved against the payment run.";
+
+                return RedirectToAction(
+                    nameof(NetcashPreview),
+                    new { id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] =
+                    $"Netcash submission failed: {ex.Message}";
+
+                return RedirectToAction(
+                    nameof(NetcashPreview),
+                    new { id });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] =
+                    $"An unexpected error occurred while submitting the Netcash batch: {ex.Message}";
+
+                return RedirectToAction(
+                    nameof(NetcashPreview),
+                    new { id });
+            }
+        }
 
         #endregion
         // ============================================================

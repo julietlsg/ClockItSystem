@@ -3,8 +3,14 @@
 @{
     ViewData["Title"] = "Netcash Batch Preview";
     var zar = new System.Globalization.CultureInfo("en-ZA");
+
     var invalidPayments = Model.Payments.Count(x => !x.BankingDetailsValid);
     var batchReady = invalidPayments == 0;
+
+    // A Netcash file token means the batch has already been submitted.
+    // This prevents the user from attempting to submit the same batch again.
+    var alreadySubmitted = !string.IsNullOrWhiteSpace(
+        ViewBag.NetcashFileToken as string);
 }
 
 <div class="container-fluid py-4">
@@ -36,11 +42,16 @@
                     </div>
 
                     <div class="mt-2">
+
                         <span class="badge bg-primary">
+
                             <i class="bi bi-calendar-event me-1"></i>
+
                             Payment Date:
                             @Model.PaymentDate.ToString("dd MMMM yyyy")
+
                         </span>
+
                     </div>
 
                 </div>
@@ -48,7 +59,6 @@
             </div>
 
         </div>
-
 
         <div class="d-flex gap-2">
 
@@ -66,6 +76,66 @@
     </div>
 
 
+    <!-- SUCCESS MESSAGE -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm"
+             role="alert">
+
+            <div class="d-flex gap-2 align-items-start">
+
+                <i class="bi bi-check-circle-fill fs-5"></i>
+
+                <div>
+                    <strong>Success</strong>
+
+                    <div class="mt-1">
+                        @TempData["Success"]
+                    </div>
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ERROR MESSAGE -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm"
+             role="alert">
+
+            <div class="d-flex gap-2 align-items-start">
+
+                <i class="bi bi-exclamation-circle-fill fs-5"></i>
+
+                <div>
+                    <strong>Netcash Submission Error</strong>
+
+                    <div class="mt-1">
+                        @TempData["Error"]
+                    </div>
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+
     <!-- IMPORTANT NOTICE -->
     <div class="alert alert-warning shadow-sm">
 
@@ -78,9 +148,23 @@
                 <strong>Netcash Batch Preview</strong>
 
                 <div class="mt-1">
-                    This page shows the payment information that will be
-                    used to prepare the Netcash payment batch.
-                    No payment has been submitted to Netcash at this stage.
+
+                    @if (alreadySubmitted)
+                    {
+                        <span>
+                            This payment batch has already been submitted to Netcash.
+                            A duplicate submission is not permitted.
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            This page shows the payment information that will be
+                            used to prepare the Netcash payment batch.
+                            No payment has been submitted to Netcash at this stage.
+                        </span>
+                    }
+
                 </div>
 
             </div>
@@ -88,6 +172,77 @@
         </div>
 
     </div>
+
+
+    <!-- NETCASH SUBMISSION STATUS -->
+    @if (alreadySubmitted)
+    {
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-start gap-3">
+
+                    <div class="text-success fs-2">
+
+                        <i class="bi bi-cloud-check-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="fw-bold text-success">
+                            Submitted to Netcash
+                        </div>
+
+                        <div class="text-muted mt-1">
+                            This payment batch has already been submitted successfully.
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(ViewBag.NetcashFileToken as string))
+                        {
+                            <div class="mt-3">
+
+                                <div class="small text-muted fw-semibold">
+                                    Netcash File Token
+                                </div>
+
+                                <div class="mt-1">
+
+                                    <code class="bg-light border rounded px-2 py-1">
+                                        @ViewBag.NetcashFileToken
+                                    </code>
+
+                                </div>
+
+                            </div>
+                        }
+
+                        @if (ViewBag.SubmittedAt != null)
+                        {
+                            <div class="mt-2">
+
+                                <small class="text-muted">
+
+                                    <i class="bi bi-clock me-1"></i>
+
+                                    Submitted:
+                                    @Convert.ToDateTime(ViewBag.SubmittedAt)
+                                        .ToString("dd MMMM yyyy HH:mm")
+
+                                </small>
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
 
 
     <!-- SUMMARY -->
@@ -163,12 +318,38 @@
 
         <div class="card-body">
 
-            @if (batchReady)
+            @if (alreadySubmitted)
             {
                 <div class="d-flex align-items-center gap-3">
 
                     <div class="text-success fs-3">
+
                         <i class="bi bi-check-circle-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="fw-bold text-success">
+                            Batch Submitted
+                        </div>
+
+                        <div class="text-muted">
+                            The Netcash batch has already been submitted and cannot be submitted again.
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+            else if (batchReady)
+            {
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-success fs-3">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
                     </div>
 
                     <div>
@@ -190,7 +371,9 @@
                 <div class="d-flex align-items-center gap-3">
 
                     <div class="text-danger fs-3">
+
                         <i class="bi bi-exclamation-circle-fill"></i>
+
                     </div>
 
                     <div>
@@ -229,7 +412,7 @@
                 </h5>
 
                 <small class="text-muted">
-                    Review each payment before generating the batch.
+                    Review each payment before submitting the batch.
                 </small>
 
             </div>
@@ -355,8 +538,11 @@
                                     @if (payment.BankingDetailsValid)
                                     {
                                         <span class="badge bg-success">
+
                                             <i class="bi bi-check-circle me-1"></i>
+
                                             Valid
+
                                         </span>
                                     }
                                     else
@@ -365,6 +551,7 @@
                                               title="@payment.ValidationMessage">
 
                                             <i class="bi bi-exclamation-circle me-1"></i>
+
                                             Invalid
 
                                         </span>
@@ -396,15 +583,32 @@
                 <div>
 
                     <h6 class="mb-1 fw-bold">
+
                         <i class="bi bi-shield-check me-2"></i>
+
                         Batch Actions
+
                     </h6>
 
                     <small class="text-muted">
-                        The next step will generate the Netcash batch file.
+
+                        @if (alreadySubmitted)
+                        {
+                            <span>
+                                This batch has already been submitted to Netcash.
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                Review the payment information carefully before submitting the batch to Netcash.
+                            </span>
+                        }
+
                     </small>
 
                 </div>
+
 
                 <div class="d-flex flex-wrap gap-2">
 
@@ -413,9 +617,11 @@
                        class="btn btn-outline-secondary">
 
                         <i class="bi bi-arrow-left me-1"></i>
+
                         Back to Payment Run
 
                     </a>
+
 
                     @if (batchReady)
                     {
@@ -424,6 +630,7 @@
                            class="btn btn-success">
 
                             <i class="bi bi-download me-1"></i>
+
                             Download Netcash .txt
 
                         </a>
@@ -435,7 +642,55 @@
                                 disabled>
 
                             <i class="bi bi-lock me-1"></i>
+
                             Batch Not Ready
+
+                        </button>
+                    }
+
+
+                    @if (batchReady && !alreadySubmitted)
+                    {
+                        <form asp-action="SubmitNetcashBatch"
+                              asp-route-id="@Model.PaymentRunId"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirmNetcashSubmission();">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-cloud-arrow-up me-1"></i>
+
+                                Submit to Netcash
+
+                            </button>
+
+                        </form>
+                    }
+                    else if (alreadySubmitted)
+                    {
+                        <button type="button"
+                                class="btn btn-success"
+                                disabled>
+
+                            <i class="bi bi-check-circle-fill me-1"></i>
+
+                            Submitted to Netcash
+
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="btn btn-secondary"
+                                disabled>
+
+                            <i class="bi bi-lock me-1"></i>
+
+                            Submit Unavailable
 
                         </button>
                     }
@@ -449,3 +704,26 @@
     </div>
 
 </div>
+
+
+@section Scripts
+{
+    <script>
+
+        function confirmNetcashSubmission() {
+
+            return confirm(
+                "You are about to submit this payment batch to Netcash.\n\n" +
+                "Please make sure that:\n" +
+                "• All banking details have been verified.\n" +
+                "• The payment date is correct.\n" +
+                "• The payment amounts are correct.\n" +
+                "• The batch is approved.\n\n" +
+                "Once submitted, the batch must not be submitted again.\n\n" +
+                "Do you want to continue?"
+            );
+
+        }
+
+    </script>
+}
