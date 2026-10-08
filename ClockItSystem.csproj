@@ -10,6 +10,7 @@
     <Folder Include="Migrations\" />
     <Folder Include="Views\Attendance\" />
     <Folder Include="wwwroot\uploads\attendance\" />
+    <Folder Include="wwwroot\uploads\bulkUpload\" />
     <Folder Include="wwwroot\uploads\students\" />
   </ItemGroup>
   <ItemGroup>
