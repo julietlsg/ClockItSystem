@@ -14,7 +14,8 @@ namespace ClockItSystem.Data
             {
                 "Admin",
                 "Facilitator",
-                "Project Manager"
+                "Project Manager",
+                "CEO"
             };
 
             foreach (var role in roles)

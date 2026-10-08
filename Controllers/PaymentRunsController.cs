@@ -12,7 +12,7 @@ using System.Text;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize(Roles = "Admin,Project Manager")]
+    [Authorize(Roles = "Admin,Project Manager,CEO")]
     public class PaymentRunsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -483,7 +483,7 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,CEO")]
         public async Task<IActionResult> Review()
         {
             var paymentRuns = await _context.StipendPaymentRuns
@@ -516,7 +516,7 @@ namespace ClockItSystem.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,CEO")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApprovePaymentRun(int id)
         {
@@ -585,7 +585,7 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,CEO")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectPaymentRun(
             int id,
@@ -642,7 +642,7 @@ namespace ClockItSystem.Controllers
         // ============================================================
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Project Manager,CEO")]
         public async Task<IActionResult> NetcashPreview(int id)
         {
             var paymentRun =
@@ -973,7 +973,7 @@ namespace ClockItSystem.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Project Manager,CEO")]
         public async Task<IActionResult> DownloadNetcashBatch(int id)
         {
             var paymentRun =
@@ -1057,7 +1057,7 @@ namespace ClockItSystem.Controllers
 
         // SUBMIT NETCASH BATCH
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Project Manager,CEO")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitNetcashBatch(int id)
         {
@@ -1311,6 +1311,181 @@ namespace ClockItSystem.Controllers
         }
 
         #endregion
+
+        # region NetCashPaymentHistory
+
+        [HttpGet]
+        [Route("/PaymentHistory")]
+        public async Task<IActionResult> PaymentHistory(
+            int? clientId,
+            string? status,
+            DateTime? fromDate,
+            DateTime? toDate)
+        {
+            var accessibleClientIds =
+                await _clientAccessService
+                    .GetAccessibleClientIdsAsync();
+
+            // --------------------------------------------------------
+            // CLIENT FILTER
+            // --------------------------------------------------------
+
+            var clients = await _context.Clients
+                .AsNoTracking()
+                .Where(x =>
+                    x.IsActive &&
+                    accessibleClientIds.Contains(x.ClientId))
+                .OrderBy(x => x.Name)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.ClientId.ToString(),
+                    Text = x.Name
+                })
+                .ToListAsync();
+
+            // --------------------------------------------------------
+            // PAYMENT HISTORY QUERY
+            // --------------------------------------------------------
+
+            var query = _context.StipendPaymentRuns
+                .AsNoTracking()
+                .Include(x => x.Client)
+                .Where(x =>
+                    accessibleClientIds.Contains(x.ClientId))
+                .AsQueryable();
+
+            // --------------------------------------------------------
+            // CLIENT FILTER
+            // --------------------------------------------------------
+
+            if (clientId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.ClientId == clientId.Value);
+            }
+
+            // --------------------------------------------------------
+            // STATUS FILTER
+            // --------------------------------------------------------
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(x =>
+                    x.Status == status);
+            }
+
+            // --------------------------------------------------------
+            // FROM DATE
+            // --------------------------------------------------------
+
+            if (fromDate.HasValue)
+            {
+                var startDate = fromDate.Value.Date;
+
+                query = query.Where(x =>
+                    x.PaymentDate >= startDate);
+            }
+
+            // --------------------------------------------------------
+            // TO DATE
+            // --------------------------------------------------------
+
+            if (toDate.HasValue)
+            {
+                var endDateExclusive =
+                    toDate.Value.Date.AddDays(1);
+
+                query = query.Where(x =>
+                    x.PaymentDate < endDateExclusive);
+            }
+
+            // --------------------------------------------------------
+            // BUILD RESULT
+            // --------------------------------------------------------
+
+            var paymentRuns = await query
+                .OrderByDescending(x => x.PaymentDate)
+                .ThenByDescending(x => x.CreatedAt)
+                .Select(x => new PaymentHistoryItemViewModel
+                {
+                    PaymentRunId = x.Id,
+
+                    ClientName =
+                        x.Client != null
+                            ? x.Client.Name
+                            : string.Empty,
+
+                    PaymentDate =
+                        x.PaymentDate,
+
+                    PeriodFrom =
+                        x.PeriodFrom,
+
+                    PeriodTo =
+                        x.PeriodTo,
+
+                    TotalStudents =
+                        x.TotalStudents,
+
+                    TotalEligibleDays =
+                        x.TotalEligibleDays,
+
+                    TotalAmount =
+                        x.TotalAmount,
+
+                    Status =
+                        x.Status,
+
+                    NetcashUploadStatus =
+                        x.NetcashUploadStatus,
+
+                    NetcashFileToken =
+                        x.NetcashFileToken,
+
+                    NetcashUploadReport =
+                        x.NetcashUploadReport,
+
+                    NetcashReportedAt =
+                        x.NetcashReportedAt,
+
+                    SubmittedAt =
+                        x.SubmittedAt,
+
+                    FailureReason =
+                        x.FailureReason,
+
+                    CreatedAt =
+                        x.CreatedAt,
+
+                    CreatedBy =
+                        x.CreatedBy
+                })
+                .ToListAsync();
+
+            // --------------------------------------------------------
+            // VIEW MODEL
+            // --------------------------------------------------------
+
+            var model = new PaymentHistoryViewModel
+            {
+                ClientId = clientId,
+
+                Status = status,
+
+                FromDate = fromDate,
+
+                ToDate = toDate,
+
+                Clients = clients,
+
+                PaymentRuns = paymentRuns
+            };
+
+            return View(model);
+        }
+
+        #endregion
+
         // ============================================================
         // POPULATE FILTERS
         // ============================================================

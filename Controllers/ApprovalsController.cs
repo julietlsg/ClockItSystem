@@ -12,7 +12,7 @@ using static ClockItSystem.Models.Enums.DataEnums;
 
 namespace ClockItSystem.Controllers
 {
-    [Authorize(Roles = "Admin,Facilitator, Project Manager")]
+    [Authorize(Roles = "Admin,Facilitator")]
     public class ApprovalsController : Controller
     {
         private readonly ApplicationDbContext _context;

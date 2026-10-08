@@ -12,8 +12,6 @@ namespace ClockItSystem.ViewModels
         public DateTime? PaymentPeriod { get; set; }
 
         [Required(ErrorMessage = "Please select a payment date.")]
-        [DataType(DataType.Date)]
-        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? PaymentDate { get; set; }
 
         public List<SelectListItem> Clients { get; set; }
