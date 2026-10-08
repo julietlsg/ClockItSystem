@@ -645,80 +645,211 @@ namespace ClockItSystem.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> NetcashPreview(int id)
         {
-            var paymentRun = await _context.StipendPaymentRuns
-                .AsNoTracking()
-                .Include(x => x.Client)
-                .Include(x => x.Payments)
-                    .ThenInclude(x => x.Student)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var paymentRun =
+                await _context.StipendPaymentRuns
+                    .AsNoTracking()
+                    .Include(x => x.Client)
+                    .Include(x => x.Payments)
+                        .ThenInclude(x => x.Student)
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == id);
 
             if (paymentRun == null)
                 return NotFound();
+
+            // --------------------------------------------------------
+            // ONLY APPROVED RUNS MAY BE PREPARED FOR NETCASH
+            // --------------------------------------------------------
 
             if (paymentRun.Status != "Approved")
             {
                 TempData["Error"] =
                     "Only an approved payment run can be prepared for Netcash.";
 
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id });
             }
 
-            if (paymentRun.Payments == null || !paymentRun.Payments.Any())
+            // --------------------------------------------------------
+            // PAYMENTS MUST EXIST
+            // --------------------------------------------------------
+
+            if (paymentRun.Payments == null ||
+                !paymentRun.Payments.Any())
             {
                 TempData["Error"] =
                     "The payment run contains no payments.";
 
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id });
             }
+
+            // --------------------------------------------------------
+            // PASS NETCASH SUBMISSION INFORMATION TO THE VIEW
+            // --------------------------------------------------------
+            //
+            // IMPORTANT:
+            // A Netcash file token does NOT necessarily mean that the
+            // batch was successfully loaded.
+            //
+            // The actual upload status comes from
+            // RequestFileUploadReport().
+            // --------------------------------------------------------
+
+            ViewBag.NetcashFileToken =
+                paymentRun.NetcashFileToken;
+
+            ViewBag.NetcashUploadStatus =
+                paymentRun.NetcashUploadStatus;
+
+            ViewBag.NetcashUploadReport =
+                paymentRun.NetcashUploadReport;
+
+            ViewBag.NetcashReportedAt =
+                paymentRun.NetcashReportedAt;
+
+            ViewBag.SubmittedAt =
+                paymentRun.SubmittedAt;
+
+            // --------------------------------------------------------
+            // BUILD PREVIEW
+            // --------------------------------------------------------
 
             var preview = new NetcashBatchPreviewViewModel
             {
-                PaymentRunId = paymentRun.Id,
-                ClientName = paymentRun.Client.Name,
-                PaymentDate = paymentRun.PaymentDate,
-                PeriodFrom = paymentRun.PeriodFrom,
-                PeriodTo = paymentRun.PeriodTo,
-                TotalPayments = paymentRun.Payments.Count,
-                TotalAmount = paymentRun.Payments.Sum(x => x.StipendAmount),
-                Status = paymentRun.Status
+                PaymentRunId =
+                    paymentRun.Id,
+
+                ClientName =
+                    paymentRun.Client.Name,
+
+                PaymentDate =
+                    paymentRun.PaymentDate,
+
+                PeriodFrom =
+                    paymentRun.PeriodFrom,
+
+                PeriodTo =
+                    paymentRun.PeriodTo,
+
+                TotalPayments =
+                    paymentRun.Payments.Count,
+
+                TotalAmount =
+                    paymentRun.Payments.Sum(
+                        x => x.StipendAmount),
+
+                Status =
+                    paymentRun.Status
             };
+
+            // --------------------------------------------------------
+            // VALIDATE EACH PAYMENT
+            // --------------------------------------------------------
 
             foreach (var payment in paymentRun.Payments)
             {
-                var validationErrors = new List<string>();
+                var validationErrors =
+                    new List<string>();
 
-                if (string.IsNullOrWhiteSpace(payment.AccountHolderName))
-                    validationErrors.Add("Account holder name is missing.");
-                else if (payment.AccountHolderName.Trim().Length > 30)
-                    validationErrors.Add("Account holder name exceeds 30 characters.");
+                // ----------------------------------------------------
+                // ACCOUNT HOLDER NAME
+                // ----------------------------------------------------
 
-                if (string.IsNullOrWhiteSpace(payment.BankName))
-                    validationErrors.Add("Bank name is missing.");
-
-                if (string.IsNullOrWhiteSpace(payment.BranchCode))
-                    validationErrors.Add("Branch code is missing.");
-                else if (!payment.BranchCode.Trim().All(char.IsDigit))
-                    validationErrors.Add("Branch code must contain digits only.");
-                else if (payment.BranchCode.Trim().Length > 6)
-                    validationErrors.Add("Branch code may not exceed 6 digits.");
-
-                if (string.IsNullOrWhiteSpace(payment.AccountNumber))
-                    validationErrors.Add("Account number is missing.");
-                else if (!payment.AccountNumber.Trim().All(char.IsDigit))
-                    validationErrors.Add("Account number must contain digits only.");
-                else if (payment.AccountNumber.Trim().Length > 11)
-                    validationErrors.Add("Account number may not exceed 11 digits.");
-
-                if (string.IsNullOrWhiteSpace(payment.AccountType))
+                if (string.IsNullOrWhiteSpace(
+                    payment.AccountHolderName))
                 {
-                    validationErrors.Add("Account type is missing.");
+                    validationErrors.Add(
+                        "Account holder name is missing.");
+                }
+                else if (
+                    payment.AccountHolderName.Trim().Length > 30)
+                {
+                    validationErrors.Add(
+                        "Account holder name exceeds 30 characters.");
+                }
+
+                // ----------------------------------------------------
+                // BANK NAME
+                // ----------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                    payment.BankName))
+                {
+                    validationErrors.Add(
+                        "Bank name is missing.");
+                }
+
+                // ----------------------------------------------------
+                // BRANCH CODE
+                // ----------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                    payment.BranchCode))
+                {
+                    validationErrors.Add(
+                        "Branch code is missing.");
+                }
+                else if (!payment.BranchCode
+                    .Trim()
+                    .All(char.IsDigit))
+                {
+                    validationErrors.Add(
+                        "Branch code must contain digits only.");
+                }
+                else if (
+                    payment.BranchCode.Trim().Length > 6)
+                {
+                    validationErrors.Add(
+                        "Branch code may not exceed 6 digits.");
+                }
+
+                // ----------------------------------------------------
+                // ACCOUNT NUMBER
+                // ----------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                    payment.AccountNumber))
+                {
+                    validationErrors.Add(
+                        "Account number is missing.");
+                }
+                else if (!payment.AccountNumber
+                    .Trim()
+                    .All(char.IsDigit))
+                {
+                    validationErrors.Add(
+                        "Account number must contain digits only.");
+                }
+                else if (
+                    payment.AccountNumber.Trim().Length > 11)
+                {
+                    validationErrors.Add(
+                        "Account number may not exceed 11 digits.");
+                }
+
+                // ----------------------------------------------------
+                // ACCOUNT TYPE
+                // ----------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                    payment.AccountType))
+                {
+                    validationErrors.Add(
+                        "Account type is missing.");
                 }
                 else
                 {
-                    var accountType = payment.AccountType.Trim().ToLowerInvariant();
+                    var accountType =
+                        payment.AccountType
+                            .Trim()
+                            .ToLowerInvariant();
 
                     var supportedAccountType =
-                        accountType is "1"
+                        accountType is
+                            "1"
                             or "2"
                             or "3"
                             or "9"
@@ -740,12 +871,25 @@ namespace ClockItSystem.Controllers
                     }
                 }
 
-                if (payment.StipendAmount <= 0)
-                    validationErrors.Add("Payment amount must be greater than zero.");
+                // ----------------------------------------------------
+                // PAYMENT AMOUNT
+                // ----------------------------------------------------
 
-                if (string.IsNullOrWhiteSpace(payment.Student.StudentNumber))
+                if (payment.StipendAmount <= 0)
                 {
-                    validationErrors.Add("Student number is required.");
+                    validationErrors.Add(
+                        "Payment amount must be greater than zero.");
+                }
+
+                // ----------------------------------------------------
+                // STUDENT NUMBER / PAYMENT REFERENCE
+                // ----------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                    payment.Student.StudentNumber))
+                {
+                    validationErrors.Add(
+                        "Student number is required.");
                 }
                 else
                 {
@@ -759,37 +903,70 @@ namespace ClockItSystem.Controllers
                     }
                 }
 
-                var valid = !validationErrors.Any();
+                // ----------------------------------------------------
+                // VALIDATION RESULT
+                // ----------------------------------------------------
 
-                preview.Payments.Add(new NetcashBatchPreviewItemViewModel
-                {
-                    PaymentId = payment.Id,
-                    StudentId = payment.StudentId,
-                    StudentNumber = payment.Student.StudentNumber,
-                    StudentName =
-                        payment.Student.FirstName + " " +
-                        payment.Student.LastName,
-                    AccountHolderName =
-                        payment.AccountHolderName ?? string.Empty,
-                    BankName =
-                        payment.BankName ?? string.Empty,
-                    BranchCode =
-                        payment.BranchCode ?? string.Empty,
-                    AccountNumber =
-                        payment.AccountNumber ?? string.Empty,
-                    AccountType =
-                        payment.AccountType ?? string.Empty,
-                    Amount =
-                        payment.StipendAmount,
-                    PaymentReference =
-                        $"CLOCKIT/{payment.Student.StudentNumber}/{paymentRun.PeriodFrom:yyyyMM}",
-                    BankingDetailsValid =
-                        valid,
-                    ValidationMessage =
-                        valid
-                            ? null
-                            : string.Join(" ", validationErrors)
-                });
+                var valid =
+                    !validationErrors.Any();
+
+                // ----------------------------------------------------
+                // ADD PAYMENT TO PREVIEW
+                // ----------------------------------------------------
+
+                preview.Payments.Add(
+                    new NetcashBatchPreviewItemViewModel
+                    {
+                        PaymentId =
+                            payment.Id,
+
+                        StudentId =
+                            payment.StudentId,
+
+                        StudentNumber =
+                            payment.Student.StudentNumber,
+
+                        StudentName =
+                            payment.Student.FirstName +
+                            " " +
+                            payment.Student.LastName,
+
+                        AccountHolderName =
+                            payment.AccountHolderName ??
+                            string.Empty,
+
+                        BankName =
+                            payment.BankName ??
+                            string.Empty,
+
+                        BranchCode =
+                            payment.BranchCode ??
+                            string.Empty,
+
+                        AccountNumber =
+                            payment.AccountNumber ??
+                            string.Empty,
+
+                        AccountType =
+                            payment.AccountType ??
+                            string.Empty,
+
+                        Amount =
+                            payment.StipendAmount,
+
+                        PaymentReference =
+                            $"CLOCKIT/{payment.Student.StudentNumber}/{paymentRun.PeriodFrom:yyyyMM}",
+
+                        BankingDetailsValid =
+                            valid,
+
+                        ValidationMessage =
+                            valid
+                                ? null
+                                : string.Join(
+                                    " ",
+                                    validationErrors)
+                    });
             }
 
             return View(preview);
@@ -910,21 +1087,6 @@ namespace ClockItSystem.Controllers
             }
 
             // --------------------------------------------------------
-            // PREVENT DUPLICATE SUBMISSION
-            // --------------------------------------------------------
-
-            if (!string.IsNullOrWhiteSpace(
-                paymentRun.NetcashFileToken))
-            {
-                TempData["Error"] =
-                    "This payment run has already been submitted to Netcash.";
-
-                return RedirectToAction(
-                    nameof(NetcashPreview),
-                    new { id });
-            }
-
-            // --------------------------------------------------------
             // PAYMENTS MUST EXIST
             // --------------------------------------------------------
 
@@ -939,20 +1101,100 @@ namespace ClockItSystem.Controllers
                     new { id });
             }
 
+            // --------------------------------------------------------
+            // SUCCESSFUL SUBMISSIONS MUST NEVER BE RESUBMITTED
+            // --------------------------------------------------------
+
+            if (string.Equals(
+                    paymentRun.NetcashUploadStatus,
+                    "Successful",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] =
+                    "This payment run has already been successfully submitted to Netcash.";
+
+                return RedirectToAction(
+                    nameof(NetcashPreview),
+                    new { id });
+            }
+
+            // --------------------------------------------------------
+            // SUCCESSFUL WITH ERRORS ALSO REQUIRES REVIEW
+            // --------------------------------------------------------
+
+            if (string.Equals(
+                    paymentRun.NetcashUploadStatus,
+                    "SuccessfulWithErrors",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] =
+                    "Netcash processed this batch with errors. " +
+                    "Please review the Netcash upload report before proceeding.";
+
+                return RedirectToAction(
+                    nameof(NetcashPreview),
+                    new { id });
+            }
+
             try
             {
                 // ----------------------------------------------------
-                // SUBMIT TO NETCASH
+                // SUBMIT OR POLL NETCASH
+                // ----------------------------------------------------
+                //
+                // NetcashPaymentService handles both scenarios:
+                //
+                // 1. No file token exists:
+                //    Upload the batch.
+                //
+                // 2. File token already exists:
+                //    DO NOT upload again.
+                //    Poll the existing Netcash upload report.
+                //
+                // This prevents duplicate Netcash batches.
                 // ----------------------------------------------------
 
-                var fileToken =
+                var result =
                     await _netcashPaymentService
                         .SubmitSalaryBatchAsync(paymentRun);
 
-                if (string.IsNullOrWhiteSpace(fileToken))
+                // ----------------------------------------------------
+                // SAVE NETCASH RESULT
+                // ----------------------------------------------------
+
+                paymentRun.NetcashFileToken =
+                    string.IsNullOrWhiteSpace(result.FileToken)
+                        ? paymentRun.NetcashFileToken
+                        : result.FileToken.Trim();
+
+                paymentRun.NetcashUploadStatus =
+                    result.UploadStatus;
+
+                paymentRun.NetcashUploadReport =
+                    result.UploadReport;
+
+                paymentRun.NetcashReportedAt =
+                    result.ReportedAt;
+
+                paymentRun.SubmittedAt ??=
+                    DateTime.Now;
+
+                // ----------------------------------------------------
+                // SUCCESSFUL
+                // ----------------------------------------------------
+
+                if (string.Equals(
+                        result.UploadStatus,
+                        "Successful",
+                        StringComparison.OrdinalIgnoreCase))
                 {
-                    TempData["Error"] =
-                        "Netcash did not return a file token.";
+                    paymentRun.FailureReason = null;
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["Success"] =
+                        "The Netcash batch was successfully uploaded and " +
+                        "processed by Netcash.";
 
                     return RedirectToAction(
                         nameof(NetcashPreview),
@@ -960,20 +1202,88 @@ namespace ClockItSystem.Controllers
                 }
 
                 // ----------------------------------------------------
-                // SAVE NETCASH FILE TOKEN
+                // SUCCESSFUL WITH ERRORS
                 // ----------------------------------------------------
 
-                paymentRun.NetcashFileToken =
-                    fileToken.Trim();
+                if (string.Equals(
+                        result.UploadStatus,
+                        "SuccessfulWithErrors",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    paymentRun.FailureReason =
+                        "Netcash processed the batch with errors. " +
+                        "Review the Netcash upload report.";
 
-                paymentRun.SubmittedAt =
-                    DateTime.Now;
+                    await _context.SaveChangesAsync();
+
+                    TempData["Error"] =
+                        "Netcash processed the batch with errors. " +
+                        "Please review the upload report.";
+
+                    return RedirectToAction(
+                        nameof(NetcashPreview),
+                        new { id });
+                }
+
+                // ----------------------------------------------------
+                // UNSUCCESSFUL
+                // ----------------------------------------------------
+
+                if (string.Equals(
+                        result.UploadStatus,
+                        "Unsuccessful",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    paymentRun.FailureReason =
+                        "Netcash rejected the batch. " +
+                        "Review the Netcash upload report before retrying.";
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["Error"] =
+                        "Netcash rejected the batch. " +
+                        "Please review the upload report before retrying.";
+
+                    return RedirectToAction(
+                        nameof(NetcashPreview),
+                        new { id });
+                }
+
+                // ----------------------------------------------------
+                // PENDING
+                // ----------------------------------------------------
+
+                if (string.Equals(
+                        result.UploadStatus,
+                        "Pending",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    paymentRun.FailureReason = null;
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["Error"] =
+                        "Netcash has received the batch, but the upload report " +
+                        "is not ready yet. Please check the Netcash status again.";
+
+                    return RedirectToAction(
+                        nameof(NetcashPreview),
+                        new { id });
+                }
+
+                // ----------------------------------------------------
+                // UNKNOWN
+                // ----------------------------------------------------
+
+                paymentRun.FailureReason =
+                    "ClockIT received a response from Netcash, " +
+                    "but could not determine the final upload status.";
 
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] =
-                    "The Netcash batch was submitted successfully. " +
-                    "The Netcash file token has been saved against the payment run.";
+                TempData["Error"] =
+                    "Netcash returned a response, but the upload status " +
+                    "could not be determined. Please review the upload report.";
 
                 return RedirectToAction(
                     nameof(NetcashPreview),
@@ -991,7 +1301,8 @@ namespace ClockItSystem.Controllers
             catch (Exception ex)
             {
                 TempData["Error"] =
-                    $"An unexpected error occurred while submitting the Netcash batch: {ex.Message}";
+                    "An unexpected error occurred while communicating " +
+                    $"with Netcash: {ex.Message}";
 
                 return RedirectToAction(
                     nameof(NetcashPreview),

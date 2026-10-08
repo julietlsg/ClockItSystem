@@ -44,6 +44,11 @@ namespace ClockItSystem.Models
 
         public string? NetcashFileToken { get; set; }
 
+        public string? NetcashUploadStatus { get; set; }
+
+        public string? NetcashUploadReport { get; set; }
+
+        public DateTime? NetcashReportedAt { get; set; }
         public DateTime? SubmittedAt { get; set; }
 
         public DateTime? ProcessedAt { get; set; }
