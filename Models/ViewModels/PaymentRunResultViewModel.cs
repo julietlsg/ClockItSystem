@@ -7,6 +7,7 @@
         public int ClientId { get; set; }
 
         public string ClientName { get; set; } = string.Empty;
+        public DateTime PaymentDate { get; set; }
 
         public DateTime PeriodFrom { get; set; }
 

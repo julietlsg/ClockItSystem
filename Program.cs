@@ -48,6 +48,7 @@ builder.Services.AddScoped<StudentReportService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IClientAccessService, ClientAccessService>();
 
+builder.Services.AddScoped<NetcashBatchGenerator>();
 
 builder.Services.Configure<ConfigSettings>(
     builder.Configuration.GetSection("ConfigSettings"));

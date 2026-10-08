@@ -553,6 +553,9 @@ namespace ClockItSystem.Migrations
                     b.Property<string>("NetcashFileToken")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("PeriodFrom")
                         .HasColumnType("datetime2");
 

@@ -16,6 +16,9 @@ namespace ClockItSystem.Models
         [Required]
         public DateTime PeriodTo { get; set; }
 
+        [Required]
+        public DateTime PaymentDate { get; set; }
+
         public int TotalStudents { get; set; }
 
         public int TotalEligibleDays { get; set; }
